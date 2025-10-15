@@ -50,7 +50,7 @@ export default function Matrix() {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <div className="min-h-screen bg-background p-4 md:p-8 pb-32">
       <div className="max-w-7xl mx-auto space-y-8">
         <header className="text-center space-y-3">
           <div className="flex items-center justify-center gap-3">
@@ -58,17 +58,9 @@ export default function Matrix() {
             <h1 className="text-3xl font-semibold">Eisenhower Matrix</h1>
           </div>
           <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-            Prioritize your tasks by urgency and importance. Type a task, press Enter, use arrow keys to select a quadrant, and press Enter again to add it.
+            Press <kbd className="px-1.5 py-0.5 text-xs bg-muted rounded">Ctrl+Enter</kbd> to start adding a task
           </p>
         </header>
-
-        <div className="max-w-4xl mx-auto">
-          <TaskInput
-            onAddTask={handleAddTask}
-            selectedQuadrant={selectedQuadrant}
-            onQuadrantChange={setSelectedQuadrant}
-          />
-        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {quadrants.map((quadrant) => (
@@ -84,6 +76,16 @@ export default function Matrix() {
               showRipple={rippleQuadrant === quadrant.id}
             />
           ))}
+        </div>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 md:p-6">
+        <div className="max-w-4xl mx-auto">
+          <TaskInput
+            onAddTask={handleAddTask}
+            selectedQuadrant={selectedQuadrant}
+            onQuadrantChange={setSelectedQuadrant}
+          />
         </div>
       </div>
     </div>
