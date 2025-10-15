@@ -3,7 +3,7 @@ import { Quadrant } from '@shared/schema';
 import { useTasks } from '@/hooks/useTasks';
 import TaskInput from './TaskInput';
 import QuadrantCard from './QuadrantCard';
-import { Grid2X2 } from 'lucide-react';
+import NavigationDrawer from './NavigationDrawer';
 
 export default function Matrix() {
   const { getTasksByQuadrant, addTask, deleteTask, toggleTaskCompletion } = useTasks();
@@ -50,37 +50,29 @@ export default function Matrix() {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8 pb-32">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <header className="text-center space-y-3">
-          <div className="flex items-center justify-center gap-3">
-            <Grid2X2 className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-semibold">Eisenhower Matrix</h1>
+    <div className="flex h-screen">
+      <NavigationDrawer />
+      
+      <div className="flex-1 ml-64 flex flex-col">
+        <div className="flex-1 p-4 md:p-6 pb-0 overflow-hidden">
+          <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-4">
+            {quadrants.map((quadrant) => (
+              <QuadrantCard
+                key={quadrant.id}
+                title={quadrant.title}
+                subtitle={quadrant.subtitle}
+                tasks={getTasksByQuadrant(quadrant.id)}
+                onDeleteTask={deleteTask}
+                onToggleTask={toggleTaskCompletion}
+                isSelected={selectedQuadrant === quadrant.id}
+                color={quadrant.color}
+                showRipple={rippleQuadrant === quadrant.id}
+              />
+            ))}
           </div>
-          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-            Press <kbd className="px-1.5 py-0.5 text-xs bg-muted rounded">Ctrl+Enter</kbd> to start adding a task
-          </p>
-        </header>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {quadrants.map((quadrant) => (
-            <QuadrantCard
-              key={quadrant.id}
-              title={quadrant.title}
-              subtitle={quadrant.subtitle}
-              tasks={getTasksByQuadrant(quadrant.id)}
-              onDeleteTask={deleteTask}
-              onToggleTask={toggleTaskCompletion}
-              isSelected={selectedQuadrant === quadrant.id}
-              color={quadrant.color}
-              showRipple={rippleQuadrant === quadrant.id}
-            />
-          ))}
         </div>
-      </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 md:p-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="border-t p-4 md:p-6 bg-background">
           <TaskInput
             onAddTask={handleAddTask}
             selectedQuadrant={selectedQuadrant}

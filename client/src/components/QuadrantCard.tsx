@@ -54,7 +54,7 @@ export default function QuadrantCard({
   return (
     <div
       className={`
-        relative rounded-xl border-2 ${colors.border} ${colors.bg} p-6 min-h-[400px]
+        relative rounded-xl border-2 ${colors.border} ${colors.bg} p-6 h-full flex flex-col
         transition-all duration-200 overflow-hidden
         ${isSelected ? `${colors.ring} ring-2 shadow-lg` : ''}
       `}
@@ -63,13 +63,13 @@ export default function QuadrantCard({
       {showRipple && (
         <div className={`absolute inset-0 ${colors.ring} animate-ping opacity-75 rounded-xl pointer-events-none`} />
       )}
-      <div className="mb-4 relative z-10">
+      <div className="mb-4 relative z-10 shrink-0">
         <h2 className="text-sm font-medium uppercase tracking-wide text-foreground">
           {title}
         </h2>
         <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
       </div>
-      <div className="space-y-2 relative z-10">
+      <div className="space-y-2 relative z-10 overflow-y-auto flex-1 pr-2">
         {tasks.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground/60 text-sm">
             No tasks yet
