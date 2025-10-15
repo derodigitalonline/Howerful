@@ -69,16 +69,29 @@ export default function TaskInput({
 
   return (
     <div className="space-y-3">
-      <Input
-        ref={inputRef}
-        type="text"
-        placeholder="Type a task and press Enter..."
-        value={taskText}
-        onChange={(e) => setTaskText(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className={`h-12 text-base ${isSelectingQuadrant ? quadrantInfo[selectedQuadrant].color : ''}`}
-        data-testid="input-task"
-      />
+      <div className="relative">
+        <Input
+          ref={inputRef}
+          type="text"
+          placeholder="Type a task and press Enter..."
+          value={taskText}
+          onChange={(e) => setTaskText(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className={`h-12 text-base pr-32 ${isSelectingQuadrant ? quadrantInfo[selectedQuadrant].color : ''}`}
+          data-testid="input-task"
+        />
+        {!taskText && !isSelectingQuadrant && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
+            <kbd className="px-2 py-1 text-xs font-mono bg-muted text-muted-foreground rounded border">
+              Ctrl
+            </kbd>
+            <span className="text-muted-foreground/50">+</span>
+            <kbd className="px-2 py-1 text-xs font-mono bg-muted text-muted-foreground rounded border">
+              Enter
+            </kbd>
+          </div>
+        )}
+      </div>
       
       {isSelectingQuadrant ? (
         <div className="text-center space-y-2">
