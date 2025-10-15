@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Quadrant } from '@shared/schema';
 import { useTasks } from '@/hooks/useTasks';
 import TaskInput from './TaskInput';
@@ -6,8 +6,21 @@ import QuadrantCard from './QuadrantCard';
 import { Grid2X2 } from 'lucide-react';
 
 export default function Matrix() {
-  const { getTasksByQuadrant, addTask, deleteTask } = useTasks();
+  const { getTasksByQuadrant, addTask, deleteTask, toggleTaskCompletion } = useTasks();
   const [selectedQuadrant, setSelectedQuadrant] = useState<Quadrant>('do-first');
+  const [rippleQuadrant, setRippleQuadrant] = useState<Quadrant | null>(null);
+
+  const handleAddTask = (text: string, quadrant: Quadrant) => {
+    addTask(text, quadrant);
+    setRippleQuadrant(quadrant);
+  };
+
+  useEffect(() => {
+    if (rippleQuadrant) {
+      const timer = setTimeout(() => setRippleQuadrant(null), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [rippleQuadrant]);
 
   const quadrants = [
     {
@@ -51,7 +64,7 @@ export default function Matrix() {
 
         <div className="max-w-4xl mx-auto">
           <TaskInput
-            onAddTask={addTask}
+            onAddTask={handleAddTask}
             selectedQuadrant={selectedQuadrant}
             onQuadrantChange={setSelectedQuadrant}
           />
@@ -65,8 +78,10 @@ export default function Matrix() {
               subtitle={quadrant.subtitle}
               tasks={getTasksByQuadrant(quadrant.id)}
               onDeleteTask={deleteTask}
+              onToggleTask={toggleTaskCompletion}
               isSelected={selectedQuadrant === quadrant.id}
               color={quadrant.color}
+              showRipple={rippleQuadrant === quadrant.id}
             />
           ))}
         </div>

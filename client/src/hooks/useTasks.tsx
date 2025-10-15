@@ -27,12 +27,21 @@ export function useTasks() {
       text,
       quadrant,
       createdAt: Date.now(),
+      completed: false,
     };
     setTasks((prev) => [...prev, newTask]);
   };
 
   const deleteTask = (id: string) => {
     setTasks((prev) => prev.filter((task) => task.id !== id));
+  };
+
+  const toggleTaskCompletion = (id: string) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    );
   };
 
   const getTasksByQuadrant = (quadrant: Quadrant) => {
@@ -43,6 +52,7 @@ export function useTasks() {
     tasks,
     addTask,
     deleteTask,
+    toggleTaskCompletion,
     getTasksByQuadrant,
   };
 }

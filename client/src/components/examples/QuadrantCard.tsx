@@ -7,12 +7,14 @@ export default function QuadrantCardExample() {
       text: 'Complete urgent client presentation',
       quadrant: 'do-first' as const,
       createdAt: Date.now(),
+      completed: false,
     },
     {
       id: '2',
       text: 'Fix critical production bug',
       quadrant: 'do-first' as const,
       createdAt: Date.now(),
+      completed: true,
     },
   ];
 
@@ -23,8 +25,10 @@ export default function QuadrantCardExample() {
         subtitle="Urgent & Important"
         tasks={mockTasks}
         onDeleteTask={(id) => console.log('Delete task:', id)}
+        onToggleTask={(id) => console.log('Toggle task:', id)}
         isSelected={true}
         color="chart-1"
+        showRipple={false}
       />
     </div>
   );

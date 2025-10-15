@@ -8,6 +8,7 @@ export const taskSchema = z.object({
   text: z.string().min(1),
   quadrant: z.enum(quadrants),
   createdAt: z.number(),
+  completed: z.boolean().default(false),
 });
 
 export type Task = z.infer<typeof taskSchema>;

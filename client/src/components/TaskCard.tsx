@@ -1,20 +1,33 @@
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface TaskCardProps {
   text: string;
+  completed: boolean;
+  onToggle: () => void;
   onDelete: () => void;
   quadrantColor: string;
 }
 
-export default function TaskCard({ text, onDelete, quadrantColor }: TaskCardProps) {
+export default function TaskCard({ text, completed, onToggle, onDelete, quadrantColor }: TaskCardProps) {
   return (
     <Card 
-      className={`group relative px-4 py-3 border-l-4 ${quadrantColor}`}
+      className={`group relative px-4 py-3 border-l-4 ${quadrantColor} animate-in fade-in slide-in-from-top-2 duration-200`}
       data-testid={`task-${text.slice(0, 10)}`}
     >
-      <p className="text-sm pr-6 break-words">{text}</p>
+      <div className="flex items-start gap-3">
+        <Checkbox
+          checked={completed}
+          onCheckedChange={onToggle}
+          className="mt-0.5"
+          data-testid="checkbox-task"
+        />
+        <p className={`text-sm flex-1 pr-6 break-words ${completed ? 'line-through text-muted-foreground' : ''}`}>
+          {text}
+        </p>
+      </div>
       <Button
         size="icon"
         variant="ghost"
