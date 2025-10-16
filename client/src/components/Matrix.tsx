@@ -6,6 +6,7 @@ import TaskInput from './TaskInput';
 import QuadrantCard from './QuadrantCard';
 import NavigationDrawer from './NavigationDrawer';
 import TaskCard from './TaskCard';
+import KeyboardShortcutsDialog from './KeyboardShortcutsDialog';
 import { motion } from 'framer-motion';
 
 export default function Matrix() {
@@ -14,6 +15,7 @@ export default function Matrix() {
   const [rippleQuadrant, setRippleQuadrant] = useState<Quadrant | null>(null);
   const [activeTask, setActiveTask] = useState<any>(null);
   const [dragOverQuadrant, setDragOverQuadrant] = useState<Quadrant | null>(null);
+  const [showShortcutsDialog, setShowShortcutsDialog] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -77,6 +79,20 @@ export default function Matrix() {
     }
   }, [rippleQuadrant]);
 
+  // Keyboard shortcut to open help dialog
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check for ? key or Ctrl+/
+      if (e.key === '?' || (e.ctrlKey && e.key === '/')) {
+        e.preventDefault();
+        setShowShortcutsDialog(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const quadrants = [
     {
       id: 'do-first' as Quadrant,
@@ -113,7 +129,7 @@ export default function Matrix() {
       onDragCancel={handleDragCancel}
     >
       <div className="flex h-screen">
-        <NavigationDrawer />
+        <NavigationDrawer onHelpClick={() => setShowShortcutsDialog(true)} />
 
         <div className="flex-1 ml-64 flex flex-col">
           <div className="flex-1 p-4 md:p-6 pb-0 overflow-hidden">
@@ -171,6 +187,11 @@ export default function Matrix() {
           </motion.div>
         ) : null}
       </DragOverlay>
+
+      <KeyboardShortcutsDialog
+        open={showShortcutsDialog}
+        onOpenChange={setShowShortcutsDialog}
+      />
     </DndContext>
   );
 }

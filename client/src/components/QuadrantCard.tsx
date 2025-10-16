@@ -52,39 +52,6 @@ const colorClasses = {
   },
 };
 
-// Confetti particle component
-function Confetti({ color }: { color: string }) {
-  const particles = Array.from({ length: 12 });
-
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {particles.map((_, i) => (
-        <motion.div
-          key={i}
-          className={`absolute w-2 h-2 rounded-full ${color}`}
-          initial={{
-            x: '50%',
-            y: '50%',
-            scale: 0,
-            opacity: 1,
-          }}
-          animate={{
-            x: `${50 + (Math.random() - 0.5) * 100}%`,
-            y: `${50 + (Math.random() - 0.5) * 100}%`,
-            scale: [0, 1, 0],
-            opacity: [1, 1, 0],
-          }}
-          transition={{
-            duration: 0.8,
-            delay: i * 0.02,
-            ease: 'easeOut',
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
 export default function QuadrantCard({
   quadrantId,
   title,
@@ -122,16 +89,13 @@ export default function QuadrantCard({
       {/* Ripple effect on task drop */}
       <AnimatePresence>
         {showRipple && (
-          <>
-            <motion.div
-              className={`absolute inset-0 ${colors.ring} rounded-xl pointer-events-none`}
-              initial={{ opacity: 0.75, scale: 0.8 }}
-              animate={{ opacity: 0, scale: 1.5 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-            />
-            {quadrantId === 'do-first' && <Confetti color="bg-chart-1" />}
-          </>
+          <motion.div
+            className={`absolute inset-0 ${colors.ring} rounded-xl pointer-events-none`}
+            initial={{ opacity: 0.75, scale: 0.8 }}
+            animate={{ opacity: 0, scale: 1.5 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+          />
         )}
       </AnimatePresence>
 
@@ -158,7 +122,7 @@ export default function QuadrantCard({
         <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
       </div>
 
-      <div className="space-y-2 relative z-10 flex-1">
+      <div className="space-y-2 relative z-10 overflow-y-auto flex-1 pr-2">
         {tasks.length === 0 ? (
           <motion.div
             className="text-center py-12 text-muted-foreground/60 text-sm"
