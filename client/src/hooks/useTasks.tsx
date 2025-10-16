@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Task, Quadrant } from '@shared/schema';
+import { useState, useEffect } from "react";
+import { Task, Quadrant } from "@shared/schema";
 
-const STORAGE_KEY = 'eisenhower-tasks';
+const STORAGE_KEY = "eisenhower-tasks";
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -12,7 +12,7 @@ export function useTasks() {
       try {
         setTasks(JSON.parse(stored));
       } catch (e) {
-        console.error('Failed to parse stored tasks', e);
+        console.error("Failed to parse stored tasks", e);
       }
     }
   }, []);
@@ -39,7 +39,21 @@ export function useTasks() {
   const toggleTaskCompletion = (id: string) => {
     setTasks((prev) =>
       prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
+        task.id === id ? { ...task, completed: !task.completed } : task,
+      ),
+    );
+  };
+
+  const editTask = (id: string, newText: string) => {
+    setTasks((prev) =>
+      prev.map((task) => (task.id === id ? { ...task, text: newText } : task)),
+    );
+  };
+
+  const moveTask = (id: string, newQuadrant: Quadrant) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id ? { ...task, quadrant: newQuadrant } : task
       )
     );
   };
@@ -53,6 +67,8 @@ export function useTasks() {
     addTask,
     deleteTask,
     toggleTaskCompletion,
+    editTask,
+    moveTask,
     getTasksByQuadrant,
   };
 }
