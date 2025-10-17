@@ -36,11 +36,27 @@ export function useTasks() {
     setTasks((prev) => prev.filter((task) => task.id !== id));
   };
 
-  const toggleTaskCompletion = (id: string) => {
+  const toggleTaskCompletion = (id: string, onComplete?: (quadrant: Quadrant) => void, onUncomplete?: (quadrant: Quadrant) => void) => {
     setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task,
-      ),
+      prev.map((task) => {
+        if (task.id === id) {
+          const newCompleted = !task.completed;
+
+          // Call callbacks for XP tracking
+          if (newCompleted && onComplete) {
+            onComplete(task.quadrant);
+          } else if (!newCompleted && onUncomplete && task.completedInQuadrant) {
+            onUncomplete(task.completedInQuadrant);
+          }
+
+          return {
+            ...task,
+            completed: newCompleted,
+            completedInQuadrant: newCompleted ? task.quadrant : undefined,
+          };
+        }
+        return task;
+      }),
     );
   };
 
@@ -53,7 +69,14 @@ export function useTasks() {
   const moveTask = (id: string, newQuadrant: Quadrant) => {
     setTasks((prev) =>
       prev.map((task) =>
-        task.id === id ? { ...task, quadrant: newQuadrant } : task
+        task.id === id
+          ? {
+              ...task,
+              quadrant: newQuadrant,
+              // Update completedInQuadrant if the task is completed
+              completedInQuadrant: task.completed ? newQuadrant : task.completedInQuadrant,
+            }
+          : task
       )
     );
   };

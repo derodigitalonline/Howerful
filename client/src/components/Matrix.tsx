@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { Quadrant } from '@shared/schema';
+import { Quadrant, XP_REWARDS } from '@shared/schema';
 import { useTasks } from '@/hooks/useTasks';
+import { useProfile } from '@/hooks/useProfile';
+import { toast } from 'sonner';
 import TaskInput from './TaskInput';
 import QuadrantCard from './QuadrantCard';
 import NavigationDrawer from './NavigationDrawer';
@@ -10,7 +12,8 @@ import KeyboardShortcutsDialog from './KeyboardShortcutsDialog';
 import { motion } from 'framer-motion';
 
 export default function Matrix() {
-  const { getTasksByQuadrant, addTask, deleteTask, toggleTaskCompletion, editTask, moveTask } = useTasks();
+  const { getTasksByQuadrant, addTask, deleteTask, toggleTaskCompletion, editTask, moveTask, tasks } = useTasks();
+  const { awardXP, deductXP } = useProfile();
   const [selectedQuadrant, setSelectedQuadrant] = useState<Quadrant>('do-first');
   const [rippleQuadrant, setRippleQuadrant] = useState<Quadrant | null>(null);
   const [activeTask, setActiveTask] = useState<any>(null);
@@ -28,6 +31,38 @@ export default function Matrix() {
   const handleAddTask = (text: string, quadrant: Quadrant) => {
     addTask(text, quadrant);
     setRippleQuadrant(quadrant);
+  };
+
+  const handleToggleTask = (id: string) => {
+    toggleTaskCompletion(
+      id,
+      (quadrant) => {
+        // Award XP when completing
+        const result = awardXP(quadrant);
+
+        if (result.leveledUp) {
+          // Level up toast with celebration
+          toast.success(`🎉 Level Up! You're now level ${result.newLevel}!`, {
+            description: `+${result.xpGained} XP earned`,
+            duration: 5000,
+          });
+        } else {
+          // Regular XP gain toast
+          toast.success(`+${result.xpGained} XP`, {
+            description: `Task completed in ${quadrant.replace('-', ' ')}`,
+            duration: 2000,
+          });
+        }
+      },
+      (quadrant) => {
+        // Deduct XP when uncompleting
+        deductXP(quadrant);
+        toast.info(`-${XP_REWARDS[quadrant]} XP`, {
+          description: 'Task uncompleted',
+          duration: 2000,
+        });
+      }
+    );
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -58,6 +93,15 @@ export default function Matrix() {
     if (over && typeof over.id === 'string' && over.id.startsWith('quadrant-')) {
       const targetQuadrant = over.id.replace('quadrant-', '') as Quadrant;
       const taskId = active.id as string;
+
+      // Find the task to check if it's completed and moving between quadrants
+      const task = tasks.find(t => t.id === taskId);
+      if (task && task.completed && task.completedInQuadrant && task.completedInQuadrant !== targetQuadrant) {
+        // Adjust XP: deduct old quadrant XP, award new quadrant XP
+        deductXP(task.completedInQuadrant);
+        awardXP(targetQuadrant);
+        console.log(`XP adjusted: -${XP_REWARDS[task.completedInQuadrant]} from ${task.completedInQuadrant}, +${XP_REWARDS[targetQuadrant]} from ${targetQuadrant}`);
+      }
 
       moveTask(taskId, targetQuadrant);
       setRippleQuadrant(targetQuadrant);
@@ -142,7 +186,7 @@ export default function Matrix() {
                   subtitle={quadrant.subtitle}
                   tasks={getTasksByQuadrant(quadrant.id)}
                   onDeleteTask={deleteTask}
-                  onToggleTask={toggleTaskCompletion}
+                  onToggleTask={handleToggleTask}
                   onEditTask={editTask}
                   isSelected={selectedQuadrant === quadrant.id}
                   isDragOver={dragOverQuadrant === quadrant.id}
