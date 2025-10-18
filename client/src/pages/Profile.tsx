@@ -130,12 +130,6 @@ export default function Profile() {
                   </div>
                 )}
               </div>
-
-              <div className="mt-6 p-4 bg-accent/50 rounded-lg">
-                <p className="text-sm text-muted-foreground">
-                  <span className="font-semibold text-foreground">Coming Soon:</span> Customize your avatar and design your personal room. Unlock new items and decorations by earning XP!
-                </p>
-              </div>
             </Card>
 
             {/* Placeholder for future features */}

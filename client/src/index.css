@@ -26,35 +26,35 @@
   --card-foreground: 0 0% 10%;
   --card-border: 20 10% 92%;
 
-  /* Sidebar - Subtle warm gray */
-  --sidebar: 20 8% 96%;
+  /* Sidebar - Subtle cool gray */
+  --sidebar: 225 10% 96%;
   --sidebar-foreground: 0 0% 10%;
-  --sidebar-border: 20 10% 90%;
-  --sidebar-primary: 16 100% 55%;
+  --sidebar-border: 225 10% 90%;
+  --sidebar-primary: 225 100% 62%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 20 8% 92%;
+  --sidebar-accent: 225 10% 92%;
   --sidebar-accent-foreground: 0 0% 10%;
-  --sidebar-ring: 16 100% 55%;
+  --sidebar-ring: 225 100% 62%;
 
   /* Popovers */
   --popover: 0 0% 98%;
   --popover-foreground: 0 0% 10%;
   --popover-border: 20 10% 92%;
 
-  /* Primary - Vibrant Orange (main brand color) */
-  --primary: 16 100% 55%;
+  /* Primary - Vibrant Gaming Blue (main brand color) */
+  --primary: 225 100% 62%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary - Soft peach/coral */
-  --secondary: 14 100% 85%;
+  /* Secondary - Soft blue/purple */
+  --secondary: 235 70% 85%;
   --secondary-foreground: 0 0% 10%;
 
   /* Muted - Warm light gray */
   --muted: 20 10% 94%;
   --muted-foreground: 0 0% 45%;
 
-  /* Accent - Soft orange accent */
-  --accent: 20 100% 92%;
+  /* Accent - Soft blue accent */
+  --accent: 225 80% 92%;
   --accent-foreground: 0 0% 10%;
 
   /* Destructive - Keep red for errors */
@@ -63,14 +63,14 @@
 
   /* Input and ring */
   --input: 20 10% 80%;
-  --ring: 16 100% 55%;
+  --ring: 225 100% 62%;
 
   /* Chart colors - Gaming palette */
   --chart-1: 142 76% 45%;    /* Green - Do First (Most Important!) */
-  --chart-2: 16 100% 55%;    /* Primary Orange - Schedule */
-  --chart-3: 25 100% 70%;    /* Peach - Delegate */
+  --chart-2: 225 100% 62%;   /* Primary Blue - Schedule */
+  --chart-3: 280 70% 65%;    /* Purple - Delegate */
   --chart-4: 340 85% 60%;    /* Pink-Red - Eliminate */
-  --chart-5: 35 100% 75%;    /* Light Orange - Additional */
+  --chart-5: 200 90% 60%;    /* Cyan - Additional */
 
   /* Success color - Same as chart-1 for consistency */
   --success: 142 76% 45%;
@@ -145,35 +145,35 @@
   --card-foreground: 0 0% 98%;
   --card-border: 20 8% 18%;
 
-  /* Sidebar - Deep dark with warm hint */
+  /* Sidebar - Deep dark with cool hint */
   --sidebar: 0 0% 10%;
   --sidebar-foreground: 0 0% 98%;
-  --sidebar-border: 20 8% 16%;
-  --sidebar-primary: 16 100% 55%;
+  --sidebar-border: 225 8% 16%;
+  --sidebar-primary: 225 100% 62%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 0 0% 15%;
   --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-ring: 16 100% 55%;
+  --sidebar-ring: 225 100% 62%;
 
   /* Popovers */
   --popover: 0 0% 12%;
   --popover-foreground: 0 0% 98%;
   --popover-border: 20 8% 18%;
 
-  /* Primary - Vibrant Orange (same in dark) */
-  --primary: 16 100% 55%;
+  /* Primary - Vibrant Gaming Blue (same in dark) */
+  --primary: 225 100% 62%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary - Darker orange tone */
-  --secondary: 16 40% 20%;
+  /* Secondary - Darker blue tone */
+  --secondary: 225 40% 20%;
   --secondary-foreground: 0 0% 98%;
 
   /* Muted - Dark warm gray */
   --muted: 20 8% 16%;
   --muted-foreground: 0 0% 65%;
 
-  /* Accent - Dark orange accent */
-  --accent: 16 50% 18%;
+  /* Accent - Dark blue accent */
+  --accent: 225 50% 18%;
   --accent-foreground: 0 0% 98%;
 
   /* Destructive - Softer red for dark mode */
@@ -182,14 +182,14 @@
 
   /* Input and ring */
   --input: 20 8% 25%;
-  --ring: 16 100% 55%;
+  --ring: 225 100% 62%;
 
   /* Chart colors - Gaming palette (dark mode) */
   --chart-1: 142 76% 55%;    /* Brighter Green - Do First (Most Important!) */
-  --chart-2: 16 100% 60%;    /* Brighter Orange - Schedule */
-  --chart-3: 25 100% 72%;    /* Brighter Peach - Delegate */
+  --chart-2: 225 100% 68%;   /* Brighter Blue - Schedule */
+  --chart-3: 280 70% 70%;    /* Brighter Purple - Delegate */
   --chart-4: 340 85% 65%;    /* Brighter Pink-Red - Eliminate */
-  --chart-5: 35 100% 78%;    /* Brighter Light Orange - Additional */
+  --chart-5: 200 90% 65%;    /* Brighter Cyan - Additional */
 
   /* Success color - Same as chart-1 for consistency */
   --success: 142 76% 55%;
@@ -340,5 +340,80 @@
   .border.active-elevate-2:not(.no-active-interaction-elevate)::after,
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
+  }
+
+  /* Chunky, Glassy 3D Gaming Button Styles */
+  .btn-glass {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* 3D depth shadow */
+    box-shadow:
+      0 4px 0 0 hsl(from hsl(var(--primary)) h s calc(l - 15)),
+      0 8px 16px -4px hsl(from hsl(var(--primary)) h s l / 0.3);
+  }
+
+  .btn-glass:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 6px 0 0 hsl(from hsl(var(--primary)) h s calc(l - 15)),
+      0 12px 24px -4px hsl(from hsl(var(--primary)) h s l / 0.4);
+  }
+
+  .btn-glass:active {
+    transform: translateY(2px);
+    box-shadow:
+      0 2px 0 0 hsl(from hsl(var(--primary)) h s calc(l - 15)),
+      0 4px 8px -2px hsl(from hsl(var(--primary)) h s l / 0.2);
+  }
+
+  /* Glass highlight effect */
+  .btn-glass::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.25) 0%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    border-radius: 16px 16px 0 0;
+    pointer-events: none;
+  }
+
+  /* Glow effect on hover */
+  .btn-glass::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 2px;
+    background: linear-gradient(
+      135deg,
+      hsl(from hsl(var(--primary)) h s calc(l + 10)),
+      hsl(var(--primary)),
+      hsl(from hsl(var(--primary)) h s calc(l - 10))
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .btn-glass:hover::after {
+    opacity: 0.6;
   }
 }

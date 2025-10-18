@@ -34,7 +34,7 @@ const colorClasses = {
     taskBorder: "border-l-chart-2",
     glow: "shadow-[0_0_30px_rgba(var(--chart-2),0.3)]",
     intense: "bg-chart-2/15 border-chart-2/40",
-    particleColor: "hsl(16 100% 55%)", // Orange for Schedule
+    particleColor: "hsl(225 100% 62%)", // Blue for Schedule
   },
   "chart-3": {
     border: "border-chart-3/20",
@@ -43,7 +43,7 @@ const colorClasses = {
     taskBorder: "border-l-chart-3",
     glow: "shadow-[0_0_30px_rgba(var(--chart-3),0.3)]",
     intense: "bg-chart-3/15 border-chart-3/40",
-    particleColor: "hsl(25 100% 70%)", // Peach for Delegate
+    particleColor: "hsl(280 70% 65%)", // Purple for Delegate
   },
   "chart-4": {
     border: "border-chart-4/20",
