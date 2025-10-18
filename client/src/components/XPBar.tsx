@@ -20,11 +20,11 @@ export default function XPBar({ profile, className = '' }: XPBarProps) {
     <div className={`flex items-center gap-3 ${className}`}>
       {/* Level Badge */}
       <motion.div
-        className="relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-chart-1 to-chart-2 shadow-lg"
+        className="relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-success to-emerald-600 shadow-lg"
         whileHover={{ scale: 1.05 }}
         transition={{ type: 'spring', stiffness: 400, damping: 10 }}
       >
-        <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-yellow-400" />
+        <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-yellow-300" />
         <span className="text-lg font-bold text-white">{level}</span>
       </motion.div>
 
@@ -40,7 +40,7 @@ export default function XPBar({ profile, className = '' }: XPBarProps) {
             </span>
           )}
           {isMaxLevel && (
-            <span className="text-xs font-semibold text-chart-1">
+            <span className="text-xs font-semibold text-success">
               MAX LEVEL!
             </span>
           )}
@@ -50,7 +50,7 @@ export default function XPBar({ profile, className = '' }: XPBarProps) {
         <div className="h-3 bg-muted rounded-full overflow-hidden relative shadow-inner">
           {/* Animated gradient background */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-chart-1/20 via-chart-2/20 to-chart-1/20"
+            className="absolute inset-0 bg-gradient-to-r from-success/20 via-emerald-500/20 to-success/20"
             animate={{
               x: ['-100%', '100%'],
             }}
@@ -63,7 +63,7 @@ export default function XPBar({ profile, className = '' }: XPBarProps) {
 
           {/* XP Fill Bar */}
           <motion.div
-            className="h-full bg-gradient-to-r from-chart-1 to-chart-2 relative overflow-hidden"
+            className="h-full bg-gradient-to-r from-success to-emerald-500 relative overflow-hidden"
             initial={{ width: 0 }}
             animate={{ width: `${isMaxLevel ? 100 : progress}%` }}
             transition={{ type: 'spring', stiffness: 50, damping: 15 }}

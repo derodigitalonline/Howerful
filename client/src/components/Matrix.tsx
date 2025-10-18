@@ -10,15 +10,18 @@ import NavigationDrawer from './NavigationDrawer';
 import TaskCard from './TaskCard';
 import KeyboardShortcutsDialog from './KeyboardShortcutsDialog';
 import { motion } from 'framer-motion';
+import { Button } from './ui/button';
+import { Trash2 } from 'lucide-react';
 
 export default function Matrix() {
-  const { getTasksByQuadrant, addTask, deleteTask, toggleTaskCompletion, editTask, moveTask, tasks } = useTasks();
+  const { getTasksByQuadrant, addTask, deleteTask, toggleTaskCompletion, editTask, moveTask, tasks, deleteCompletedTasks } = useTasks();
   const { awardXP, deductXP } = useProfile();
   const [selectedQuadrant, setSelectedQuadrant] = useState<Quadrant>('do-first');
   const [rippleQuadrant, setRippleQuadrant] = useState<Quadrant | null>(null);
   const [activeTask, setActiveTask] = useState<any>(null);
   const [dragOverQuadrant, setDragOverQuadrant] = useState<Quadrant | null>(null);
   const [showShortcutsDialog, setShowShortcutsDialog] = useState(false);
+  const [isSelectingQuadrant, setIsSelectingQuadrant] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -116,6 +119,22 @@ export default function Matrix() {
     setDragOverQuadrant(null);
   };
 
+  const handleCleanCompleted = () => {
+    const completedCount = tasks.filter(t => t.completed).length;
+
+    if (completedCount === 0) {
+      toast.info('No completed tasks to clean');
+      return;
+    }
+
+    if (confirm(`Are you sure you want to delete ${completedCount} completed task${completedCount > 1 ? 's' : ''}?`)) {
+      deleteCompletedTasks();
+      toast.success(`Cleaned ${completedCount} completed task${completedCount > 1 ? 's' : ''}!`, {
+        description: 'Your task list is now tidy',
+      });
+    }
+  };
+
   useEffect(() => {
     if (rippleQuadrant) {
       const timer = setTimeout(() => setRippleQuadrant(null), 600);
@@ -176,6 +195,21 @@ export default function Matrix() {
         <NavigationDrawer onHelpClick={() => setShowShortcutsDialog(true)} />
 
         <div className="flex-1 ml-64 flex flex-col">
+          {/* Action Button Group */}
+          <div className="border-b p-4 md:px-6 md:py-3 bg-background">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCleanCompleted}
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Clean Completed Tasks
+              </Button>
+            </div>
+          </div>
+
           <div className="flex-1 p-4 md:p-6 pb-0 overflow-hidden">
             <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-4">
               {quadrants.map((quadrant) => (
@@ -188,7 +222,7 @@ export default function Matrix() {
                   onDeleteTask={deleteTask}
                   onToggleTask={handleToggleTask}
                   onEditTask={editTask}
-                  isSelected={selectedQuadrant === quadrant.id}
+                  isSelected={isSelectingQuadrant && selectedQuadrant === quadrant.id}
                   isDragOver={dragOverQuadrant === quadrant.id}
                   color={quadrant.color}
                   showRipple={rippleQuadrant === quadrant.id}
@@ -202,6 +236,8 @@ export default function Matrix() {
               onAddTask={handleAddTask}
               selectedQuadrant={selectedQuadrant}
               onQuadrantChange={setSelectedQuadrant}
+              isSelectingQuadrant={isSelectingQuadrant}
+              onSelectingChange={setIsSelectingQuadrant}
             />
           </div>
         </div>

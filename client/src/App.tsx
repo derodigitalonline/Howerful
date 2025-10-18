@@ -6,15 +6,37 @@ import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/Home";
 import Progress from "@/pages/Progress";
+import Profile from "@/pages/Profile";
+import Quests from "@/pages/Quests";
 import NotFound from "@/pages/not-found";
+import OnboardingDialog from "@/components/OnboardingDialog";
+import { ProfileProvider, useProfile } from "@/hooks/useProfile";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/progress" component={Progress} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/quests" component={Quests} />
       <Route component={NotFound} />
     </Switch>
+  );
+}
+
+function AppContent() {
+  const { profile, completeOnboarding } = useProfile();
+
+  return (
+    <>
+      <Toaster />
+      <Sonner position="top-right" richColors />
+      <OnboardingDialog
+        open={!profile.hasCompletedOnboarding}
+        onComplete={completeOnboarding}
+      />
+      <Router />
+    </>
   );
 }
 
@@ -22,9 +44,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner position="top-right" richColors />
-        <Router />
+        <ProfileProvider>
+          <AppContent />
+        </ProfileProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

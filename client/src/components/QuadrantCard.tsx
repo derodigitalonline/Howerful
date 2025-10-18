@@ -1,4 +1,4 @@
-import { Task } from "@shared/schema";
+import { Task, Quadrant, XP_REWARDS } from "@shared/schema";
 import TaskCard from "./TaskCard";
 import { useDroppable } from '@dnd-kit/core';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,6 +25,7 @@ const colorClasses = {
     taskBorder: "border-l-chart-1",
     glow: "shadow-[0_0_30px_rgba(var(--chart-1),0.3)]",
     intense: "bg-chart-1/15 border-chart-1/40",
+    particleColor: "hsl(142 76% 45%)", // Green for Do First
   },
   "chart-2": {
     border: "border-chart-2/20",
@@ -33,6 +34,7 @@ const colorClasses = {
     taskBorder: "border-l-chart-2",
     glow: "shadow-[0_0_30px_rgba(var(--chart-2),0.3)]",
     intense: "bg-chart-2/15 border-chart-2/40",
+    particleColor: "hsl(16 100% 55%)", // Orange for Schedule
   },
   "chart-3": {
     border: "border-chart-3/20",
@@ -41,6 +43,7 @@ const colorClasses = {
     taskBorder: "border-l-chart-3",
     glow: "shadow-[0_0_30px_rgba(var(--chart-3),0.3)]",
     intense: "bg-chart-3/15 border-chart-3/40",
+    particleColor: "hsl(25 100% 70%)", // Peach for Delegate
   },
   "chart-4": {
     border: "border-chart-4/20",
@@ -49,6 +52,7 @@ const colorClasses = {
     taskBorder: "border-l-chart-4",
     glow: "shadow-[0_0_30px_rgba(var(--chart-4),0.3)]",
     intense: "bg-chart-4/15 border-chart-4/40",
+    particleColor: "hsl(340 85% 60%)", // Pink-red for Eliminate
   },
 };
 
@@ -144,6 +148,8 @@ export default function QuadrantCard({
               onDelete={() => onDeleteTask(task.id)}
               onEdit={(newText) => onEditTask(task.id, newText)}
               quadrantColor={colors.taskBorder}
+              xpAmount={XP_REWARDS[quadrantId as Quadrant]}
+              particleColor={colors.particleColor}
             />
           ))
         )}

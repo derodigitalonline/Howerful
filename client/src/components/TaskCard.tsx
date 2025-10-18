@@ -5,6 +5,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useState, useRef, useEffect } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
+import ParticleBurst from './ParticleBurst';
+import FloatingXP from './FloatingXP';
 
 interface TaskCardProps {
   id: string;
@@ -15,21 +17,31 @@ interface TaskCardProps {
   onEdit: (newText: string) => void;
   quadrantColor: string;
   isDragging?: boolean;
+  xpAmount?: number;
+  particleColor?: string;
 }
 
-export default function TaskCard({ 
-  id, 
-  text, 
-  completed, 
-  onToggle, 
-  onDelete, 
-  onEdit, 
+export default function TaskCard({
+  id,
+  text,
+  completed,
+  onToggle,
+  onDelete,
+  onEdit,
   quadrantColor,
-  isDragging = false
+  isDragging = false,
+  xpAmount = 0,
+  particleColor = 'hsl(var(--success))'
 }: TaskCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(text);
   const inputRef = useRef<HTMLInputElement>(null);
+  const checkboxRef = useRef<HTMLButtonElement>(null);
+
+  // Animation states
+  const [showParticles, setShowParticles] = useState(false);
+  const [showFloatingXP, setShowFloatingXP] = useState(false);
+  const [particlePosition, setParticlePosition] = useState({ x: 0, y: 0 });
 
   const { attributes, listeners, setNodeRef, transform, isDragging: isDraggingState } = useDraggable({
     id: id,
@@ -70,6 +82,25 @@ export default function TaskCard({
     }
   };
 
+  const handleToggleWithEffects = () => {
+    // Get checkbox position for effects
+    if (checkboxRef.current && !completed && xpAmount > 0) {
+      const rect = checkboxRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      setParticlePosition({ x: centerX, y: centerY });
+      setShowParticles(true);
+      setShowFloatingXP(true);
+
+      // Reset animations after they complete
+      setTimeout(() => setShowParticles(false), 800);
+      setTimeout(() => setShowFloatingXP(false), 1600);
+    }
+
+    onToggle();
+  };
+
   // Don't show drag cursor when editing
   const dragListeners = isEditing ? {} : listeners;
 
@@ -89,8 +120,9 @@ export default function TaskCard({
       >
         <div className="flex items-start gap-3">
           <Checkbox
+            ref={checkboxRef}
             checked={completed}
-            onCheckedChange={onToggle}
+            onCheckedChange={handleToggleWithEffects}
             className="mt-0.5"
             data-testid="checkbox-task"
           />
@@ -122,6 +154,25 @@ export default function TaskCard({
           </Button>
         </div>
       </Card>
+
+      {/* Visual Effects */}
+      {showParticles && (
+        <ParticleBurst
+          x={particlePosition.x}
+          y={particlePosition.y}
+          color={particleColor}
+          particleCount={15}
+        />
+      )}
+
+      {showFloatingXP && xpAmount > 0 && (
+        <FloatingXP
+          x={particlePosition.x}
+          y={particlePosition.y}
+          amount={xpAmount}
+          color={particleColor}
+        />
+      )}
     </div>
   );
 }

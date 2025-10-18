@@ -85,6 +85,10 @@ export function useTasks() {
     return tasks.filter((task) => task.quadrant === quadrant);
   };
 
+  const deleteCompletedTasks = () => {
+    setTasks((prev) => prev.filter((task) => !task.completed));
+  };
+
   return {
     tasks,
     addTask,
@@ -93,5 +97,6 @@ export function useTasks() {
     editTask,
     moveTask,
     getTasksByQuadrant,
+    deleteCompletedTasks,
   };
 }

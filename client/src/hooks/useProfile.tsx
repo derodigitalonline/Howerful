@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { UserProfile, Quadrant, XP_REWARDS } from "@shared/schema";
 import { getLevelFromXP, willLevelUp } from "../utils/xpCalculator";
 
@@ -11,11 +11,23 @@ export interface XPGainResult {
   oldLevel: number;
 }
 
-export function useProfile() {
+interface ProfileContextType {
+  profile: UserProfile;
+  awardXP: (quadrant: Quadrant) => XPGainResult;
+  deductXP: (quadrant: Quadrant) => void;
+  resetProfile: () => void;
+  completeOnboarding: (selectedSprite: string) => void;
+}
+
+const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
+
+export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile>({
     totalXP: 0,
     level: 1,
     tasksCompleted: 0,
+    hasCompletedOnboarding: false,
+    selectedSprite: undefined,
   });
 
   // Load profile from localStorage on mount
@@ -78,6 +90,22 @@ export function useProfile() {
   };
 
   /**
+   * Complete onboarding with selected sprite
+   */
+  const completeOnboarding = (selectedSprite: string): void => {
+    console.log('useProfile: completeOnboarding called with:', selectedSprite);
+    setProfile((prev) => {
+      const newProfile = {
+        ...prev,
+        hasCompletedOnboarding: true,
+        selectedSprite,
+      };
+      console.log('useProfile: New profile state:', newProfile);
+      return newProfile;
+    });
+  };
+
+  /**
    * Reset profile (for debugging or user request)
    */
   const resetProfile = (): void => {
@@ -85,13 +113,30 @@ export function useProfile() {
       totalXP: 0,
       level: 1,
       tasksCompleted: 0,
+      hasCompletedOnboarding: false,
+      selectedSprite: undefined,
     });
   };
 
-  return {
-    profile,
-    awardXP,
-    deductXP,
-    resetProfile,
-  };
+  return (
+    <ProfileContext.Provider
+      value={{
+        profile,
+        awardXP,
+        deductXP,
+        resetProfile,
+        completeOnboarding,
+      }}
+    >
+      {children}
+    </ProfileContext.Provider>
+  );
+}
+
+export function useProfile() {
+  const context = useContext(ProfileContext);
+  if (!context) {
+    throw new Error("useProfile must be used within ProfileProvider");
+  }
+  return context;
 }

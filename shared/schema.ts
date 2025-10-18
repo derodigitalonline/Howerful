@@ -28,6 +28,8 @@ export const userProfileSchema = z.object({
   totalXP: z.number().default(0),
   level: z.number().default(1),
   tasksCompleted: z.number().default(0),
+  hasCompletedOnboarding: z.boolean().default(false),
+  selectedSprite: z.string().optional(),
 });
 
 export type UserProfile = z.infer<typeof userProfileSchema>;

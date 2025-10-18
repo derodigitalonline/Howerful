@@ -7,6 +7,8 @@ interface TaskInputProps {
   onAddTask: (text: string, quadrant: Quadrant) => void;
   selectedQuadrant: Quadrant;
   onQuadrantChange: (quadrant: Quadrant) => void;
+  isSelectingQuadrant: boolean;
+  onSelectingChange: (isSelecting: boolean) => void;
 }
 
 const quadrantInfo = {
@@ -20,9 +22,10 @@ export default function TaskInput({
   onAddTask,
   selectedQuadrant,
   onQuadrantChange,
+  isSelectingQuadrant,
+  onSelectingChange,
 }: TaskInputProps) {
   const [taskText, setTaskText] = useState('');
-  const [isSelectingQuadrant, setIsSelectingQuadrant] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -39,7 +42,7 @@ export default function TaskInput({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isSelectingQuadrant && e.key === 'Enter' && taskText.trim()) {
-      setIsSelectingQuadrant(true);
+      onSelectingChange(true);
       e.preventDefault();
       return;
     }
@@ -58,10 +61,10 @@ export default function TaskInput({
       } else if (e.key === 'Enter') {
         onAddTask(taskText.trim(), selectedQuadrant);
         setTaskText('');
-        setIsSelectingQuadrant(false);
+        onSelectingChange(false);
         e.preventDefault();
       } else if (e.key === 'Escape') {
-        setIsSelectingQuadrant(false);
+        onSelectingChange(false);
         e.preventDefault();
       }
     }

@@ -106,7 +106,7 @@ export default function KeyboardShortcutsDialog({ open, onOpenChange }: Keyboard
           <div className="flex items-start gap-2 text-sm text-muted-foreground">
             <div className="mt-0.5">💡</div>
             <div>
-              <strong className="text-foreground">Pro tip:</strong> Use the Eisenhower Matrix to prioritize tasks based on urgency and importance. Focus on "Do First" tasks, schedule time for important but not urgent work, delegate when possible, and eliminate time-wasters.
+              <strong className="text-foreground">Pro tip:</strong> Use Howerful to prioritize tasks based on urgency and importance. Focus on "Do First" tasks, schedule time for important but not urgent work, delegate when possible, and eliminate time-wasters. Earn xp and upgrade your avatar as you progress!
             </div>
           </div>
         </div>
