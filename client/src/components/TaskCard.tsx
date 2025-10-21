@@ -123,7 +123,7 @@ export default function TaskCard({
             ref={checkboxRef}
             checked={completed}
             onCheckedChange={handleToggleWithEffects}
-            className="mt-0.5"
+            className="w-5 h-5 mt-0.5"
             data-testid="checkbox-task"
           />
 
@@ -138,7 +138,7 @@ export default function TaskCard({
               className="flex-1 text-sm bg-transparent border-b border-primary focus:outline-none"
             />
           ) : (
-            <p className={`text-sm flex-1 break-words ${completed ? 'line-through text-muted-foreground' : ''}`}>
+            <p className={`text-m flex-1 break-words ${completed ? 'line-through text-muted-foreground' : ''}`}>
               {text}
             </p>
           )}

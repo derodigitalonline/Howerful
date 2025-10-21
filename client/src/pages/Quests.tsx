@@ -3,10 +3,56 @@ import Quest from '@/components/Quest';
 import { motion } from 'framer-motion';
 import { Glasses, Trophy, Target } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
+import { toast } from 'sonner';
+import confetti from 'canvas-confetti';
+
+// Quest IDs
+const QUEST_GET_UR_GLASSES = 'quest-get-ur-glasses';
+
+// Quest Rewards (mapping quest ID to cosmetic ID)
+const QUEST_REWARDS: Record<string, string> = {
+  [QUEST_GET_UR_GLASSES]: 'facewear-howerful-glasses',
+};
 
 export default function Quests() {
-  const { profile } = useProfile();
+  const { profile, setProfile } = useProfile();
   const currentLevel = profile.level;
+  const claimedQuests = profile.claimedQuests || [];
+  const unlockedCosmetics = profile.unlockedCosmetics || [];
+
+  const handleClaimQuest = (questId: string, questName: string) => {
+    const rewardCosmeticId = QUEST_REWARDS[questId];
+
+    if (!rewardCosmeticId) {
+      toast.error('No reward found for this quest');
+      return;
+    }
+
+    // Add the cosmetic to unlocked cosmetics
+    const newUnlockedCosmetics = [...unlockedCosmetics, rewardCosmeticId];
+
+    // Mark quest as claimed
+    const newClaimedQuests = [...claimedQuests, questId];
+
+    setProfile({
+      ...profile,
+      unlockedCosmetics: newUnlockedCosmetics,
+      claimedQuests: newClaimedQuests,
+    });
+
+    // Celebration!
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#4ade80', '#22c55e', '#16a34a'],
+    });
+
+    toast.success(`Quest Complete: ${questName}!`, {
+      description: 'Reward added to your inventory. Check the Customize page!',
+      duration: 5000,
+    });
+  };
 
   return (
     <div className="flex h-screen">
@@ -39,6 +85,8 @@ export default function Quests() {
                 total={2}
                 isNew={true}
                 isCompleted={currentLevel >= 2}
+                isClaimed={claimedQuests.includes(QUEST_GET_UR_GLASSES)}
+                onClaim={() => handleClaimQuest(QUEST_GET_UR_GLASSES, 'Get Ur Glasses')}
               />
 
               {/* Future quests - placeholder examples */}

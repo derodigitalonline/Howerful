@@ -1,4 +1,4 @@
-import { HelpCircle, CheckSquare, Sparkles, TrendingUp, Glasses, Warehouse, Crown } from 'lucide-react';
+import { HelpCircle, CheckSquare, Sparkles, TrendingUp, Glasses, Warehouse, Crown, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLocation, Link } from 'wouter';
@@ -37,6 +37,12 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
       path: '/',
       icon: CheckSquare,
       description: 'Manage your tasks',
+    },
+    {
+      label: 'Routines',
+      path: '/routines',
+      icon: Calendar,
+      description: 'Daily habits',
     },
     {
       label: 'Quests',

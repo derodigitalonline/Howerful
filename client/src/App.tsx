@@ -7,7 +7,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/Home";
 import Progress from "@/pages/Progress";
 import Profile from "@/pages/Profile";
+import Customize from "@/pages/Customize";
 import Quests from "@/pages/Quests";
+import Routines from "@/pages/Routines";
 import NotFound from "@/pages/not-found";
 import OnboardingDialog from "@/components/OnboardingDialog";
 import { ProfileProvider, useProfile } from "@/hooks/useProfile";
@@ -16,8 +18,10 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/routines" component={Routines} />
       <Route path="/progress" component={Progress} />
       <Route path="/profile" component={Profile} />
+      <Route path="/customize" component={Customize} />
       <Route path="/quests" component={Quests} />
       <Route component={NotFound} />
     </Switch>

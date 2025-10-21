@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LucideIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { LucideIcon, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface QuestProps {
@@ -12,6 +13,8 @@ interface QuestProps {
   total?: number;
   isNew?: boolean;
   isCompleted?: boolean;
+  isClaimed?: boolean;
+  onClaim?: () => void;
 }
 
 export default function Quest({
@@ -23,8 +26,11 @@ export default function Quest({
   total = 1,
   isNew = false,
   isCompleted = false,
+  isClaimed = false,
+  onClaim,
 }: QuestProps) {
   const progressPercent = (progress / total) * 100;
+  const canClaim = isCompleted && !isClaimed;
 
   return (
     <motion.div
@@ -72,25 +78,41 @@ export default function Quest({
           </div>
 
           {/* Rewards Section */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                Rewards
-              </p>
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center border-2 border-border">
-                  <RewardIcon className="w-5 h-5 text-foreground" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{rewardName}</p>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                  Rewards
+                </p>
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center border-2 border-border">
+                    <RewardIcon className="w-5 h-5 text-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{rewardName}</p>
+                  </div>
                 </div>
               </div>
+
+              {/* Claimed Badge */}
+              {isClaimed && (
+                <Badge className="bg-success/20 text-success border-success/30 border font-bold">
+                  Claimed
+                </Badge>
+              )}
             </div>
 
-            {/* Reward Count Badge (if you want to show quantity) */}
-            {/* <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center border-2 border-border">
-              <span className="text-sm font-bold">1</span>
-            </div> */}
+            {/* Claim Button - Chunky Green Button */}
+            {canClaim && onClaim && (
+              <Button
+                onClick={onClaim}
+                className="w-full bg-success hover:bg-success/90 text-white font-bold py-6 shadow-[0_4px_0_0_hsl(var(--success)/.7)] active:shadow-[0_2px_0_0_hsl(var(--success)/.7)] active:translate-y-[2px] transition-all"
+                size="lg"
+              >
+                <Gift className="w-5 h-5 mr-2" />
+                Claim Reward
+              </Button>
+            )}
           </div>
         </div>
       </Card>

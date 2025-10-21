@@ -13,10 +13,12 @@ export interface XPGainResult {
 
 interface ProfileContextType {
   profile: UserProfile;
+  setProfile: (profile: UserProfile) => void;
   awardXP: (quadrant: Quadrant) => XPGainResult;
+  addXP: (amount: number) => void;
   deductXP: (quadrant: Quadrant) => void;
   resetProfile: () => void;
-  completeOnboarding: (selectedSprite: string) => void;
+  completeOnboarding: (nickname: string) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -28,6 +30,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     tasksCompleted: 0,
     hasCompletedOnboarding: false,
     selectedSprite: undefined,
+    nickname: "Howie",
   });
 
   // Load profile from localStorage on mount
@@ -74,6 +77,20 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   /**
+   * Add XP directly without incrementing tasks completed (for dev tools)
+   */
+  const addXP = (amount: number): void => {
+    const newTotalXP = profile.totalXP + amount;
+    const newLevel = getLevelFromXP(newTotalXP);
+
+    setProfile((prev) => ({
+      ...prev,
+      totalXP: newTotalXP,
+      level: newLevel,
+    }));
+  };
+
+  /**
    * Deduct XP when uncompleting a task (optional feature)
    */
   const deductXP = (quadrant: Quadrant): void => {
@@ -90,15 +107,16 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * Complete onboarding with selected sprite
+   * Complete onboarding with nickname
    */
-  const completeOnboarding = (selectedSprite: string): void => {
-    console.log('useProfile: completeOnboarding called with:', selectedSprite);
+  const completeOnboarding = (nickname: string): void => {
+    console.log('useProfile: completeOnboarding called with nickname:', nickname);
     setProfile((prev) => {
       const newProfile = {
         ...prev,
         hasCompletedOnboarding: true,
-        selectedSprite,
+        selectedSprite: 'default', // Always assign default sprite on onboarding
+        nickname: nickname || 'Howie', // Fallback to "Howie" if empty
       };
       console.log('useProfile: New profile state:', newProfile);
       return newProfile;
@@ -115,6 +133,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       tasksCompleted: 0,
       hasCompletedOnboarding: false,
       selectedSprite: undefined,
+      nickname: "Howie",
     });
   };
 
@@ -122,7 +141,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     <ProfileContext.Provider
       value={{
         profile,
+        setProfile,
         awardXP,
+        addXP,
         deductXP,
         resetProfile,
         completeOnboarding,

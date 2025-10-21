@@ -2,25 +2,19 @@ import NavigationDrawer from '@/components/NavigationDrawer';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, Code2, RotateCcw, CheckCircle2, Zap, TrendingUp } from 'lucide-react';
+import { User, Code2, RotateCcw, CheckCircle2, Zap, TrendingUp, Sparkles } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { useTasks } from '@/hooks/useTasks';
 import { toast } from 'sonner';
-import DefaultSprite from '@/assets/DefaultSprite.png';
-import DefaultSpriteB from '@/assets/DefaultSprite-B.png';
+import LayeredAvatar from '@/components/LayeredAvatar';
+import { getXPForLevel } from '@/utils/xpCalculator';
 
 export default function Profile() {
-  const { profile, resetProfile, awardXP } = useProfile();
+  const { profile, resetProfile, awardXP, addXP } = useProfile();
   const { addTask } = useTasks();
 
-  // Get the correct sprite image based on selection
-  const getSpriteImage = () => {
-    if (!profile.selectedSprite) return null;
-    if (profile.selectedSprite === 'default-b') return DefaultSpriteB;
-    return DefaultSprite;
-  };
-
-  const spriteImage = getSpriteImage();
+  // Avatar customization - use equipped cosmetics from profile
+  const hasSprite = Boolean(profile.selectedSprite);
 
   const handleResetProgress = () => {
     if (confirm('⚠️ Are you sure? This will reset ALL progress (XP, level, tasks completed, and quest progress). This cannot be undone!')) {
@@ -56,26 +50,24 @@ export default function Profile() {
   };
 
   const handleAddXP = (amount: number) => {
-    // Award XP in chunks using do-first (20 XP per chunk)
-    const chunks = Math.ceil(amount / 20);
-    for (let i = 0; i < chunks; i++) {
-      awardXP('do-first');
-    }
+    // Use the addXP function which directly adds XP without incrementing tasks
+    addXP(amount);
     toast.success(`+${amount} XP awarded!`, {
       description: `Your new level: ${profile.level}`,
     });
   };
 
-  const handleSetLevel = (level: number) => {
-    resetProfile();
-    // Award enough XP to reach the target level
-    // This is a simplified approach - adjust XP to match level
-    const targetXP = Math.pow(level, 3) * 100; // Simplified XP formula
-    for (let i = 0; i < Math.ceil(targetXP / 20); i++) {
-      awardXP('do-first');
+  const handleSetLevel = (targetLevel: number) => {
+    // Calculate XP needed for target level using the real XP formula
+    const targetXP = getXPForLevel(targetLevel);
+    const xpDifference = targetXP - profile.totalXP;
+
+    if (xpDifference !== 0) {
+      addXP(xpDifference);
     }
-    toast.success(`Level set to ${level}!`, {
-      description: 'Progress adjusted to target level.',
+
+    toast.success(`Level set to ${targetLevel}!`, {
+      description: `XP set to ${targetXP.toLocaleString()}`,
     });
   };
 
@@ -89,6 +81,7 @@ export default function Profile() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            className="max-w-[1150px] mx-auto"
           >
             {/* Header */}
             <div className="mb-8">
@@ -98,54 +91,90 @@ export default function Profile() {
               </p>
             </div>
 
-            {/* Avatar & Crib Container - 512x512 */}
-            <Card className="p-8 mb-6 max-w-2xl">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4">
-                Avatar & Crib
-              </h2>
+            {/* Avatar & Customization Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(400px,512px)_1fr] gap-6 mb-8 max-w-full">
+              {/* Left: Avatar Display */}
+              <Card className="p-8">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4">
+                  {profile.nickname || "Your Howie"}
+                </h2>
 
-              {/* 512x512 Container */}
-              <div className="relative w-full max-w-[512px] aspect-square bg-gradient-to-br from-muted/50 to-muted/20 rounded-xl border-2 border-border overflow-hidden mx-auto">
-                {spriteImage ? (
-                  <div className="w-full h-full flex items-center justify-center p-8">
-                    <img
-                      src={spriteImage}
-                      alt="Your Howie"
-                      className="w-[168px] h-[168px] object-contain"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <User className="w-12 h-12 text-primary" />
-                      </div>
-                      <p className="text-sm text-muted-foreground font-medium">
-                        No Howie Selected
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        512 × 512 pixels
-                      </p>
+                {/* 512x512 Container */}
+                <div className="relative w-full aspect-square bg-gradient-to-br from-muted/50 to-muted/20 rounded-xl border-2 border-border overflow-hidden">
+                  {hasSprite ? (
+                    <div className="w-full h-full flex items-center justify-center p-8">
+                      {/* LayeredAvatar Component - renders base sprite + equipped cosmetics */}
+                      <LayeredAvatar
+                        equippedCosmetics={profile.equippedCosmetics || {}}
+                        size={168}
+                        showPet={true}
+                      />
                     </div>
-                  </div>
-                )}
-              </div>
-            </Card>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <User className="w-12 h-12 text-primary" />
+                        </div>
+                        <p className="text-sm text-muted-foreground font-medium">
+                          No Howie Selected
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          512 × 512 pixels
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-            {/* Placeholder for future features */}
-            <div className="grid gap-4 md:grid-cols-2 max-w-2xl mb-8">
-              <Card className="p-6">
-                <h3 className="font-semibold mb-2">Wardrobe</h3>
-                <p className="text-sm text-muted-foreground">
-                  Unlock avatar clothing and accessories
-                </p>
+                <div className="mt-6 p-4 bg-accent/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-semibold text-foreground">Coming Soon:</span> Customize your Howie and design your crib!
+                  </p>
+                </div>
               </Card>
 
-              <Card className="p-6">
-                <h3 className="font-semibold mb-2">Room Items</h3>
-                <p className="text-sm text-muted-foreground">
-                  Decorate your personal space
-                </p>
+              {/* Right: Stats & Customization Button */}
+              <Card className="p-8 flex flex-col">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-6">
+                  Your Stats
+                </h2>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="p-4 bg-accent/50 rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-1">Level</p>
+                    <p className="text-3xl font-bold text-primary">{profile.level}</p>
+                  </div>
+                  <div className="p-4 bg-accent/50 rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-1">Total XP</p>
+                    <p className="text-3xl font-bold text-primary">{profile.totalXP.toLocaleString()}</p>
+                  </div>
+                  <div className="p-4 bg-accent/50 rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-1">Tasks Completed</p>
+                    <p className="text-3xl font-bold text-primary">{profile.tasksCompleted}</p>
+                  </div>
+                  <div className="p-4 bg-accent/50 rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-1">Nickname</p>
+                    <p className="text-2xl font-bold text-primary truncate">{profile.nickname || 'Howie'}</p>
+                  </div>
+                </div>
+
+                {/* Customization CTA */}
+                <div className="mt-auto">
+                  <Button
+                    size="lg"
+                    className="w-full text-base font-bold gap-2"
+                    onClick={() => window.location.href = '/customize'}
+                  >
+                    <Sparkles className="w-5 h-5" />
+                    Customize My Howie
+                  </Button>
+
+                  <p className="text-xs text-center text-muted-foreground mt-4">
+                    Mix and match cosmetics to create your unique look
+                  </p>
+                </div>
               </Card>
             </div>
 
@@ -175,8 +204,8 @@ export default function Profile() {
                   <p className="text-2xl font-bold text-primary">{profile.tasksCompleted}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Sprite</p>
-                  <p className="text-xs font-bold text-primary truncate">{profile.selectedSprite || 'none'}</p>
+                  <p className="text-xs text-muted-foreground mb-1">Nickname</p>
+                  <p className="text-xs font-bold text-primary truncate">{profile.nickname || 'Howie'}</p>
                 </div>
               </div>
 
