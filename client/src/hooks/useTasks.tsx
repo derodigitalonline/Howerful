@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Task, Quadrant } from "@shared/schema";
+import { Task, Quadrant, Workspace } from "@shared/schema";
 
 const STORAGE_KEY = "eisenhower-tasks";
 
@@ -21,11 +21,12 @@ export function useTasks() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
   }, [tasks]);
 
-  const addTask = (text: string, quadrant: Quadrant) => {
+  const addTask = (text: string, quadrant: Quadrant, workspace: Workspace = "personal") => {
     const newTask: Task = {
       id: crypto.randomUUID(),
       text,
       quadrant,
+      workspace,
       createdAt: Date.now(),
       completed: false,
     };
@@ -81,12 +82,17 @@ export function useTasks() {
     );
   };
 
-  const getTasksByQuadrant = (quadrant: Quadrant) => {
-    return tasks.filter((task) => task.quadrant === quadrant);
+  const getTasksByQuadrant = (quadrant: Quadrant, workspace?: Workspace) => {
+    return tasks.filter((task) =>
+      task.quadrant === quadrant &&
+      (workspace ? task.workspace === workspace : true)
+    );
   };
 
-  const deleteCompletedTasks = () => {
-    setTasks((prev) => prev.filter((task) => !task.completed));
+  const deleteCompletedTasks = (workspace?: Workspace) => {
+    setTasks((prev) => prev.filter((task) =>
+      !task.completed || (workspace ? task.workspace !== workspace : false)
+    ));
   };
 
   return {

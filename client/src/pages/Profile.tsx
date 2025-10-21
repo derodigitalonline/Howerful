@@ -7,6 +7,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useTasks } from '@/hooks/useTasks';
 import { toast } from 'sonner';
 import LayeredAvatar from '@/components/LayeredAvatar';
+import XPBar from '@/components/XPBar';
 import { getXPForLevel } from '@/utils/xpCalculator';
 
 export default function Profile() {
@@ -129,7 +130,7 @@ export default function Profile() {
 
                 <div className="mt-6 p-4 bg-accent/50 rounded-lg">
                   <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold text-foreground">Coming Soon:</span> Customize your Howie and design your crib!
+                    <span className="font-semibold text-foreground">Coming Soon:</span> Customize your Howse!
                   </p>
                 </div>
               </Card>
@@ -139,6 +140,11 @@ export default function Profile() {
                 <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-6">
                   Your Stats
                 </h2>
+
+                {/* XP Progress Bar */}
+                <div className="mb-6">
+                  <XPBar profile={profile} />
+                </div>
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 gap-4 mb-8">

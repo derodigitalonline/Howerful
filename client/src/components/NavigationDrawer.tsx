@@ -1,4 +1,4 @@
-import { HelpCircle, CheckSquare, Sparkles, TrendingUp, Glasses, Warehouse, Crown, Calendar } from 'lucide-react';
+import { HelpCircle, CheckSquare, Sparkles, Crown, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLocation, Link } from 'wouter';
@@ -49,12 +49,6 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
       path: '/quests',
       icon: Sparkles,
       description: 'Unlock rewards',
-    },
-     {
-      label: 'Progress',
-      path: '/progress',
-      icon: TrendingUp,
-      description: 'View your stats',
     },
   ];
 

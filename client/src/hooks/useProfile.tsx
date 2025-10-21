@@ -66,6 +66,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       totalXP: newTotalXP,
       level: newLevel,
       tasksCompleted: prev.tasksCompleted + 1,
+      doFirstTasksCompleted: quadrant === 'do-first'
+        ? (prev.doFirstTasksCompleted || 0) + 1
+        : (prev.doFirstTasksCompleted || 0),
     }));
 
     return {

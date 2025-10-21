@@ -3,6 +3,10 @@ import { z } from "zod";
 export const quadrants = ["do-first", "schedule", "delegate", "eliminate"] as const;
 export type Quadrant = typeof quadrants[number];
 
+// Workspace types for task organization
+export const workspaces = ["personal", "work"] as const;
+export type Workspace = typeof workspaces[number];
+
 // XP rewards per quadrant (Do First tasks worth more!)
 export const XP_REWARDS: Record<Quadrant, number> = {
   "do-first": 20,
@@ -15,6 +19,7 @@ export const taskSchema = z.object({
   id: z.string(),
   text: z.string().min(1),
   quadrant: z.enum(quadrants),
+  workspace: z.enum(workspaces).default("personal"), // Which matrix this task belongs to
   createdAt: z.number(),
   completed: z.boolean().default(false),
   completedInQuadrant: z.enum(quadrants).optional(), // Track which quadrant task was completed in
@@ -57,6 +62,7 @@ export const userProfileSchema = z.object({
   totalXP: z.number().default(0),
   level: z.number().default(1),
   tasksCompleted: z.number().default(0),
+  doFirstTasksCompleted: z.number().default(0), // Track "Do First" quadrant completions
   hasCompletedOnboarding: z.boolean().default(false),
   selectedSprite: z.string().optional(),
   nickname: z.string().default("Howie"), // User's nickname for their avatar

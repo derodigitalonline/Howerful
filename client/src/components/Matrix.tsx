@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { Quadrant, XP_REWARDS } from '@shared/schema';
+import { Quadrant, XP_REWARDS, Workspace } from '@shared/schema';
 import { useTasks } from '@/hooks/useTasks';
 import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
@@ -9,9 +9,10 @@ import QuadrantCard from './QuadrantCard';
 import NavigationDrawer from './NavigationDrawer';
 import TaskCard from './TaskCard';
 import KeyboardShortcutsDialog from './KeyboardShortcutsDialog';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './ui/button';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Briefcase, Home } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
 
 export default function Matrix() {
   const { getTasksByQuadrant, addTask, deleteTask, toggleTaskCompletion, editTask, moveTask, tasks, deleteCompletedTasks } = useTasks();
@@ -22,6 +23,8 @@ export default function Matrix() {
   const [dragOverQuadrant, setDragOverQuadrant] = useState<Quadrant | null>(null);
   const [showShortcutsDialog, setShowShortcutsDialog] = useState(false);
   const [isSelectingQuadrant, setIsSelectingQuadrant] = useState(false);
+  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>('personal');
+  const [workspaceDirection, setWorkspaceDirection] = useState<'left' | 'right'>('right');
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -32,8 +35,14 @@ export default function Matrix() {
   );
 
   const handleAddTask = (text: string, quadrant: Quadrant) => {
-    addTask(text, quadrant);
+    addTask(text, quadrant, currentWorkspace);
     setRippleQuadrant(quadrant);
+  };
+
+  const switchWorkspace = (newWorkspace: Workspace) => {
+    const direction = newWorkspace === 'work' ? 'right' : 'left';
+    setWorkspaceDirection(direction);
+    setCurrentWorkspace(newWorkspace);
   };
 
   const handleToggleTask = (id: string) => {
@@ -120,7 +129,7 @@ export default function Matrix() {
   };
 
   const handleCleanCompleted = () => {
-    const completedCount = tasks.filter(t => t.completed).length;
+    const completedCount = tasks.filter(t => t.completed && t.workspace === currentWorkspace).length;
 
     if (completedCount === 0) {
       toast.info('No completed tasks to clean');
@@ -128,7 +137,7 @@ export default function Matrix() {
     }
 
     if (confirm(`Are you sure you want to delete ${completedCount} completed task${completedCount > 1 ? 's' : ''}?`)) {
-      deleteCompletedTasks();
+      deleteCompletedTasks(currentWorkspace);
       toast.success(`Cleaned ${completedCount} completed task${completedCount > 1 ? 's' : ''}!`, {
         description: 'Your task list is now tidy',
       });
@@ -142,7 +151,7 @@ export default function Matrix() {
     }
   }, [rippleQuadrant]);
 
-  // Keyboard shortcut to open help dialog
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Check for ? key or Ctrl+/
@@ -150,11 +159,29 @@ export default function Matrix() {
         e.preventDefault();
         setShowShortcutsDialog(true);
       }
+
+      // Ctrl+Left Arrow - Switch to Personal
+      if (e.ctrlKey && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (currentWorkspace === 'work') {
+          switchWorkspace('personal');
+          toast.info('Switched to Personal');
+        }
+      }
+
+      // Ctrl+Right Arrow - Switch to Work
+      if (e.ctrlKey && e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (currentWorkspace === 'personal') {
+          switchWorkspace('work');
+          toast.info('Switched to Work');
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [currentWorkspace]);
 
   const quadrants = [
     {
@@ -195,9 +222,24 @@ export default function Matrix() {
         <NavigationDrawer onHelpClick={() => setShowShortcutsDialog(true)} />
 
         <div className="flex-1 ml-64 flex flex-col">
-          {/* Action Button Group */}
+          {/* Workspace Tabs & Action Buttons */}
           <div className="border-b p-4 md:px-6 md:py-3 bg-background">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-4">
+              {/* Workspace Tabs */}
+              <Tabs value={currentWorkspace} onValueChange={(value) => switchWorkspace(value as Workspace)}>
+                <TabsList>
+                  <TabsTrigger value="personal" className="gap-2">
+                    <Home className="h-4 w-4" />
+                    Personal
+                  </TabsTrigger>
+                  <TabsTrigger value="work" className="gap-2">
+                    <Briefcase className="h-4 w-4" />
+                    Work
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {/* Action Buttons */}
               <Button
                 variant="outline"
                 size="sm"
@@ -211,24 +253,33 @@ export default function Matrix() {
           </div>
 
           <div className="flex-1 p-4 md:p-6 pb-0 overflow-hidden">
-            <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-4">
-              {quadrants.map((quadrant) => (
-                <QuadrantCard
-                  key={quadrant.id}
-                  quadrantId={quadrant.id}
-                  title={quadrant.title}
-                  subtitle={quadrant.subtitle}
-                  tasks={getTasksByQuadrant(quadrant.id)}
-                  onDeleteTask={deleteTask}
-                  onToggleTask={handleToggleTask}
-                  onEditTask={editTask}
-                  isSelected={isSelectingQuadrant && selectedQuadrant === quadrant.id}
-                  isDragOver={dragOverQuadrant === quadrant.id}
-                  color={quadrant.color}
-                  showRipple={rippleQuadrant === quadrant.id}
-                />
-              ))}
-            </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentWorkspace}
+                initial={{ opacity: 0, x: workspaceDirection === 'right' ? 100 : -100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: workspaceDirection === 'right' ? -100 : 100 }}
+                transition={{ duration: 0.15, ease: 'easeInOut' }}
+                className="h-full grid grid-cols-1 md:grid-cols-2 gap-4"
+              >
+                {quadrants.map((quadrant) => (
+                  <QuadrantCard
+                    key={quadrant.id}
+                    quadrantId={quadrant.id}
+                    title={quadrant.title}
+                    subtitle={quadrant.subtitle}
+                    tasks={getTasksByQuadrant(quadrant.id, currentWorkspace)}
+                    onDeleteTask={deleteTask}
+                    onToggleTask={handleToggleTask}
+                    onEditTask={editTask}
+                    isSelected={isSelectingQuadrant && selectedQuadrant === quadrant.id}
+                    isDragOver={dragOverQuadrant === quadrant.id}
+                    color={quadrant.color}
+                    showRipple={rippleQuadrant === quadrant.id}
+                  />
+                ))}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           <div className="border-t p-4 md:p-6 bg-background">

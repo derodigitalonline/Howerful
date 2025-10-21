@@ -71,9 +71,9 @@ export const COSMETICS_LIBRARY: CosmeticItem[] = [
     id: 'shirt-tuxedo',
     name: 'Tuxedo',
     category: 'shirt',
-    imagePath: '/assets/cosmetics/shirts/tuxedo.png',
-    description: 'Formal and fancy',
-    unlockLevel: 10,
+    imagePath: '/assets/cosmetics/shirts/top-tuxedo.png',
+    description: 'Dress for success with performative productivity',
+    unlockQuest: 'quest-performative-productivity',
     rarity: 'epic',
   },
   {

@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/Home";
-import Progress from "@/pages/Progress";
 import Profile from "@/pages/Profile";
 import Customize from "@/pages/Customize";
 import Quests from "@/pages/Quests";
@@ -19,7 +18,6 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/routines" component={Routines} />
-      <Route path="/progress" component={Progress} />
       <Route path="/profile" component={Profile} />
       <Route path="/customize" component={Customize} />
       <Route path="/quests" component={Quests} />

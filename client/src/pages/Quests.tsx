@@ -1,7 +1,7 @@
 import NavigationDrawer from '@/components/NavigationDrawer';
 import Quest from '@/components/Quest';
 import { motion } from 'framer-motion';
-import { Glasses, Target, Crown } from 'lucide-react';
+import { Glasses, Shirt, Crown } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
@@ -9,11 +9,13 @@ import confetti from 'canvas-confetti';
 // Quest IDs
 const QUEST_GET_UR_GLASSES = 'quest-get-ur-glasses';
 const QUEST_TASK_MASTER = 'quest-task-master';
+const QUEST_PERFORMATIVE_PRODUCTIVITY = 'quest-performative-productivity';
 
 // Quest Rewards (mapping quest ID to cosmetic ID)
 const QUEST_REWARDS: Record<string, string> = {
   [QUEST_GET_UR_GLASSES]: 'facewear-howerful-glasses',
   [QUEST_TASK_MASTER]: 'hat-baseball-cap',
+  [QUEST_PERFORMATIVE_PRODUCTIVITY]: 'shirt-tuxedo',
 };
 
 export default function Quests() {
@@ -105,15 +107,18 @@ export default function Quests() {
                 onClaim={() => handleClaimQuest(QUEST_TASK_MASTER, 'Task Master')}
               />
 
+              {/* Performative Productivity Quest */}
               <Quest
-                name="Productivity Pro"
+                name="Performative Productivity"
                 requirement="Complete 5 'Do First' tasks"
-                rewardName="Focus Badge"
-                rewardIcon={Target}
-                progress={0}
+                rewardName="Tuxedo"
+                rewardIcon={Shirt}
+                progress={Math.min(profile.doFirstTasksCompleted || 0, 5)}
                 total={5}
                 isNew={false}
-                isCompleted={false}
+                isCompleted={(profile.doFirstTasksCompleted || 0) >= 5}
+                isClaimed={claimedQuests.includes(QUEST_PERFORMATIVE_PRODUCTIVITY)}
+                onClaim={() => handleClaimQuest(QUEST_PERFORMATIVE_PRODUCTIVITY, 'Performative Productivity')}
               />
             </div>
           </motion.div>

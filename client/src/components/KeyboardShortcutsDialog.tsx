@@ -39,6 +39,16 @@ const shortcuts: Shortcut[] = [
     category: 'Task Management',
   },
   {
+    keys: ['Ctrl', '←'],
+    description: 'Switch to Personal workspace',
+    category: 'Workspace',
+  },
+  {
+    keys: ['Ctrl', '→'],
+    description: 'Switch to Work workspace',
+    category: 'Workspace',
+  },
+  {
     keys: ['?'],
     description: 'Show this help dialog',
     category: 'Navigation',
