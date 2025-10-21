@@ -29,11 +29,12 @@ export const COSMETICS_LIBRARY: CosmeticItem[] = [
     rarity: 'common',
   },
   {
-    id: 'hat-baseball',
+    id: 'hat-baseball-cap',
     name: 'Baseball Cap',
     category: 'hat',
-    imagePath: '/assets/cosmetics/hats/baseball.png',
+    imagePath: '/assets/cosmetics/hats/baseball_cap.png',
     description: 'A classic sporty look',
+    unlockQuest: 'quest-task-master',
     rarity: 'common',
   },
   {
@@ -49,7 +50,7 @@ export const COSMETICS_LIBRARY: CosmeticItem[] = [
     id: 'hat-crown',
     name: 'Golden Crown',
     category: 'hat',
-    imagePath: '/assets/cosmetics/hats/crown.png',
+    imagePath: '/assets/cosmetics/hats/golden_crown.png',
     description: 'For productivity royalty',
     unlockLevel: 25,
     rarity: 'legendary',

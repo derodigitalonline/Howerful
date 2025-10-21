@@ -207,6 +207,10 @@ export default function Customize() {
                       <Crown className="w-4 h-4" />
                       <span className="hidden sm:inline">Hats</span>
                     </TabsTrigger>
+                    <TabsTrigger value="facewear" className="gap-2">
+                      <Glasses className="w-4 h-4" />
+                      <span className="hidden sm:inline">Facewear</span>
+                    </TabsTrigger>
                     <TabsTrigger value="shirt" className="gap-2">
                       <Shirt className="w-4 h-4" />
                       <span className="hidden sm:inline">Shirts</span>
@@ -223,10 +227,6 @@ export default function Customize() {
                       <Sparkles className="w-4 h-4" />
                       <span className="hidden sm:inline">Pets</span>
                     </TabsTrigger>
-                    <TabsTrigger value="facewear" className="gap-2">
-                      <Glasses className="w-4 h-4" />
-                      <span className="hidden sm:inline">Facewear</span>
-                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="hat" className="space-y-4">
@@ -237,6 +237,16 @@ export default function Customize() {
                       </p>
                     </div>
                     {renderCosmeticGrid('hat')}
+                  </TabsContent>
+
+                  <TabsContent value="facewear" className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Facewear</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Stylish glasses, masks, and face accessories
+                      </p>
+                    </div>
+                    {renderCosmeticGrid('facewear')}
                   </TabsContent>
 
                   <TabsContent value="shirt" className="space-y-4">
@@ -277,16 +287,6 @@ export default function Customize() {
                       </p>
                     </div>
                     {renderCosmeticGrid('pet')}
-                  </TabsContent>
-
-                  <TabsContent value="facewear" className="space-y-4">
-                    <div>
-                      <h3 className="text-lg font-semibold mb-2">Facewear</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Stylish glasses, masks, and face accessories
-                      </p>
-                    </div>
-                    {renderCosmeticGrid('facewear')}
                   </TabsContent>
                 </Tabs>
               </Card>
