@@ -1,4 +1,3 @@
-import NavigationDrawer from '@/components/NavigationDrawer';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { useTasks } from '@/hooks/useTasks';
 import { toast } from 'sonner';
 import LayeredAvatar from '@/components/LayeredAvatar';
 import XPBar from '@/components/XPBar';
+import CoinDisplay from '@/components/CoinDisplay';
 import { getXPForLevel } from '@/utils/xpCalculator';
 
 export default function Profile() {
@@ -73,17 +73,13 @@ export default function Profile() {
   };
 
   return (
-    <div className="flex h-screen">
-      <NavigationDrawer />
-
-      <div className="flex-1 ml-64 flex flex-col">
-        <div className="flex-1 p-6 md:p-8 overflow-y-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="max-w-[1150px] mx-auto"
-          >
+    <div className="h-full p-6 md:p-8 overflow-y-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-[1150px] mx-auto"
+      >
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold mb-2">Your Profile</h1>
@@ -128,10 +124,16 @@ export default function Profile() {
                   )}
                 </div>
 
-                <div className="mt-6 p-4 bg-accent/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold text-foreground">Coming Soon:</span> Customize your Howse!
-                  </p>
+                {/* Customize Button */}
+                <div className="mt-6">
+                  <Button
+                    size="lg"
+                    className="w-full text-base font-bold gap-2"
+                    onClick={() => window.location.href = '/customize'}
+                  >
+                    <Sparkles className="w-5 h-5" />
+                    Customize My Howie
+                  </Button>
                 </div>
               </Card>
 
@@ -161,25 +163,11 @@ export default function Profile() {
                     <p className="text-3xl font-bold text-primary">{profile.tasksCompleted}</p>
                   </div>
                   <div className="p-4 bg-accent/50 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">Nickname</p>
-                    <p className="text-2xl font-bold text-primary truncate">{profile.nickname || 'Howie'}</p>
+                    <p className="text-xs text-muted-foreground mb-1">Howie Coins</p>
+                    <div className="mt-1">
+                      <CoinDisplay coins={profile.coins || 0} size="sm" />
+                    </div>
                   </div>
-                </div>
-
-                {/* Customization CTA */}
-                <div className="mt-auto">
-                  <Button
-                    size="lg"
-                    className="w-full text-base font-bold gap-2"
-                    onClick={() => window.location.href = '/customize'}
-                  >
-                    <Sparkles className="w-5 h-5" />
-                    Customize My Howie
-                  </Button>
-
-                  <p className="text-xs text-center text-muted-foreground mt-4">
-                    Mix and match cosmetics to create your unique look
-                  </p>
                 </div>
               </Card>
             </div>
@@ -336,9 +324,7 @@ export default function Profile() {
                 </div>
               </div>
             </Card>
-          </motion.div>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

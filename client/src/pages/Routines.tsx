@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import NavigationDrawer from '@/components/NavigationDrawer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -37,7 +36,7 @@ const BOUNTY_XP = 1000;
 const ROUTINE_XP = 20;
 
 export default function Routines() {
-  const { profile, awardXP } = useProfile();
+  const { profile, awardXP, trackRoutineCompletion } = useProfile();
   const [isSetup, setIsSetup] = useState(false);
   const [setupRoutines, setSetupRoutines] = useState<string[]>(['']);
   const [data, setData] = useState<RoutineData>({
@@ -173,6 +172,9 @@ export default function Routines() {
     if (!routine.completed && !data.xpAwardedToday.includes(id)) {
       awardXP('do-first'); // Awards 20 XP
 
+      // Track routine completion for daily quests
+      trackRoutineCompletion();
+
       // Get click position for animation
       const rect = (event.target as HTMLElement).getBoundingClientRect();
       const x = rect.left + rect.width / 2;
@@ -244,6 +246,7 @@ export default function Routines() {
         routines: [],
         lastClaimedDate: null,
         lastResetDate: null,
+        xpAwardedToday: [],
       });
       setIsSetup(false);
       setSetupRoutines(['']);
@@ -259,17 +262,13 @@ export default function Routines() {
   const canClaimBounty = allCompleted && data.lastClaimedDate !== new Date().toDateString();
 
   return (
-    <div className="flex h-screen">
-      <NavigationDrawer />
-
-      <div className="flex-1 ml-64 flex flex-col">
-        <div className="flex-1 p-6 md:p-8 overflow-y-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="max-w-2xl mx-auto"
-          >
+    <div className="h-full p-6 md:p-8 overflow-y-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-2xl mx-auto"
+      >
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold mb-2">Daily Routines</h1>
@@ -447,9 +446,7 @@ export default function Routines() {
                 </div>
               </div>
             )}
-          </motion.div>
-        </div>
-      </div>
+      </motion.div>
 
       {/* XP Animations */}
       {xpAnimations.map(anim => (

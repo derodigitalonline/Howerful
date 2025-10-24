@@ -1,8 +1,8 @@
-import NavigationDrawer from '@/components/NavigationDrawer';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shirt, Crown, Glasses, Wind, Sparkles } from 'lucide-react';
+import { Shirt, Crown, Glasses, Wind, Sparkles, ArrowLeft } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import LayeredAvatar from '@/components/LayeredAvatar';
 import {
@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 export default function Customize() {
-  const { profile, setProfile } = useProfile();
+  const { profile, setProfile, trackCosmeticChange } = useProfile();
   const [selectedCategory, setSelectedCategory] = useState<CosmeticCategory>('hat');
 
   const equippedCosmetics = profile.equippedCosmetics || {};
@@ -35,6 +35,10 @@ export default function Customize() {
           [category]: noneId,
         },
       });
+
+      // Track cosmetic change for daily quests
+      trackCosmeticChange();
+
       toast.success('Item unequipped');
     } else {
       // Check if unlocked
@@ -58,6 +62,9 @@ export default function Customize() {
           [category]: cosmeticId,
         },
       });
+
+      // Track cosmetic change for daily quests
+      trackCosmeticChange();
 
       const cosmetic = COSMETICS_LIBRARY.find(c => c.id === cosmeticId);
       toast.success(`Equipped: ${cosmetic?.name}`);
@@ -145,16 +152,25 @@ export default function Customize() {
   };
 
   return (
-    <div className="flex h-screen">
-      <NavigationDrawer />
+    <div className="h-full p-6 md:p-8 overflow-y-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+            {/* Back Button */}
+            <div className="mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.location.href = '/profile'}
+                className="gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Profile
+              </Button>
+            </div>
 
-      <div className="flex-1 ml-64 flex flex-col">
-        <div className="flex-1 p-6 md:p-8 overflow-y-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold mb-2">Customize Your Howie</h1>
@@ -291,9 +307,7 @@ export default function Customize() {
                 </Tabs>
               </Card>
             </div>
-          </motion.div>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

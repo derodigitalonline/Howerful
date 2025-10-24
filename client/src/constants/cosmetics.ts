@@ -43,8 +43,8 @@ export const COSMETICS_LIBRARY: CosmeticItem[] = [
     category: 'hat',
     imagePath: '/assets/cosmetics/hats/wizard-hat.png',
     description: 'Channel your inner magic',
-    unlockLevel: 5,
     rarity: 'rare',
+    coinPrice: 150,
   },
   {
     id: 'hat-crown',
@@ -80,10 +80,10 @@ export const COSMETICS_LIBRARY: CosmeticItem[] = [
     id: 'shirt-hoodie',
     name: 'Cozy Hoodie',
     category: 'shirt',
-    imagePath: '/assets/cosmetics/shirts/hoodie.png',
+    imagePath: '/assets/cosmetics/shirts/shirt-hoodie.png',
     description: 'Comfort and productivity',
-    unlockLevel: 3,
     rarity: 'common',
+    coinPrice: 75,
   },
 
   // ======================
@@ -104,6 +104,7 @@ export const COSMETICS_LIBRARY: CosmeticItem[] = [
     imagePath: '/assets/cosmetics/pants/jeans.png',
     description: 'Casual and comfortable',
     rarity: 'common',
+    coinPrice: 30,
   },
 
   // ======================
@@ -162,8 +163,8 @@ export const COSMETICS_LIBRARY: CosmeticItem[] = [
     category: 'pet',
     imagePath: '/assets/cosmetics/pets/dog.png',
     description: "Your best friend and productivity buddy",
-    unlockLevel: 12,
     rarity: 'epic',
+    coinPrice: 300,
   },
 
   // ======================
@@ -242,9 +243,15 @@ export function getUnlockedCosmeticsByCategory(
 /**
  * Check if a specific cosmetic is unlocked for the user
  *
+ * Three unlock systems (mutually exclusive):
+ * 1. Quest Rewards - Must be in unlockedCosmetics array (earned via quest completion)
+ * 2. Shop Items - Must be in unlockedCosmetics array (purchased with coins)
+ * 3. Level Rewards - Unlocked when user reaches required level
+ * 4. Default Items - Always available (no requirements)
+ *
  * @param cosmeticId - The ID of the cosmetic to check
  * @param level - The user's current level
- * @param unlockedCosmetics - Array of cosmetic IDs unlocked via quests (optional)
+ * @param unlockedCosmetics - Array of cosmetic IDs unlocked via quests or shop purchases
  * @returns true if unlocked, false if locked
  */
 export function isCosmeticUnlocked(
@@ -255,7 +262,7 @@ export function isCosmeticUnlocked(
   const cosmetic = getCosmeticById(cosmeticId);
   if (!cosmetic) return false;
 
-  // If unlocked via quest, it's available
+  // If in unlocked array, it's available (quest rewards or shop purchases)
   if (unlockedCosmetics.includes(cosmeticId)) {
     return true;
   }
@@ -265,8 +272,18 @@ export function isCosmeticUnlocked(
     return false;
   }
 
-  // Otherwise, check level requirement
-  return !cosmetic.unlockLevel || cosmetic.unlockLevel <= level;
+  // If it's a shop item but not in unlocked list, it's locked (must purchase)
+  if (cosmetic.coinPrice && cosmetic.coinPrice > 0) {
+    return false;
+  }
+
+  // If it has a level requirement, check if user meets it
+  if (cosmetic.unlockLevel) {
+    return cosmetic.unlockLevel <= level;
+  }
+
+  // Default items (no requirements) are always available
+  return true;
 }
 
 /**

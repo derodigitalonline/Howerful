@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Task, Quadrant, Workspace } from "@shared/schema";
+import { useProfile } from "./useProfile";
 
 const STORAGE_KEY = "eisenhower-tasks";
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const { trackCleanupEvent } = useProfile();
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -21,7 +23,7 @@ export function useTasks() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
   }, [tasks]);
 
-  const addTask = (text: string, quadrant: Quadrant, workspace: Workspace = "personal") => {
+  const addTask = (text: string, quadrant?: Quadrant, workspace: Workspace = "personal") => {
     const newTask: Task = {
       id: crypto.randomUUID(),
       text,
@@ -43,8 +45,8 @@ export function useTasks() {
         if (task.id === id) {
           const newCompleted = !task.completed;
 
-          // Call callbacks for XP tracking
-          if (newCompleted && onComplete) {
+          // Call callbacks for XP tracking (only for tasks with quadrants)
+          if (newCompleted && onComplete && task.quadrant) {
             onComplete(task.quadrant);
           } else if (!newCompleted && onUncomplete && task.completedInQuadrant) {
             onUncomplete(task.completedInQuadrant);
@@ -67,7 +69,7 @@ export function useTasks() {
     );
   };
 
-  const moveTask = (id: string, newQuadrant: Quadrant) => {
+  const moveTask = (id: string, newQuadrant?: Quadrant) => {
     setTasks((prev) =>
       prev.map((task) =>
         task.id === id
@@ -75,7 +77,7 @@ export function useTasks() {
               ...task,
               quadrant: newQuadrant,
               // Update completedInQuadrant if the task is completed
-              completedInQuadrant: task.completed ? newQuadrant : task.completedInQuadrant,
+              completedInQuadrant: task.completed && newQuadrant ? newQuadrant : task.completedInQuadrant,
             }
           : task
       )
@@ -89,10 +91,20 @@ export function useTasks() {
     );
   };
 
+  const getBrainDumpTasks = (workspace?: Workspace) => {
+    return tasks.filter((task) =>
+      !task.quadrant &&
+      (workspace ? task.workspace === workspace : true)
+    );
+  };
+
   const deleteCompletedTasks = (workspace?: Workspace) => {
     setTasks((prev) => prev.filter((task) =>
       !task.completed || (workspace ? task.workspace !== workspace : false)
     ));
+
+    // Track cleanup event for daily quests
+    trackCleanupEvent();
   };
 
   return {
@@ -103,6 +115,7 @@ export function useTasks() {
     editTask,
     moveTask,
     getTasksByQuadrant,
+    getBrainDumpTasks,
     deleteCompletedTasks,
   };
 }

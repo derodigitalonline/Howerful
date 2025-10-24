@@ -108,7 +108,7 @@ export default function TaskCard({
     <div ref={setNodeRef} style={style} {...attributes} {...dragListeners}>
       <Card
         className={`
-          group px-4 py-3 border-l-4 ${quadrantColor} 
+          group px-4 py-2 border-l-4 ${quadrantColor} 
           animate-in fade-in slide-in-from-top-2 duration-200
           ${isDraggingState ? 'opacity-50' : ''}
           ${isDragging ? 'shadow-2xl cursor-grabbing' : 'cursor-grab hover:shadow-md'}
