@@ -121,3 +121,65 @@ export const userProfileSchema = z.object({
 });
 
 export type UserProfile = z.infer<typeof userProfileSchema>;
+
+// Daily Spread (Bullet Journal) System
+export const dailySpreadItemTypes = ["task", "event", "note"] as const;
+export type DailySpreadItemType = typeof dailySpreadItemTypes[number];
+
+// Temporal buckets for ADHD-friendly task organization
+export const buckets = ["today", "tomorrow", "someday"] as const;
+export type Bucket = typeof buckets[number];
+
+export const dailySpreadItemSchema = z.object({
+  id: z.string(),
+  type: z.enum(dailySpreadItemTypes),
+  text: z.string().min(1),
+  bucket: z.enum(buckets).default("today"), // Temporal bucket instead of specific dates
+  date: z.string().optional(), // Optional - only for scheduled events with specific dates
+  time: z.string().optional(), // Optional time for events (HH:MM format)
+  completed: z.boolean().default(false), // For tasks only
+  createdAt: z.number(),
+  order: z.number(), // For manual sorting within bucket
+  movedToSomedayAt: z.number().optional(), // Timestamp when item was moved to Someday bucket
+
+  // Focus Mode tracking
+  focusState: z.enum(['idle', 'queued', 'active', 'completed']).default('idle').optional(),
+  focusStartedAt: z.number().optional(), // Timestamp when focus session started
+  focusCompletedAt: z.number().optional(), // Timestamp when focus session completed
+  pomodorosCompleted: z.number().default(0).optional(), // Count of completed pomodoros
+  estimatedPomodoros: z.number().optional(), // User can estimate how many pomodoros needed
+});
+
+export type DailySpreadItem = z.infer<typeof dailySpreadItemSchema>;
+export type InsertDailySpreadItem = Omit<DailySpreadItem, "id" | "createdAt">;
+
+// Focus Session System (Pomodoro Timer)
+export const focusPhases = ["work", "shortBreak", "longBreak"] as const;
+export type FocusPhase = typeof focusPhases[number];
+
+export const focusSessionSchema = z.object({
+  id: z.string(),
+  itemId: z.string().optional(), // ID of the DailySpreadItem being focused on (optional for standalone focus sessions)
+  itemText: z.string().optional(), // Snapshot of item text at session start
+  phase: z.enum(focusPhases),
+  targetDuration: z.number(), // Target duration in seconds
+  actualDuration: z.number().optional(), // Actual duration if finished early
+  startedAt: z.number(), // Timestamp when session started
+  completedAt: z.number().optional(), // Timestamp when session completed
+  wasInterrupted: z.boolean().default(false), // True if user finished early or cancelled
+  wasCompleted: z.boolean().default(false), // True if timer ran to completion
+});
+
+export type FocusSession = z.infer<typeof focusSessionSchema>;
+
+// Focus Settings (Timer configuration)
+export interface FocusSettings {
+  workDuration: number; // In seconds (default: 25 * 60 = 1500)
+  shortBreakDuration: number; // In seconds (default: 5 * 60 = 300)
+  longBreakDuration: number; // In seconds (default: 15 * 60 = 900)
+  longBreakInterval: number; // After how many work sessions (default: 4)
+  autoStartBreaks: boolean; // Automatically start break timer after work session
+  autoStartWork: boolean; // Automatically start work timer after break
+  soundEnabled: boolean; // Play sound when timer completes
+  notificationsEnabled: boolean; // Show browser notifications
+}

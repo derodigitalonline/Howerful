@@ -122,7 +122,7 @@ export const COSMETICS_LIBRARY: CosmeticItem[] = [
     id: 'cape-red',
     name: 'Red Cape',
     category: 'cape',
-    imagePath: '/assets/cosmetics/capes/red.png',
+    imagePath: '/assets/cosmetics/capes/red-cape.png',
     description: 'For the heroes among us',
     unlockLevel: 20,
     rarity: 'legendary',

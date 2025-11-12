@@ -180,7 +180,7 @@ export default function Customize() {
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-[500px_1fr] gap-6 mb-8">
               {/* Left: Live Preview */}
               <Card className="p-8 lg:sticky lg:top-6 h-fit">
                 <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4">

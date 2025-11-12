@@ -1,9 +1,10 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Gift, Check } from 'lucide-react';
+import { Gift, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import XPIcon from '@/assets/xp-icon.png';
 
 interface DailyQuestProps {
   name: string;
@@ -90,13 +91,13 @@ export default function DailyQuest({
             <div className="flex items-center gap-3">
               {/* Coin Reward */}
               <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1.5 rounded-lg">
-                <img src="/assets/howie-coin.png" alt="Coins" className="w-4 h-4" />
-                <span className="text-sm font-bold">+{coinReward}</span>
+                <img src="/assets/howie-coin.png" alt="Coins" className="w-7 h-7" />
+                <span className="text-sm font-bold">{coinReward}</span>
               </div>
               {/* XP Reward */}
               <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1.5 rounded-lg">
-                <Sparkles className="w-4 h-4 text-purple-500" />
-                <span className="text-sm font-bold">+{xpReward} XP</span>
+                <img src={XPIcon} alt="XP" className="w-7 h-7" />
+                <span className="text-sm font-bold">{xpReward} XP</span>
               </div>
             </div>
           </div>

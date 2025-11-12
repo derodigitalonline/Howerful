@@ -12,7 +12,7 @@ export default function TopBar() {
   const isOnProfilePage = location === '/profile';
 
   return (
-    <div className="fixed top-0 left-64 right-0 h-16 bg-card/95 backdrop-blur-sm border-b border-border px-6 py-3 flex items-center justify-between z-50">
+    <div className="fixed top-0 left-64 right-0 h-16 bg-card/95 backdrop-blur-sm border-b border-border px-6 py-3 flex items-center justify-end gap-8 z-50">
       {/* Left: Coin Display */}
       <div className="flex items-center">
         <CoinDisplay coins={coins} size="sm" />

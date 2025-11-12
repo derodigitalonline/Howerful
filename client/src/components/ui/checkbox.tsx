@@ -15,9 +15,7 @@ const Checkbox = React.forwardRef<
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       "disabled:cursor-not-allowed disabled:opacity-50",
       "hover:border-primary/50 hover:shadow-sm",
-      "data-[state=checked]:bg-success data-[state=checked]:border-success data-[state=checked]:text-white",
-      "data-[state=checked]:shadow-[0_3px_0_0_hsl(var(--success)/.7)]",
-      "active:shadow-[0_1px_0_0_hsl(var(--success)/.7)] active:translate-y-[2px]",
+      "data-[state=checked]:bg-foreground/10 data-[state=checked]:border-foreground/30",
       className
     )}
     {...props}

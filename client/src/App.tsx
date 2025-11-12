@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/Home";
+import Dojo from "@/pages/Dojo";
+import Focus from "@/pages/Focus";
 import Profile from "@/pages/Profile";
 import Customize from "@/pages/Customize";
 import Quests from "@/pages/Quests";
@@ -15,11 +17,14 @@ import OnboardingDialog from "@/components/OnboardingDialog";
 import NavigationDrawer from "@/components/NavigationDrawer";
 import TopBar from "@/components/TopBar";
 import { ProfileProvider, useProfile } from "@/hooks/useProfile";
+import { FocusProvider } from "@/hooks/useFocus";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
+      <Route path="/" component={Dojo} />
+      <Route path="/matrix" component={Home} />
+      <Route path="/focus" component={Focus} />
       <Route path="/routines" component={Routines} />
       <Route path="/profile" component={Profile} />
       <Route path="/customize" component={Customize} />
@@ -64,7 +69,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ProfileProvider>
-          <AppContent />
+          <FocusProvider>
+            <AppContent />
+          </FocusProvider>
         </ProfileProvider>
       </TooltipProvider>
     </QueryClientProvider>

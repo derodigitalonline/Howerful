@@ -231,7 +231,7 @@ export default function Matrix() {
           </div>
         </div>
 
-        <div className="flex-1 p-4 md:p-6 pb-0 overflow-hidden">
+        <div className="flex-1 p-4 md:p-6 overflow-hidden">
           <div className="h-full flex gap-4">
             {/* Brain Dump Section */}
             <div className="w-80 flex-shrink-0">
@@ -246,36 +246,40 @@ export default function Matrix() {
               />
             </div>
 
-            {/* Quadrants Grid */}
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {quadrants.map((quadrant) => (
-                <QuadrantCard
-                  key={quadrant.id}
-                  quadrantId={quadrant.id}
-                  title={quadrant.title}
-                  subtitle={quadrant.subtitle}
-                  tasks={getTasksByQuadrant(quadrant.id)}
-                  onDeleteTask={deleteTask}
-                  onToggleTask={handleToggleTask}
-                  onEditTask={editTask}
-                  isSelected={isSelectingQuadrant && selectedQuadrant === quadrant.id}
-                  isDragOver={dragOverQuadrant === quadrant.id}
-                  color={quadrant.color}
-                  showRipple={rippleQuadrant === quadrant.id}
+            {/* Right Column: Quadrants + TaskInput */}
+            <div className="flex-1 flex flex-col gap-4">
+              {/* Quadrants Grid */}
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-auto">
+                {quadrants.map((quadrant) => (
+                  <QuadrantCard
+                    key={quadrant.id}
+                    quadrantId={quadrant.id}
+                    title={quadrant.title}
+                    subtitle={quadrant.subtitle}
+                    tasks={getTasksByQuadrant(quadrant.id)}
+                    onDeleteTask={deleteTask}
+                    onToggleTask={handleToggleTask}
+                    onEditTask={editTask}
+                    isSelected={isSelectingQuadrant && selectedQuadrant === quadrant.id}
+                    isDragOver={dragOverQuadrant === quadrant.id}
+                    color={quadrant.color}
+                    showRipple={rippleQuadrant === quadrant.id}
+                  />
+                ))}
+              </div>
+
+              {/* TaskInput */}
+              <div className="border-t pt-4 bg-background">
+                <TaskInput
+                  onAddTask={handleAddTask}
+                  selectedQuadrant={selectedQuadrant}
+                  onQuadrantChange={setSelectedQuadrant}
+                  isSelectingQuadrant={isSelectingQuadrant}
+                  onSelectingChange={setIsSelectingQuadrant}
                 />
-              ))}
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="border-t p-4 md:p-6 bg-background">
-          <TaskInput
-            onAddTask={handleAddTask}
-            selectedQuadrant={selectedQuadrant}
-            onQuadrantChange={setSelectedQuadrant}
-            isSelectingQuadrant={isSelectingQuadrant}
-            onSelectingChange={setIsSelectingQuadrant}
-          />
         </div>
       </div>
 

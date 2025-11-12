@@ -1,8 +1,10 @@
 import Quest from '@/components/Quest';
 import DailyQuest from '@/components/DailyQuest';
+import BarHeader, { TimerBadge } from '@/components/BarHeader';
 import { motion } from 'framer-motion';
 import { Glasses, Shirt, Crown, Calendar } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
+import { useTimeUntilMidnight } from '@/utils/timeUntilMidnight';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 
@@ -27,6 +29,7 @@ const QUEST_COIN_REWARDS: Record<string, number> = {
 
 export default function Quests() {
   const { profile, setProfile, addCoins, claimDailyQuest } = useProfile();
+  const timer = useTimeUntilMidnight();
   const currentLevel = profile.level;
   const claimedQuests = profile.claimedQuests || [];
   const unlockedCosmetics = profile.unlockedCosmetics || [];
@@ -111,32 +114,33 @@ export default function Quests() {
 
             {/* Daily Quests Section */}
             {dailyQuests.length > 0 && (
-              <div className="mb-10">
-                <div className="flex items-center gap-2 mb-4">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  <h2 className="text-2xl font-bold">Daily Quests</h2>
-                  <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full font-medium">
-                    Resets Daily
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Complete these quests before they reset tomorrow for bonus rewards!
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl">
-                  {dailyQuests.map((quest) => (
-                    <DailyQuest
-                      key={quest.id}
-                      name={quest.name}
-                      description={quest.description}
-                      progress={quest.progress}
-                      requirement={quest.requirement}
-                      coinReward={quest.coinReward}
-                      xpReward={quest.xpReward}
-                      completed={quest.completed}
-                      claimed={quest.claimed}
-                      onClaim={() => handleClaimDailyQuest(quest.id, quest.name, quest.coinReward, quest.xpReward)}
-                    />
-                  ))}
+              <div className="mb-10 max-w-6xl">
+                <BarHeader
+                  title="Daily Quests"
+                  icon={<Calendar className="w-4 h-4" />}
+                  variant="gradient"
+                  rightContent={<TimerBadge time={timer.formatted} />}
+                />
+                <div className="p-5 border-2 border-t-0 border-border/50 rounded-b-lg bg-muted/10">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Complete these quests before they reset for bonus rewards!
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {dailyQuests.map((quest) => (
+                      <DailyQuest
+                        key={quest.id}
+                        name={quest.name}
+                        description={quest.description}
+                        progress={quest.progress}
+                        requirement={quest.requirement}
+                        coinReward={quest.coinReward}
+                        xpReward={quest.xpReward}
+                        completed={quest.completed}
+                        claimed={quest.claimed}
+                        onClaim={() => handleClaimDailyQuest(quest.id, quest.name, quest.coinReward, quest.xpReward)}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

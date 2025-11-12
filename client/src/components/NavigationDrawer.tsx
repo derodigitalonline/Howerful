@@ -1,4 +1,4 @@
-import { HelpCircle, CheckSquare, Sparkles, Crown, Calendar, ShoppingBag } from 'lucide-react';
+import { HelpCircle, CheckSquare, Sparkles, Crown, Calendar, ShoppingBag, Home, Timer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLocation, Link } from 'wouter';
@@ -33,8 +33,20 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
 
   const navItems = [
     {
-      label: 'Track',
+      label: 'Dojo',
       path: '/',
+      icon: Home,
+      description: 'Your training grounds',
+    },
+    {
+      label: 'Focus',
+      path: '/focus',
+      icon: Timer,
+      description: 'Deep work sessions',
+    },
+    {
+      label: 'Matrix',
+      path: '/matrix',
       icon: CheckSquare,
       description: 'Manage your tasks',
     },
