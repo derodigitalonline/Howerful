@@ -9,3 +9,6 @@ vite.config.ts.*
 
 # Vercel
 .vercel
+
+# Windows reserved device names
+nul
