@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DailySpreadItem as DailySpreadItemType, DailySpreadItemType as ItemType, Bucket, DailySpreadItemType as BulletType } from '@shared/schema';
+import { BulletItem as BulletItemType, BulletItemType as ItemType, Bucket, BulletItemType as BulletType } from '@shared/schema';
 import { Circle, Minus, X, Clock, GripVertical, ArrowRight, FastForward, ArrowLeft, CheckSquare, Check, Timer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,8 +25,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
 import { getRelativeTime } from '@/utils/relativeTime';
 
-interface DailySpreadItemProps {
-  item: DailySpreadItemType;
+interface BulletItemProps {
+  item: BulletItemType;
   currentBucket?: Bucket;
   onToggleComplete: (id: string) => void;
   onCycleType: (id: string) => void;
@@ -39,7 +39,7 @@ interface DailySpreadItemProps {
   isDragging?: boolean;
 }
 
-export default function DailySpreadItem({
+export default function BulletItem({
   item,
   currentBucket,
   onToggleComplete,

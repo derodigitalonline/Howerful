@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Home from "@/pages/Home";
+import Matrix from "@/pages/Matrix";
 import Dojo from "@/pages/Dojo";
 import Focus from "@/pages/Focus";
 import Profile from "@/pages/Profile";
@@ -18,12 +18,24 @@ import NavigationDrawer from "@/components/NavigationDrawer";
 import TopBar from "@/components/TopBar";
 import { ProfileProvider, useProfile } from "@/hooks/useProfile";
 import { FocusProvider } from "@/hooks/useFocus";
+import { useState, createContext, useContext } from "react";
+
+// Sidebar context to share collapse state
+const SidebarContext = createContext<{
+  isCollapsed: boolean;
+  setIsCollapsed: (collapsed: boolean) => void;
+}>({
+  isCollapsed: false,
+  setIsCollapsed: () => {},
+});
+
+export const useSidebar = () => useContext(SidebarContext);
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dojo} />
-      <Route path="/matrix" component={Home} />
+      <Route path="/matrix" component={Matrix} />
       <Route path="/focus" component={Focus} />
       <Route path="/routines" component={Routines} />
       <Route path="/profile" component={Profile} />
@@ -37,9 +49,10 @@ function Router() {
 
 function AppContent() {
   const { profile, completeOnboarding } = useProfile();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <>
+    <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed }}>
       <Toaster />
       <Sonner position="top-right" richColors />
       <OnboardingDialog
@@ -51,7 +64,7 @@ function AppContent() {
       <div className="flex h-screen">
         <NavigationDrawer />
 
-        <div className="flex-1 ml-64 flex flex-col">
+        <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
           <TopBar />
 
           {/* Main content area with top padding for TopBar */}
@@ -60,7 +73,7 @@ function AppContent() {
           </div>
         </div>
       </div>
-    </>
+    </SidebarContext.Provider>
   );
 }
 

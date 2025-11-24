@@ -21,9 +21,9 @@ export default function BucketTabs({ activeBucket, onBucketChange, counts }: Buc
   ];
 
   return (
-    <div className="relative">
+    <div className="relative border-b border-border">
       {/* Tab Container */}
-      <div className="flex items-end gap-1">
+      <div className="flex items-center gap-1">
         {tabs.map((tab) => {
           const isActive = activeBucket === tab.bucket;
           const count = counts[tab.bucket];
@@ -33,11 +33,10 @@ export default function BucketTabs({ activeBucket, onBucketChange, counts }: Buc
               key={tab.bucket}
               onClick={() => onBucketChange(tab.bucket)}
               className={cn(
-                "relative px-6 py-3 rounded-t-lg font-medium transition-all duration-200",
-                "border-t-2 border-x-2",
+                "relative px-4 py-2.5 rounded-md font-medium transition-all duration-200",
                 isActive
-                  ? "bg-card border-primary text-foreground z-10 -mb-[2px] shadow-md"
-                  : "bg-muted/50 border-border text-muted-foreground hover:bg-muted hover:text-foreground z-0 mb-0 opacity-80"
+                  ? "bg-card text-primary shadow-sm"
+                  : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-accent/50"
               )}
             >
               {/* Tab Content */}
@@ -50,8 +49,8 @@ export default function BucketTabs({ activeBucket, onBucketChange, counts }: Buc
                     className={cn(
                       "inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-semibold",
                       isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted-foreground/20 text-muted-foreground"
+                        ? "bg-primary/10 text-primary"
+                        : "bg-muted-foreground/10 text-muted-foreground"
                     )}
                   >
                     {count}
@@ -59,11 +58,11 @@ export default function BucketTabs({ activeBucket, onBucketChange, counts }: Buc
                 )}
               </div>
 
-              {/* Active Tab Indicator */}
+              {/* Active Tab Indicator - Bottom border */}
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-card"
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
@@ -74,15 +73,12 @@ export default function BucketTabs({ activeBucket, onBucketChange, counts }: Buc
         {/* Future: Custom Collections Button */}
         <button
           disabled
-          className="ml-2 px-3 py-2 rounded-t-lg bg-muted/30 border-t-2 border-x-2 border-border text-muted-foreground opacity-40 cursor-not-allowed"
+          className="ml-2 px-3 py-2 rounded-md bg-transparent text-muted-foreground/40 cursor-not-allowed"
           title="Custom collections coming soon"
         >
           <Plus className="w-4 h-4" />
         </button>
       </div>
-
-      {/* Bottom Border that connects to active tab */}
-      <div className="h-[2px] bg-border -mt-[2px] relative z-0" />
     </div>
   );
 }

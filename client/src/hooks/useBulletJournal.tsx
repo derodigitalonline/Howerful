@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
-import { DailySpreadItem, DailySpreadItemType, Bucket } from "@shared/schema";
+import { BulletItem, BulletItemType, Bucket } from "@shared/schema";
 import { calculateStreak, StreakData } from "@/utils/streakCalculator";
 
-const STORAGE_KEY = "howerful-daily-spread";
+const STORAGE_KEY = "howerful-bullet-journal";
 
-export function useDailySpread() {
-  const [items, setItems] = useState<DailySpreadItem[]>([]);
+export function useBulletJournal() {
+  const [items, setItems] = useState<BulletItem[]>([]);
 
   // Load items from localStorage on mount
   useEffect(() => {
@@ -14,7 +14,7 @@ export function useDailySpread() {
       try {
         setItems(JSON.parse(stored));
       } catch (e) {
-        console.error("Failed to parse stored daily spread items", e);
+        console.error("Failed to parse stored bullet journal items", e);
       }
     }
   }, []);
@@ -24,7 +24,7 @@ export function useDailySpread() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items]);
 
-  const addItem = (text: string, type: DailySpreadItemType, bucket: Bucket = 'today', time?: string, date?: string) => {
+  const addItem = (text: string, type: BulletItemType, bucket: Bucket = 'today', time?: string, date?: string) => {
     setItems((prev) => {
       // Find the highest order for this bucket, default to 0
       const bucketItems = prev.filter(item => item.bucket === bucket);
@@ -32,7 +32,7 @@ export function useDailySpread() {
         ? Math.max(...bucketItems.map(item => item.order))
         : -1;
 
-      const newItem: DailySpreadItem = {
+      const newItem: BulletItem = {
         id: crypto.randomUUID(),
         type,
         text,
@@ -51,7 +51,7 @@ export function useDailySpread() {
     setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const updateItem = (id: string, updates: Partial<DailySpreadItem>) => {
+  const updateItem = (id: string, updates: Partial<BulletItem>) => {
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
     );
@@ -69,7 +69,7 @@ export function useDailySpread() {
     setItems((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          const types: DailySpreadItemType[] = ["task", "event", "note"];
+          const types: BulletItemType[] = ["task", "event", "note"];
           const currentIndex = types.indexOf(item.type);
           const nextIndex = (currentIndex + 1) % types.length;
           const newType = types[nextIndex];
@@ -86,7 +86,7 @@ export function useDailySpread() {
     );
   };
 
-  const changeItemType = (id: string, newType: DailySpreadItemType) => {
+  const changeItemType = (id: string, newType: BulletItemType) => {
     setItems((prev) =>
       prev.map((item) => {
         if (item.id === id) {
@@ -118,7 +118,7 @@ export function useDailySpread() {
     setItems((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          const updates: Partial<DailySpreadItem> = { bucket };
+          const updates: Partial<BulletItem> = { bucket };
 
           // Track when items are moved to Someday for backlog metadata
           if (bucket === 'someday' && item.bucket !== 'someday') {

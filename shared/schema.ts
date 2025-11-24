@@ -122,17 +122,17 @@ export const userProfileSchema = z.object({
 
 export type UserProfile = z.infer<typeof userProfileSchema>;
 
-// Daily Spread (Bullet Journal) System
-export const dailySpreadItemTypes = ["task", "event", "note"] as const;
-export type DailySpreadItemType = typeof dailySpreadItemTypes[number];
+// Bullet Journal System
+export const bulletItemTypes = ["task", "event", "note"] as const;
+export type BulletItemType = typeof bulletItemTypes[number];
 
 // Temporal buckets for ADHD-friendly task organization
 export const buckets = ["today", "tomorrow", "someday"] as const;
 export type Bucket = typeof buckets[number];
 
-export const dailySpreadItemSchema = z.object({
+export const bulletItemSchema = z.object({
   id: z.string(),
-  type: z.enum(dailySpreadItemTypes),
+  type: z.enum(bulletItemTypes),
   text: z.string().min(1),
   bucket: z.enum(buckets).default("today"), // Temporal bucket instead of specific dates
   date: z.string().optional(), // Optional - only for scheduled events with specific dates
@@ -150,8 +150,15 @@ export const dailySpreadItemSchema = z.object({
   estimatedPomodoros: z.number().optional(), // User can estimate how many pomodoros needed
 });
 
-export type DailySpreadItem = z.infer<typeof dailySpreadItemSchema>;
-export type InsertDailySpreadItem = Omit<DailySpreadItem, "id" | "createdAt">;
+export type BulletItem = z.infer<typeof bulletItemSchema>;
+export type InsertBulletItem = Omit<BulletItem, "id" | "createdAt">;
+
+// Legacy aliases for backwards compatibility (can be removed after migration)
+export type DailySpreadItem = BulletItem;
+export type DailySpreadItemType = BulletItemType;
+export type InsertDailySpreadItem = InsertBulletItem;
+export const dailySpreadItemTypes = bulletItemTypes;
+export const dailySpreadItemSchema = bulletItemSchema;
 
 // Focus Session System (Pomodoro Timer)
 export const focusPhases = ["work", "shortBreak", "longBreak"] as const;
@@ -159,7 +166,7 @@ export type FocusPhase = typeof focusPhases[number];
 
 export const focusSessionSchema = z.object({
   id: z.string(),
-  itemId: z.string().optional(), // ID of the DailySpreadItem being focused on (optional for standalone focus sessions)
+  itemId: z.string().optional(), // ID of the BulletItem being focused on (optional for standalone focus sessions)
   itemText: z.string().optional(), // Snapshot of item text at session start
   phase: z.enum(focusPhases),
   targetDuration: z.number(), // Target duration in seconds

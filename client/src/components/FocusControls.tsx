@@ -50,7 +50,7 @@ export default function FocusControls({ variant = "default" }: FocusControlsProp
         ) : (
           <Button
             size={buttonSize}
-            variant="secondary"
+            variant="outline"
             onClick={pauseTimer}
             className="gap-2"
           >

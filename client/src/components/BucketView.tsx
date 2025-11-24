@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
-import { DailySpreadItem as DailySpreadItemType, Bucket, DailySpreadItemType as BulletType } from '@shared/schema';
-import DailySpreadItem from './DailySpreadItem';
+import { BulletItem as BulletItemType, Bucket, BulletItemType as BulletType } from '@shared/schema';
+import BulletItem from './BulletItem';
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -9,9 +9,9 @@ import {
 
 interface BucketViewProps {
   bucket: Bucket;
-  items: DailySpreadItemType[];
+  items: BulletItemType[];
   deleteItem: (id: string) => void;
-  updateItem: (id: string, updates: Partial<DailySpreadItemType>) => void;
+  updateItem: (id: string, updates: Partial<BulletItemType>) => void;
   toggleItemCompletion: (id: string) => void;
   cycleItemType: (id: string) => void;
   changeItemType: (id: string, type: BulletType) => void;
@@ -110,7 +110,7 @@ export default function BucketView({
             ) : (
               <>
                 {generalItems.map((item) => (
-                  <DailySpreadItem
+                  <BulletItem
                     key={item.id}
                     item={item}
                     currentBucket={bucket}
@@ -137,7 +137,7 @@ export default function BucketView({
               </h3>
               <div className="space-y-1">
                 {scheduledItems.map((item) => (
-                  <DailySpreadItem
+                  <BulletItem
                     key={item.id}
                     item={item}
                     currentBucket={bucket}

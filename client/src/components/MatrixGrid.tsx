@@ -8,20 +8,17 @@ import TaskInput from './TaskInput';
 import QuadrantCard from './QuadrantCard';
 import TaskCard from './TaskCard';
 import KeyboardShortcutsDialog from './KeyboardShortcutsDialog';
-import BrainDumpCard from './BrainDumpCard';
 import { motion } from 'framer-motion';
 import { Button } from './ui/button';
 import { Trash2 } from 'lucide-react';
 
 export default function Matrix() {
-  const { getTasksByQuadrant, getBrainDumpTasks, addTask, deleteTask, toggleTaskCompletion, editTask, moveTask, tasks, deleteCompletedTasks } = useTasks();
+  const { getTasksByQuadrant, addTask, deleteTask, toggleTaskCompletion, editTask, moveTask, tasks, deleteCompletedTasks } = useTasks();
   const { awardXP, deductXP } = useProfile();
   const [selectedQuadrant, setSelectedQuadrant] = useState<Quadrant>('do-first');
   const [rippleQuadrant, setRippleQuadrant] = useState<Quadrant | null>(null);
-  const [rippleBrainDump, setRippleBrainDump] = useState(false);
   const [activeTask, setActiveTask] = useState<any>(null);
   const [dragOverQuadrant, setDragOverQuadrant] = useState<Quadrant | null>(null);
-  const [dragOverBrainDump, setDragOverBrainDump] = useState(false);
   const [showShortcutsDialog, setShowShortcutsDialog] = useState(false);
   const [isSelectingQuadrant, setIsSelectingQuadrant] = useState(false);
 
@@ -82,14 +79,9 @@ export default function Matrix() {
       if (overId.startsWith('quadrant-')) {
         const quadrant = overId.replace('quadrant-', '') as Quadrant;
         setDragOverQuadrant(quadrant);
-        setDragOverBrainDump(false);
-      } else if (overId === 'brain-dump') {
-        setDragOverBrainDump(true);
-        setDragOverQuadrant(null);
       }
     } else {
       setDragOverQuadrant(null);
-      setDragOverBrainDump(false);
     }
   };
 
@@ -113,27 +105,16 @@ export default function Matrix() {
 
         moveTask(taskId, targetQuadrant);
         setRippleQuadrant(targetQuadrant);
-      } else if (over.id === 'brain-dump') {
-        // Move task back to brain dump (remove quadrant assignment)
-        const task = tasks.find(t => t.id === taskId);
-        if (task && task.completed && task.completedInQuadrant) {
-          // Deduct XP if task was completed in a quadrant
-          deductXP(task.completedInQuadrant);
-        }
-        moveTask(taskId, undefined);
-        setRippleBrainDump(true);
       }
     }
 
     setActiveTask(null);
     setDragOverQuadrant(null);
-    setDragOverBrainDump(false);
   };
 
   const handleDragCancel = () => {
     setActiveTask(null);
     setDragOverQuadrant(null);
-    setDragOverBrainDump(false);
   };
 
   const handleCleanCompleted = () => {
@@ -159,12 +140,6 @@ export default function Matrix() {
     }
   }, [rippleQuadrant]);
 
-  useEffect(() => {
-    if (rippleBrainDump) {
-      const timer = setTimeout(() => setRippleBrainDump(false), 600);
-      return () => clearTimeout(timer);
-    }
-  }, [rippleBrainDump]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -231,54 +206,36 @@ export default function Matrix() {
           </div>
         </div>
 
-        <div className="flex-1 p-4 md:p-6 overflow-hidden">
-          <div className="h-full flex gap-4">
-            {/* Brain Dump Section */}
-            <div className="w-80 flex-shrink-0">
-              <BrainDumpCard
-                tasks={getBrainDumpTasks()}
+        <div className="flex-1 p-4 md:p-6 overflow-hidden flex flex-col gap-4">
+          {/* Quadrants Grid */}
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-auto">
+            {quadrants.map((quadrant) => (
+              <QuadrantCard
+                key={quadrant.id}
+                quadrantId={quadrant.id}
+                title={quadrant.title}
+                subtitle={quadrant.subtitle}
+                tasks={getTasksByQuadrant(quadrant.id)}
                 onDeleteTask={deleteTask}
                 onToggleTask={handleToggleTask}
                 onEditTask={editTask}
-                onAddTask={(text) => addTask(text, undefined)}
-                isDragOver={dragOverBrainDump}
-                showRipple={rippleBrainDump}
+                isSelected={isSelectingQuadrant && selectedQuadrant === quadrant.id}
+                isDragOver={dragOverQuadrant === quadrant.id}
+                color={quadrant.color}
+                showRipple={rippleQuadrant === quadrant.id}
               />
-            </div>
+            ))}
+          </div>
 
-            {/* Right Column: Quadrants + TaskInput */}
-            <div className="flex-1 flex flex-col gap-4">
-              {/* Quadrants Grid */}
-              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-auto">
-                {quadrants.map((quadrant) => (
-                  <QuadrantCard
-                    key={quadrant.id}
-                    quadrantId={quadrant.id}
-                    title={quadrant.title}
-                    subtitle={quadrant.subtitle}
-                    tasks={getTasksByQuadrant(quadrant.id)}
-                    onDeleteTask={deleteTask}
-                    onToggleTask={handleToggleTask}
-                    onEditTask={editTask}
-                    isSelected={isSelectingQuadrant && selectedQuadrant === quadrant.id}
-                    isDragOver={dragOverQuadrant === quadrant.id}
-                    color={quadrant.color}
-                    showRipple={rippleQuadrant === quadrant.id}
-                  />
-                ))}
-              </div>
-
-              {/* TaskInput */}
-              <div className="border-t pt-4 bg-background">
-                <TaskInput
-                  onAddTask={handleAddTask}
-                  selectedQuadrant={selectedQuadrant}
-                  onQuadrantChange={setSelectedQuadrant}
-                  isSelectingQuadrant={isSelectingQuadrant}
-                  onSelectingChange={setIsSelectingQuadrant}
-                />
-              </div>
-            </div>
+          {/* TaskInput */}
+          <div className="border-t pt-4 bg-background">
+            <TaskInput
+              onAddTask={handleAddTask}
+              selectedQuadrant={selectedQuadrant}
+              onQuadrantChange={setSelectedQuadrant}
+              isSelectingQuadrant={isSelectingQuadrant}
+              onSelectingChange={setIsSelectingQuadrant}
+            />
           </div>
         </div>
       </div>

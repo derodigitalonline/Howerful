@@ -3,7 +3,7 @@ import BucketView from '@/components/BucketView';
 import FocusDropZone from '@/components/FocusDropZone';
 import FocusedItemBanner from '@/components/FocusedItemBanner';
 import SwitchFocusDialog from '@/components/SwitchFocusDialog';
-import { useDailySpread } from '@/hooks/useDailySpread';
+import { useBulletJournal } from '@/hooks/useBulletJournal';
 import { useFocus } from '@/hooks/useFocus';
 import { parseBulletEntry } from '@/utils/bulletDetection';
 import { Input } from '@/components/ui/input';
@@ -22,7 +22,7 @@ import {
 } from '@dnd-kit/core';
 
 export default function Dojo() {
-  const { getItemsByBucket, addItem, deleteItem, updateItem, toggleItemCompletion, cycleItemType, changeItemType, reorderItems, moveItemToBucket, items: allItems } = useDailySpread();
+  const { getItemsByBucket, addItem, deleteItem, updateItem, toggleItemCompletion, cycleItemType, changeItemType, reorderItems, moveItemToBucket, items: allItems } = useBulletJournal();
   const { startTimer, activeItemId, activeItemText } = useFocus();
 
   const [activeBucket, setActiveBucket] = useState<Bucket>('today');
@@ -162,7 +162,7 @@ export default function Dojo() {
     >
       <div className="h-full flex flex-col overflow-hidden">
         {/* Fixed Top Section */}
-        <div className="flex-shrink-0 px-6 md:px-8 pt-6 md:pt-8 border-b bg-background">
+        <div className="flex-shrink-0 px-6 md:px-8 pt-6 md:pt-8 bg-background">
           {/* Task Entry Input */}
           <div>
             <Input
@@ -180,7 +180,7 @@ export default function Dojo() {
           </div>
 
           {/* Bucket Tabs */}
-          <div className="mt-4">
+          <div className="mt-6">
             <BucketTabs
               activeBucket={activeBucket}
               onBucketChange={setActiveBucket}

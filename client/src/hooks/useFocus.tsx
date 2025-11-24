@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { FocusPhase, FocusSession, FocusSettings } from "@shared/schema";
-import { useDailySpread } from "./useDailySpread";
+import { useBulletJournal } from "./useBulletJournal";
 
 const STORAGE_KEY = "howerful-focus-state";
 const SETTINGS_KEY = "howerful-focus-settings";
@@ -81,7 +81,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<FocusSettings>(DEFAULT_SETTINGS);
   const [sessions, setSessions] = useState<FocusSession[]>([]);
 
-  const { updateItem, items: allItems } = useDailySpread();
+  const { updateItem, items: allItems } = useBulletJournal();
 
   // Helper to get item by ID
   const getItemById = useCallback((id: string) => {
@@ -204,7 +204,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     if (currentState.phase === 'work' && currentState.activeItemId) {
       const item = getItemById(currentState.activeItemId);
       if (item && item.type === 'task' && !item.completed) {
-        // Toggle completion through useDailySpread
+        // Toggle completion through useBulletJournal
         // This will be handled by the parent component that has access to toggleItemCompletion
       }
 

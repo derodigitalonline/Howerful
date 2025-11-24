@@ -11,14 +11,14 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground btn-glass no-default-hover-elevate no-default-active-elevate",
+          "bg-primary text-primary-foreground btn-glass [--btn-color:var(--primary)] no-default-hover-elevate no-default-active-elevate",
         destructive:
-          "bg-destructive text-destructive-foreground btn-glass no-default-hover-elevate no-default-active-elevate",
+          "bg-destructive text-destructive-foreground btn-glass [--btn-color:var(--destructive)] no-default-hover-elevate no-default-active-elevate",
         outline:
           // Shows the background color of whatever card / sidebar / accent background it is inside of.
           // Inherits the current text color.
-          " border [border-color:var(--button-outline)]  shadow-xs active:shadow-none rounded-lg",
-        secondary: "border bg-secondary text-secondary-foreground border border-secondary-border rounded-lg",
+          " border [border-color:var(--button-outline)] rounded-lg btn-chunky no-default-hover-elevate no-default-active-elevate",
+        secondary: "border bg-secondary text-secondary-foreground border border-secondary-border rounded-lg btn-chunky no-default-hover-elevate no-default-active-elevate",
         // Add a transparent border so that when someone toggles a border on later, it doesn't shift layout/size.
         ghost: "border border-transparent rounded-lg",
       },

@@ -351,24 +351,24 @@
     font-weight: 600;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* 3D depth shadow */
+    /* 3D depth shadow - dynamically based on button color */
     box-shadow:
-      0 4px 0 0 hsl(from hsl(var(--primary)) h s calc(l - 15)),
-      0 8px 16px -4px hsl(from hsl(var(--primary)) h s l / 0.3);
+      0 4px 0 0 hsl(from hsl(var(--btn-color)) h s calc(l - 15)),
+      0 8px 16px -4px hsl(from hsl(var(--btn-color)) h s l / 0.3);
   }
 
   .btn-glass:hover {
     transform: translateY(-2px);
     box-shadow:
-      0 6px 0 0 hsl(from hsl(var(--primary)) h s calc(l - 15)),
-      0 12px 24px -4px hsl(from hsl(var(--primary)) h s l / 0.4);
+      0 6px 0 0 hsl(from hsl(var(--btn-color)) h s calc(l - 15)),
+      0 12px 24px -4px hsl(from hsl(var(--btn-color)) h s l / 0.4);
   }
 
   .btn-glass:active {
     transform: translateY(2px);
     box-shadow:
-      0 2px 0 0 hsl(from hsl(var(--primary)) h s calc(l - 15)),
-      0 4px 8px -2px hsl(from hsl(var(--primary)) h s l / 0.2);
+      0 2px 0 0 hsl(from hsl(var(--btn-color)) h s calc(l - 15)),
+      0 4px 8px -2px hsl(from hsl(var(--btn-color)) h s l / 0.2);
   }
 
   /* Glass highlight effect */
@@ -397,9 +397,9 @@
     padding: 2px;
     background: linear-gradient(
       135deg,
-      hsl(from hsl(var(--primary)) h s calc(l + 10)),
-      hsl(var(--primary)),
-      hsl(from hsl(var(--primary)) h s calc(l - 10))
+      hsl(from hsl(var(--btn-color)) h s calc(l + 10)),
+      hsl(var(--btn-color)),
+      hsl(from hsl(var(--btn-color)) h s calc(l - 10))
     );
     -webkit-mask:
       linear-gradient(#fff 0 0) content-box,
@@ -415,5 +415,22 @@
 
   .btn-glass:hover::after {
     opacity: 0.6;
+  }
+
+  /* 3D Chunky effect for secondary and outline buttons */
+  .btn-chunky {
+    position: relative;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 0 0 rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-chunky:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-chunky:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.15);
   }
 }
