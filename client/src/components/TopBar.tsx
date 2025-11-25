@@ -2,11 +2,14 @@ import { useProfile } from '@/hooks/useProfile';
 import { Link, useLocation } from 'wouter';
 import CoinDisplay from './CoinDisplay';
 import { motion } from 'framer-motion';
-import { Menu } from 'lucide-react';
+import { Menu, LogIn } from 'lucide-react';
 import { useSidebar } from '@/App';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from './ui/button';
 
 export default function TopBar() {
   const { profile } = useProfile();
+  const { isAuthenticated } = useAuth();
   const [location] = useLocation();
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const coins = profile.coins || 0;
@@ -35,27 +38,38 @@ export default function TopBar() {
           <CoinDisplay coins={coins} size="sm" />
         </div>
 
-        {/* Profile Picture */}
-        <Link href="/profile">
-          <a>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`
-                w-10 h-10 rounded-full
-                bg-gradient-to-br from-primary/20 to-chart-2/20
-                border-2
-                ${isOnProfilePage ? 'border-primary' : 'border-primary/30'}
-                flex items-center justify-center
-                cursor-pointer
-                hover:ring-2 hover:ring-primary/50
-                transition-all
-              `}
-            >
-              <span className="text-sm font-bold text-primary">{initial}</span>
-            </motion.div>
-          </a>
-        </Link>
+        {/* Profile Picture or Login Button */}
+        {isAuthenticated ? (
+          <Link href="/profile">
+            <a>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`
+                  w-10 h-10 rounded-full
+                  bg-gradient-to-br from-primary/20 to-chart-2/20
+                  border-2
+                  ${isOnProfilePage ? 'border-primary' : 'border-primary/30'}
+                  flex items-center justify-center
+                  cursor-pointer
+                  hover:ring-2 hover:ring-primary/50
+                  transition-all
+                `}
+              >
+                <span className="text-sm font-bold text-primary">{initial}</span>
+              </motion.div>
+            </a>
+          </Link>
+        ) : (
+          <Link href="/login">
+            <a>
+              <Button variant="default" size="sm" className="gap-2">
+                <LogIn className="h-4 w-4" />
+                Login / Register
+              </Button>
+            </a>
+          </Link>
+        )}
       </div>
     </div>
   );
