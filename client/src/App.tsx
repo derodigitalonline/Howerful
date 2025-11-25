@@ -12,12 +12,15 @@ import Customize from "@/pages/Customize";
 import Quests from "@/pages/Quests";
 import Routines from "@/pages/Routines";
 import Bazaar from "@/pages/Bazaar";
+import Login from "@/pages/Login";
+import Signup from "@/pages/Signup";
 import NotFound from "@/pages/not-found";
 import OnboardingDialog from "@/components/OnboardingDialog";
 import NavigationDrawer from "@/components/NavigationDrawer";
 import TopBar from "@/components/TopBar";
 import { ProfileProvider, useProfile } from "@/hooks/useProfile";
 import { FocusProvider } from "@/hooks/useFocus";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { useState, createContext, useContext } from "react";
 
 // Sidebar context to share collapse state
@@ -42,6 +45,8 @@ function Router() {
       <Route path="/customize" component={Customize} />
       <Route path="/quests" component={Quests} />
       <Route path="/bazaar" component={Bazaar} />
+      <Route path="/login" component={Login} />
+      <Route path="/signup" component={Signup} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -81,11 +86,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <ProfileProvider>
-          <FocusProvider>
-            <AppContent />
-          </FocusProvider>
-        </ProfileProvider>
+        <AuthProvider>
+          <ProfileProvider>
+            <FocusProvider>
+              <AppContent />
+            </FocusProvider>
+          </ProfileProvider>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -114,7 +114,7 @@ export default function BulletItem({
 
   if (isEditing) {
     return (
-      <div className="flex items-center gap-2 p-2 bg-accent/50 rounded-lg">
+      <div className="flex items-center gap-2 p-4 bg-card border shadow-sm rounded-lg">
         <div className="w-5 h-5" /> {/* Spacer for alignment */}
         <div className="flex-1 flex gap-2">
           <Input
@@ -165,7 +165,7 @@ export default function BulletItem({
     <div className="relative">
       {/* Drop Indicator - shown when hovering over this item during drag */}
       {isOver && (
-        <div className="absolute -top-1 left-0 right-0 h-0.5 bg-primary shadow-[0_0_8px_rgba(var(--primary),0.6)] rounded-full z-10" />
+        <div className="absolute -top-2 left-0 right-0 h-1 bg-primary/30 rounded-full z-10" />
       )}
 
       <ContextMenu onOpenChange={setIsContextMenuOpen}>
@@ -178,11 +178,11 @@ export default function BulletItem({
         exit={{ opacity: 0, x: 20 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
         className={cn(
-          "group flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors relative",
+          "group flex items-center gap-3 p-4 rounded-lg transition-all relative bg-card border shadow-sm hover:shadow-md",
           item.completed && item.type === 'task' && "opacity-60",
-          isDragging && "opacity-50",
-          isOver && "bg-accent/30",
-          isContextMenuOpen && "ring-1 ring-primary bg-accent/30"
+          isDragging && "opacity-50 shadow-lg scale-105",
+          isOver && "ring-2 ring-primary/20",
+          isContextMenuOpen && "ring-2 ring-primary shadow-md"
         )}
       >
       {/* Drag Handle - collapses when hidden, slides content to reveal on hover */}

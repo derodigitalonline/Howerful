@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { Card } from '@/components/ui/card';
 import { BulletItem as BulletItemType, Bucket, BulletItemType as BulletType } from '@shared/schema';
 import BulletItem from './BulletItem';
 import {
@@ -86,26 +85,17 @@ export default function BucketView({
   const emptyState = getEmptyStateMessage();
 
   return (
-    <Card className="p-6">
+    <div className="space-y-3">
       {/* Items List with Drag and Drop */}
       <SortableContext
         items={items.map(item => item.id)}
         strategy={verticalListSortingStrategy}
       >
           {/* General Bullets Section */}
-          <div className="space-y-1">
+          <div className="space-y-3">
             {generalItems.length === 0 && scheduledItems.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <p className="text-lg font-medium">{emptyState.title}</p>
-                <p className="text-sm mt-2">{emptyState.subtitle}</p>
-                {bucket === 'today' && (
-                  <div className="text-xs mt-6 space-y-1 opacity-70">
-                    <p>💡 Type naturally - the system auto-detects:</p>
-                    <p>− Notes: Default for any entry</p>
-                    <p>• Tasks: "todo: call dentist" or "buy milk"</p>
-                    <p>○ Events: "meeting at 2pm" or "lunch tomorrow 1:30"</p>
-                  </div>
-                )}
+              <div className="text-center py-8 text-muted-foreground/60">
+                <p className="text-sm">{emptyState.subtitle}</p>
               </div>
             ) : (
               <>
@@ -131,11 +121,11 @@ export default function BucketView({
 
           {/* Scheduled Section (Today and Tomorrow only) */}
           {showScheduledSection && scheduledItems.length > 0 && (
-            <div className="mt-8 pt-6 border-t">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
+            <div className="mt-6">
+              <h3 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide px-1">
                 Scheduled {bucket === 'today' ? 'Today' : 'Tomorrow'}
               </h3>
-              <div className="space-y-1">
+              <div className="space-y-3">
                 {scheduledItems.map((item) => (
                   <BulletItem
                     key={item.id}
@@ -156,6 +146,6 @@ export default function BucketView({
             </div>
           )}
       </SortableContext>
-    </Card>
+    </div>
   );
 }
