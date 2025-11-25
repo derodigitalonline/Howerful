@@ -10,24 +10,22 @@ import { Plus, X, Trophy, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import FloatingXP from '@/components/FloatingXP';
 import ParticleBurst from '@/components/ParticleBurst';
-
-interface DailyRoutine {
-  id: string;
-  text: string;
-  completed: boolean;
-}
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  useSupabaseRoutines,
+  useSupabaseRoutineMetadata,
+  useBulkUpsertRoutines,
+  useUpdateRoutine,
+  useUpsertRoutineMetadata,
+  type DailyRoutine,
+  type RoutineMetadata,
+} from '@/hooks/useSupabaseFocus';
+import { isSupabaseConfigured } from '@/lib/supabase';
 
 interface XPAnimation {
   id: string;
   x: number;
   y: number;
-}
-
-interface RoutineData {
-  routines: DailyRoutine[];
-  lastClaimedDate: string | null;
-  lastResetDate: string | null;
-  xpAwardedToday: string[]; // Array of routine IDs that have awarded XP today
 }
 
 const STORAGE_KEY = 'howerful-routines';
@@ -36,11 +34,18 @@ const BOUNTY_XP = 1000;
 const ROUTINE_XP = 20;
 
 export default function Routines() {
+  const { isAuthenticated } = useAuth();
+  const { data: supabaseRoutines, isLoading: routinesLoading } = useSupabaseRoutines();
+  const { data: supabaseMetadata, isLoading: metadataLoading } = useSupabaseRoutineMetadata();
+  const bulkUpsertRoutines = useBulkUpsertRoutines();
+  const updateRoutine = useUpdateRoutine();
+  const upsertMetadata = useUpsertRoutineMetadata();
+
   const { profile, awardXP, trackRoutineCompletion } = useProfile();
   const [isSetup, setIsSetup] = useState(false);
   const [setupRoutines, setSetupRoutines] = useState<string[]>(['']);
-  const [data, setData] = useState<RoutineData>({
-    routines: [],
+  const [routines, setRoutines] = useState<DailyRoutine[]>([]);
+  const [metadata, setMetadata] = useState<RoutineMetadata>({
     lastClaimedDate: null,
     lastResetDate: null,
     xpAwardedToday: [],
@@ -48,50 +53,108 @@ export default function Routines() {
   const [isEditing, setIsEditing] = useState(false);
   const [xpAnimations, setXpAnimations] = useState<XPAnimation[]>([]);
   const [particleBursts, setParticleBursts] = useState<XPAnimation[]>([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
-  // Load routines from localStorage
+  // Load routines and metadata on mount: Supabase if logged in, otherwise localStorage
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed: RoutineData = JSON.parse(stored);
+    if (isAuthenticated && (routinesLoading || metadataLoading)) {
+      // Still loading from Supabase, wait
+      return;
+    }
 
-        // Check if we need to reset for a new day
-        const today = new Date().toDateString();
-        if (parsed.lastResetDate !== today) {
-          // Reset all completions for new day
-          parsed.routines = parsed.routines.map(r => ({ ...r, completed: false }));
-          parsed.lastResetDate = today;
-          parsed.lastClaimedDate = null;
-          parsed.xpAwardedToday = []; // Reset XP tracking
+    const today = new Date().toDateString();
+
+    if (isAuthenticated && supabaseRoutines !== undefined) {
+      // Logged in: Load from Supabase
+      let loadedRoutines = supabaseRoutines || [];
+      let loadedMetadata = supabaseMetadata || {
+        lastClaimedDate: null,
+        lastResetDate: null,
+        xpAwardedToday: [],
+      };
+
+      // Check if we need to reset for a new day
+      if (loadedMetadata.lastResetDate !== today) {
+        // Reset all completions for new day
+        loadedRoutines = loadedRoutines.map(r => ({ ...r, completed: false }));
+        loadedMetadata = {
+          ...loadedMetadata,
+          lastResetDate: today,
+          lastClaimedDate: null,
+          xpAwardedToday: [],
+        };
+
+        // Sync the reset to Supabase
+        if (loadedRoutines.length > 0 && isSupabaseConfigured()) {
+          bulkUpsertRoutines.mutate(loadedRoutines);
+          upsertMetadata.mutate(loadedMetadata);
         }
-
-        // Migrate old data that doesn't have xpAwardedToday
-        if (!parsed.xpAwardedToday) {
-          parsed.xpAwardedToday = [];
-        }
-
-        setData(parsed);
-        setIsSetup(parsed.routines.length > 0);
-      } catch (e) {
-        console.error('Failed to parse routines', e);
       }
-    }
-  }, []);
 
-  // Save routines to localStorage
-  useEffect(() => {
-    if (data.routines.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      setRoutines(loadedRoutines);
+      setMetadata(loadedMetadata);
+      setIsSetup(loadedRoutines.length > 0);
+      setDataLoaded(true);
+
+      // Save to localStorage as cache
+      if (loadedRoutines.length > 0) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          routines: loadedRoutines,
+          ...loadedMetadata,
+        }));
+      }
+    } else if (!isAuthenticated) {
+      // Not logged in: Load from localStorage only
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          const parsed: any = JSON.parse(stored);
+
+          let loadedRoutines = parsed.routines || [];
+          let loadedMetadata = {
+            lastClaimedDate: parsed.lastClaimedDate || null,
+            lastResetDate: parsed.lastResetDate || null,
+            xpAwardedToday: parsed.xpAwardedToday || [],
+          };
+
+          // Check if we need to reset for a new day
+          if (loadedMetadata.lastResetDate !== today) {
+            // Reset all completions for new day
+            loadedRoutines = loadedRoutines.map((r: DailyRoutine) => ({ ...r, completed: false }));
+            loadedMetadata = {
+              lastResetDate: today,
+              lastClaimedDate: null,
+              xpAwardedToday: [],
+            };
+          }
+
+          setRoutines(loadedRoutines);
+          setMetadata(loadedMetadata);
+          setIsSetup(loadedRoutines.length > 0);
+        } catch (e) {
+          console.error('Failed to parse routines', e);
+        }
+      }
+      setDataLoaded(true);
     }
-  }, [data]);
+  }, [isAuthenticated, supabaseRoutines, supabaseMetadata, routinesLoading, metadataLoading]);
+
+  // Save routines to localStorage as cache
+  useEffect(() => {
+    if (dataLoaded && routines.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        routines,
+        ...metadata,
+      }));
+    }
+  }, [routines, metadata, dataLoaded]);
 
   // Populate edit mode with existing routines
   useEffect(() => {
-    if (isEditing && data.routines.length > 0) {
-      setSetupRoutines(data.routines.map(r => r.text));
+    if (isEditing && routines.length > 0) {
+      setSetupRoutines(routines.map(r => r.text));
     }
-  }, [isEditing]);
+  }, [isEditing, routines]);
 
   const handleAddRoutineField = () => {
     if (setupRoutines.length < MAX_ROUTINES) {
@@ -119,7 +182,7 @@ export default function Routines() {
 
     // Create a map of old routines by text for matching
     const oldRoutinesByText = new Map(
-      data.routines.map(r => [r.text.toLowerCase(), r])
+      routines.map(r => [r.text.toLowerCase(), r])
     );
 
     const newRoutines: DailyRoutine[] = filtered.map(text => {
@@ -144,15 +207,24 @@ export default function Routines() {
     });
 
     const today = new Date().toDateString();
-    setData({
-      routines: newRoutines,
-      lastClaimedDate: data.lastClaimedDate, // Preserve bounty claim status
+    const updatedMetadata: RoutineMetadata = {
+      lastClaimedDate: metadata.lastClaimedDate, // Preserve bounty claim status
       lastResetDate: today,
-      xpAwardedToday: data.xpAwardedToday, // Preserve XP tracking
-    });
+      xpAwardedToday: metadata.xpAwardedToday, // Preserve XP tracking
+    };
 
+    // Update local state immediately
+    setRoutines(newRoutines);
+    setMetadata(updatedMetadata);
     setIsSetup(true);
     setIsEditing(false);
+
+    // Sync to Supabase if logged in
+    if (isAuthenticated && isSupabaseConfigured()) {
+      bulkUpsertRoutines.mutate(newRoutines);
+      upsertMetadata.mutate(updatedMetadata);
+    }
+
     toast.success(`${newRoutines.length} routines saved!`, {
       description: 'Complete them all to claim your daily bounty!',
     });
@@ -164,12 +236,14 @@ export default function Routines() {
   };
 
   const handleToggleRoutine = (id: string, event: React.MouseEvent) => {
-    const routine = data.routines.find(r => r.id === id);
+    const routine = routines.find(r => r.id === id);
     if (!routine) return;
+
+    const newCompleted = !routine.completed;
 
     // If completing the routine (not uncompleting), award XP and trigger animation
     // But only if XP hasn't been awarded for this routine today
-    if (!routine.completed && !data.xpAwardedToday.includes(id)) {
+    if (newCompleted && !metadata.xpAwardedToday.includes(id)) {
       awardXP('do-first'); // Awards 20 XP
 
       // Track routine completion for daily quests
@@ -194,22 +268,32 @@ export default function Routines() {
         setParticleBursts(prev => prev.filter(burst => burst.id !== particleId));
       }, 1000);
 
-      // Mark this routine as having awarded XP today
-      setData(prev => ({
-        ...prev,
-        xpAwardedToday: [...prev.xpAwardedToday, id],
-        routines: prev.routines.map(r =>
-          r.id === id ? { ...r, completed: !r.completed } : r
-        ),
-      }));
+      // Update local state with new completion and XP tracking
+      const updatedMetadata: RoutineMetadata = {
+        ...metadata,
+        xpAwardedToday: [...metadata.xpAwardedToday, id],
+      };
+
+      setRoutines(prev => prev.map(r =>
+        r.id === id ? { ...r, completed: newCompleted } : r
+      ));
+      setMetadata(updatedMetadata);
+
+      // Sync to Supabase if logged in
+      if (isAuthenticated && isSupabaseConfigured()) {
+        updateRoutine.mutate({ id, completed: newCompleted });
+        upsertMetadata.mutate(updatedMetadata);
+      }
     } else {
       // Just toggle completion without awarding XP
-      setData(prev => ({
-        ...prev,
-        routines: prev.routines.map(r =>
-          r.id === id ? { ...r, completed: !r.completed } : r
-        ),
-      }));
+      setRoutines(prev => prev.map(r =>
+        r.id === id ? { ...r, completed: newCompleted } : r
+      ));
+
+      // Sync to Supabase if logged in
+      if (isAuthenticated && isSupabaseConfigured()) {
+        updateRoutine.mutate({ id, completed: newCompleted });
+      }
     }
   };
 
@@ -221,10 +305,18 @@ export default function Routines() {
       awardXP('do-first');
     }
 
-    setData(prev => ({
-      ...prev,
+    const updatedMetadata: RoutineMetadata = {
+      ...metadata,
       lastClaimedDate: today,
-    }));
+    };
+
+    // Update local state
+    setMetadata(updatedMetadata);
+
+    // Sync to Supabase if logged in
+    if (isAuthenticated && isSupabaseConfigured()) {
+      upsertMetadata.mutate(updatedMetadata);
+    }
 
     // Confetti celebration!
     confetti({
@@ -242,24 +334,38 @@ export default function Routines() {
 
   const handleResetRoutines = () => {
     if (confirm('Are you sure you want to reset your routines? This will clear all your daily tasks.')) {
-      setData({
-        routines: [],
+      // Update local state
+      setRoutines([]);
+      setMetadata({
         lastClaimedDate: null,
         lastResetDate: null,
         xpAwardedToday: [],
       });
       setIsSetup(false);
       setSetupRoutines(['']);
+
+      // Clear localStorage
       localStorage.removeItem(STORAGE_KEY);
+
+      // Sync to Supabase if logged in (delete all routines)
+      if (isAuthenticated && isSupabaseConfigured()) {
+        bulkUpsertRoutines.mutate([]);
+        upsertMetadata.mutate({
+          lastClaimedDate: null,
+          lastResetDate: null,
+          xpAwardedToday: [],
+        });
+      }
+
       toast.success('Routines reset!');
     }
   };
 
-  const completedCount = data.routines.filter(r => r.completed).length;
-  const totalCount = data.routines.length;
+  const completedCount = routines.filter(r => r.completed).length;
+  const totalCount = routines.length;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
   const allCompleted = totalCount > 0 && completedCount === totalCount;
-  const canClaimBounty = allCompleted && data.lastClaimedDate !== new Date().toDateString();
+  const canClaimBounty = allCompleted && metadata.lastClaimedDate !== new Date().toDateString();
 
   return (
     <div className="h-full p-6 md:p-8 overflow-y-auto">
@@ -390,7 +496,7 @@ export default function Routines() {
                   </div>
 
                   {/* Routines List - Only show incomplete routines */}
-                  {data.routines.filter(r => !r.completed).length === 0 ? (
+                  {routines.filter(r => !r.completed).length === 0 ? (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -402,7 +508,7 @@ export default function Routines() {
                   ) : (
                     <div className="space-y-2">
                       <AnimatePresence mode="popLayout">
-                        {data.routines.filter(r => !r.completed).map((routine, index) => (
+                        {routines.filter(r => !r.completed).map((routine, index) => (
                           <motion.div
                             key={routine.id}
                             initial={{ opacity: 0, x: -20 }}

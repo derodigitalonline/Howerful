@@ -5,6 +5,9 @@ import {
   generateDailyQuests,
   shouldResetDailyQuests,
 } from "../constants/dailyQuests";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSupabaseProfile, useUpdateProfile } from "./useSupabaseProfile";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 const STORAGE_KEY = "eisenhower-profile";
 
@@ -36,6 +39,10 @@ interface ProfileContextType {
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
+  const { user, isAuthenticated } = useAuth();
+  const { data: supabaseProfile, isLoading: supabaseLoading } = useSupabaseProfile();
+  const updateProfile = useUpdateProfile();
+
   const [profile, setProfile] = useState<UserProfile>({
     totalXP: 0,
     level: 1,
@@ -45,31 +52,103 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     selectedSprite: undefined,
     nickname: "Howie",
   });
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load profile from localStorage on mount
+  // Load profile on mount: Supabase if logged in, otherwise localStorage
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setProfile(parsed);
-      } catch (e) {
-        console.error("Failed to parse stored profile", e);
-      }
+    if (isAuthenticated && supabaseLoading) {
+      // Still loading from Supabase, wait
+      return;
     }
-  }, []);
+
+    if (isAuthenticated && supabaseProfile) {
+      // Logged in: Load from Supabase, merge with localStorage for fields not in DB yet
+      const stored = localStorage.getItem(STORAGE_KEY);
+      let localData: Partial<UserProfile> = {};
+
+      if (stored) {
+        try {
+          localData = JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse stored profile", e);
+        }
+      }
+
+      setProfile({
+        // Basic fields from Supabase
+        nickname: supabaseProfile.nickname,
+        totalXP: supabaseProfile.totalXP,
+        level: supabaseProfile.level,
+        coins: supabaseProfile.coins,
+        tasksCompleted: supabaseProfile.tasksCompleted,
+        doFirstTasksCompleted: supabaseProfile.doFirstTasksCompleted,
+        hasCompletedOnboarding: supabaseProfile.hasCompletedOnboarding,
+        selectedSprite: supabaseProfile.selectedSprite || undefined,
+        // Complex fields from localStorage (Phase 3+)
+        dailyQuests: localData.dailyQuests || [],
+        lastDailyQuestReset: localData.lastDailyQuestReset,
+        inbox: localData.inbox || [],
+        claimedQuests: localData.claimedQuests || [],
+        unlockedCosmetics: localData.unlockedCosmetics || [],
+        equippedCosmetics: localData.equippedCosmetics,
+      });
+      setIsLoading(false);
+    } else {
+      // Not logged in: Load from localStorage only
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setProfile(parsed);
+        } catch (e) {
+          console.error("Failed to parse stored profile", e);
+        }
+      }
+      setIsLoading(false);
+    }
+  }, [isAuthenticated, supabaseProfile, supabaseLoading]);
 
   // Check and reset daily quests when profile loads
   useEffect(() => {
-    if (profile.hasCompletedOnboarding) {
+    if (profile.hasCompletedOnboarding && !isLoading) {
       checkAndResetDailyQuests();
     }
-  }, [profile.hasCompletedOnboarding]);
+  }, [profile.hasCompletedOnboarding, isLoading]);
 
   // Save profile to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-  }, [profile]);
+    if (!isLoading) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    }
+  }, [profile, isLoading]);
+
+  // Sync basic profile fields to Supabase when they change
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && isSupabaseConfigured() && user) {
+      updateProfile.mutate({
+        nickname: profile.nickname,
+        totalXP: profile.totalXP,
+        level: profile.level,
+        coins: profile.coins,
+        tasksCompleted: profile.tasksCompleted,
+        doFirstTasksCompleted: profile.doFirstTasksCompleted,
+        hasCompletedOnboarding: profile.hasCompletedOnboarding,
+        selectedSprite: profile.selectedSprite || null,
+      });
+    }
+  }, [
+    profile.nickname,
+    profile.totalXP,
+    profile.level,
+    profile.coins,
+    profile.tasksCompleted,
+    profile.doFirstTasksCompleted,
+    profile.hasCompletedOnboarding,
+    profile.selectedSprite,
+    isLoading,
+    isAuthenticated,
+    user,
+  ]);
 
   /**
    * Award XP and Coins for completing a task

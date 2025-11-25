@@ -1,6 +1,14 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { FocusPhase, FocusSession, FocusSettings } from "@shared/schema";
 import { useBulletJournal } from "./useBulletJournal";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  useSupabaseFocusSettings,
+  useUpsertFocusSettings,
+  useSupabaseFocusSessions,
+  useAddFocusSession,
+} from "./useSupabaseFocus";
+import { isSupabaseConfigured } from "@/lib/supabase";
 
 const STORAGE_KEY = "howerful-focus-state";
 const SETTINGS_KEY = "howerful-focus-settings";
@@ -78,9 +86,17 @@ const INITIAL_STATE: FocusState = {
 };
 
 export function FocusProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  const { data: supabaseSettings, isLoading: settingsLoading } = useSupabaseFocusSettings();
+  const { data: supabaseSessions, isLoading: sessionsLoading } = useSupabaseFocusSessions();
+  const upsertSettings = useUpsertFocusSettings();
+  const addSession = useAddFocusSession();
+
   const [state, setState] = useState<FocusState>(INITIAL_STATE);
   const [settings, setSettings] = useState<FocusSettings>(DEFAULT_SETTINGS);
   const [sessions, setSessions] = useState<FocusSession[]>([]);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [sessionsLoaded, setSessionsLoaded] = useState(false);
 
   const { updateItem, items: allItems } = useBulletJournal();
 
@@ -89,30 +105,69 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     return allItems.find((item) => item.id === id);
   }, [allItems]);
 
-  // Load state, settings, and sessions from localStorage on mount
+  // Load settings: Supabase if logged in, otherwise localStorage
+  useEffect(() => {
+    if (isAuthenticated && settingsLoading) {
+      return; // Still loading from Supabase
+    }
+
+    if (isAuthenticated && supabaseSettings) {
+      // Logged in: Use Supabase settings
+      setSettings(supabaseSettings);
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(supabaseSettings));
+      setSettingsLoaded(true);
+    } else if (!isAuthenticated) {
+      // Not logged in: Load from localStorage
+      const storedSettings = localStorage.getItem(SETTINGS_KEY);
+      if (storedSettings) {
+        try {
+          const parsed = JSON.parse(storedSettings);
+          setSettings({ ...DEFAULT_SETTINGS, ...parsed });
+        } catch (e) {
+          console.error("Failed to parse focus settings", e);
+        }
+      }
+      setSettingsLoaded(true);
+    } else if (isAuthenticated && !settingsLoading && !supabaseSettings) {
+      // Logged in but no settings in Supabase yet, use defaults
+      setSettings(DEFAULT_SETTINGS);
+      setSettingsLoaded(true);
+    }
+  }, [isAuthenticated, supabaseSettings, settingsLoading]);
+
+  // Load sessions: Supabase if logged in, otherwise localStorage
+  useEffect(() => {
+    if (isAuthenticated && sessionsLoading) {
+      return; // Still loading from Supabase
+    }
+
+    if (isAuthenticated && supabaseSessions) {
+      // Logged in: Use Supabase sessions
+      setSessions(supabaseSessions);
+      localStorage.setItem(SESSIONS_KEY, JSON.stringify(supabaseSessions));
+      setSessionsLoaded(true);
+    } else if (!isAuthenticated) {
+      // Not logged in: Load from localStorage
+      const storedSessions = localStorage.getItem(SESSIONS_KEY);
+      if (storedSessions) {
+        try {
+          const parsed = JSON.parse(storedSessions);
+          setSessions(parsed);
+        } catch (e) {
+          console.error("Failed to parse focus sessions", e);
+        }
+      }
+      setSessionsLoaded(true);
+    } else if (isAuthenticated && !sessionsLoading && !supabaseSessions) {
+      // Logged in but no sessions in Supabase yet
+      setSessions([]);
+      setSessionsLoaded(true);
+    }
+  }, [isAuthenticated, supabaseSessions, sessionsLoading]);
+
+  // Load timer state from localStorage only (ephemeral)
   useEffect(() => {
     const storedState = localStorage.getItem(STORAGE_KEY);
-    const storedSettings = localStorage.getItem(SETTINGS_KEY);
-    const storedSessions = localStorage.getItem(SESSIONS_KEY);
-
-    if (storedSettings) {
-      try {
-        const parsed = JSON.parse(storedSettings);
-        setSettings({ ...DEFAULT_SETTINGS, ...parsed });
-      } catch (e) {
-        console.error("Failed to parse focus settings", e);
-      }
-    }
-
-    if (storedSessions) {
-      try {
-        const parsed = JSON.parse(storedSessions);
-        setSessions(parsed);
-      } catch (e) {
-        console.error("Failed to parse focus sessions", e);
-      }
-    }
-
     if (storedState) {
       try {
         const parsed = JSON.parse(storedState);
@@ -148,15 +203,19 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  // Save sessions to localStorage whenever they change
+  // Save sessions to localStorage whenever they change (cache)
   useEffect(() => {
-    localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
-  }, [sessions]);
+    if (sessionsLoaded) {
+      localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+    }
+  }, [sessions, sessionsLoaded]);
 
-  // Save settings to localStorage whenever they change
+  // Save settings to localStorage whenever they change (cache)
   useEffect(() => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  }, [settings]);
+    if (settingsLoaded) {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    }
+  }, [settings, settingsLoaded]);
 
   // Timer countdown effect
   useEffect(() => {
@@ -214,6 +273,11 @@ export function FocusProvider({ children }: { children: ReactNode }) {
       };
 
       setSessions((prev) => [...prev, completedSession]);
+
+      // Sync to Supabase if logged in
+      if (isAuthenticated && isSupabaseConfigured()) {
+        addSession.mutate(completedSession);
+      }
     }
 
     // Auto-complete task if it's a work session with an active item
@@ -394,6 +458,11 @@ export function FocusProvider({ children }: { children: ReactNode }) {
 
     setSessions((prev) => [...prev, interruptedSession]);
 
+    // Sync to Supabase if logged in
+    if (isAuthenticated && isSupabaseConfigured()) {
+      addSession.mutate(interruptedSession);
+    }
+
     // Still mark as completed if it's a work session
     if (state.phase === 'work' && state.activeItemId) {
       const item = getItemById(state.activeItemId);
@@ -421,8 +490,14 @@ export function FocusProvider({ children }: { children: ReactNode }) {
 
   // Update settings
   const updateSettings = useCallback((newSettings: Partial<FocusSettings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
-  }, []);
+    const updatedSettings = { ...settings, ...newSettings };
+    setSettings(updatedSettings);
+
+    // Sync to Supabase if logged in
+    if (isAuthenticated && isSupabaseConfigured()) {
+      upsertSettings.mutate(updatedSettings);
+    }
+  }, [settings, isAuthenticated, upsertSettings]);
 
   // Get today's sessions
   const getTodaysSessions = useCallback(() => {

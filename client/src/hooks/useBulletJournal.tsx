@@ -1,68 +1,121 @@
 import { useState, useEffect, useMemo } from "react";
 import { BulletItem, BulletItemType, Bucket } from "@shared/schema";
 import { calculateStreak, StreakData } from "@/utils/streakCalculator";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  useSupabaseBulletItems,
+  useAddBulletItem as useAddBulletItemMutation,
+  useUpdateBulletItem,
+  useDeleteBulletItem as useDeleteBulletItemMutation,
+} from "./useSupabaseTasks";
+import { isSupabaseConfigured } from "@/lib/supabase";
 
 const STORAGE_KEY = "howerful-bullet-journal";
 
 export function useBulletJournal() {
+  const { isAuthenticated } = useAuth();
+  const { data: supabaseItems, isLoading: supabaseLoading } = useSupabaseBulletItems();
+  const addItemMutation = useAddBulletItemMutation();
+  const updateItemMutation = useUpdateBulletItem();
+  const deleteItemMutation = useDeleteBulletItemMutation();
+
   const [items, setItems] = useState<BulletItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load items from localStorage on mount
+  // Load items on mount: Supabase if logged in, otherwise localStorage
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setItems(JSON.parse(stored));
-      } catch (e) {
-        console.error("Failed to parse stored bullet journal items", e);
-      }
+    if (isAuthenticated && supabaseLoading) {
+      // Still loading from Supabase, wait
+      return;
     }
-  }, []);
 
-  // Save items to localStorage whenever they change
+    if (isAuthenticated && supabaseItems) {
+      // Logged in: Load from Supabase
+      setItems(supabaseItems);
+      // Also save to localStorage as cache
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(supabaseItems));
+      setIsLoading(false);
+    } else {
+      // Not logged in: Load from localStorage only
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          setItems(JSON.parse(stored));
+        } catch (e) {
+          console.error("Failed to parse stored bullet journal items", e);
+        }
+      }
+      setIsLoading(false);
+    }
+  }, [isAuthenticated, supabaseItems, supabaseLoading]);
+
+  // Save to localStorage whenever items change (cache)
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }, [items]);
+    if (!isLoading) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+  }, [items, isLoading]);
 
   const addItem = (text: string, type: BulletItemType, bucket: Bucket = 'today', time?: string, date?: string) => {
-    setItems((prev) => {
-      // Find the highest order for this bucket, default to 0
-      const bucketItems = prev.filter(item => item.bucket === bucket);
-      const maxOrder = bucketItems.length > 0
-        ? Math.max(...bucketItems.map(item => item.order))
-        : -1;
+    // Find the highest order for this bucket
+    const bucketItems = items.filter(item => item.bucket === bucket);
+    const maxOrder = bucketItems.length > 0
+      ? Math.max(...bucketItems.map(item => item.order))
+      : -1;
+    const order = maxOrder + 1;
 
-      const newItem: BulletItem = {
-        id: crypto.randomUUID(),
-        type,
-        text,
-        bucket,
-        date, // Optional - only for scheduled events
-        time,
-        completed: false,
-        createdAt: Date.now(),
-        order: maxOrder + 1, // New items get next order (will appear at top after sort)
-      };
-      return [...prev, newItem];
-    });
+    const newItem: BulletItem = {
+      id: crypto.randomUUID(),
+      type,
+      text,
+      bucket,
+      date, // Optional - only for scheduled events
+      time,
+      completed: false,
+      createdAt: Date.now(),
+      order, // New items get next order (will appear at top after sort)
+    };
+
+    // Update local state immediately
+    setItems((prev) => [...prev, newItem]);
+
+    // Sync to Supabase if logged in
+    if (isAuthenticated && isSupabaseConfigured()) {
+      addItemMutation.mutate({ text, type, bucket, time, date, order });
+    }
   };
 
   const deleteItem = (id: string) => {
+    // Update local state immediately
     setItems((prev) => prev.filter((item) => item.id !== id));
+
+    // Sync to Supabase if logged in
+    if (isAuthenticated && isSupabaseConfigured()) {
+      deleteItemMutation.mutate(id);
+    }
   };
 
   const updateItem = (id: string, updates: Partial<BulletItem>) => {
+    // Update local state immediately
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
     );
+
+    // Sync to Supabase if logged in
+    if (isAuthenticated && isSupabaseConfigured()) {
+      updateItemMutation.mutate({ id, updates });
+    }
   };
 
   const toggleItemCompletion = (id: string, onComplete?: () => void, onUncomplete?: () => void) => {
+    let newCompleted: boolean | undefined;
+
+    // Update local state immediately
     setItems((prev) =>
       prev.map((item) => {
         if (item.id === id) {
           const wasCompleted = item.completed;
-          const newCompleted = !wasCompleted;
+          newCompleted = !wasCompleted;
 
           // Only trigger callbacks for task-type items
           if (item.type === 'task') {
@@ -78,9 +131,17 @@ export function useBulletJournal() {
         return item;
       })
     );
+
+    // Sync to Supabase if logged in
+    if (newCompleted !== undefined && isAuthenticated && isSupabaseConfigured()) {
+      updateItemMutation.mutate({ id, updates: { completed: newCompleted } });
+    }
   };
 
   const cycleItemType = (id: string) => {
+    let updates: Partial<BulletItem> = {};
+
+    // Update local state immediately
     setItems((prev) =>
       prev.map((item) => {
         if (item.id === id) {
@@ -89,34 +150,46 @@ export function useBulletJournal() {
           const nextIndex = (currentIndex + 1) % types.length;
           const newType = types[nextIndex];
 
-          // Reset completed state when changing away from task
-          return {
-            ...item,
+          updates = {
             type: newType,
             completed: newType === "task" ? item.completed : false,
           };
+
+          return { ...item, ...updates };
         }
         return item;
       })
     );
+
+    // Sync to Supabase if logged in
+    if (updates.type && isAuthenticated && isSupabaseConfigured()) {
+      updateItemMutation.mutate({ id, updates });
+    }
   };
 
   const changeItemType = (id: string, newType: BulletItemType) => {
+    let updates: Partial<BulletItem> = {};
+
+    // Update local state immediately
     setItems((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          return {
-            ...item,
+          updates = {
             type: newType,
-            // Reset completed state when changing away from task
             completed: newType === "task" ? item.completed : false,
-            // Clear time field when changing away from event
             time: newType === "event" ? item.time : undefined,
           };
+
+          return { ...item, ...updates };
         }
         return item;
       })
     );
+
+    // Sync to Supabase if logged in
+    if (isAuthenticated && isSupabaseConfigured()) {
+      updateItemMutation.mutate({ id, updates });
+    }
   };
 
   const getItemsByDate = (date: string) => {
@@ -130,10 +203,13 @@ export function useBulletJournal() {
   };
 
   const moveItemToBucket = (id: string, bucket: Bucket) => {
+    let updates: Partial<BulletItem> = {};
+
+    // Update local state immediately
     setItems((prev) =>
       prev.map((item) => {
         if (item.id === id) {
-          const updates: Partial<BulletItem> = { bucket };
+          updates = { bucket };
 
           // Track when items are moved to Someday for backlog metadata
           if (bucket === 'someday' && item.bucket !== 'someday') {
@@ -150,9 +226,17 @@ export function useBulletJournal() {
         return item;
       })
     );
+
+    // Sync to Supabase if logged in
+    if (isAuthenticated && isSupabaseConfigured()) {
+      updateItemMutation.mutate({ id, updates });
+    }
   };
 
   const reorderItems = (bucket: Bucket, startIndex: number, endIndex: number) => {
+    let reorderedBucketItems: BulletItem[] = [];
+
+    // Update local state immediately
     setItems((prev) => {
       const bucketItems = prev.filter(item => item.bucket === bucket)
         .sort((a, b) => b.order - a.order);
@@ -162,13 +246,20 @@ export function useBulletJournal() {
       bucketItems.splice(endIndex, 0, removed);
 
       // Reassign order values
-      const reorderedBucketItems = bucketItems.map((item, index) => ({
+      reorderedBucketItems = bucketItems.map((item, index) => ({
         ...item,
         order: bucketItems.length - 1 - index, // Reverse index for descending order
       }));
 
       return [...otherItems, ...reorderedBucketItems];
     });
+
+    // Sync to Supabase if logged in (batch update all reordered items)
+    if (isAuthenticated && isSupabaseConfigured()) {
+      reorderedBucketItems.forEach(item => {
+        updateItemMutation.mutate({ id: item.id, updates: { order: item.order } });
+      });
+    }
   };
 
   // Calculate streak data

@@ -9,6 +9,7 @@ import LayeredAvatar from '@/components/LayeredAvatar';
 import XPBar from '@/components/XPBar';
 import CoinDisplay from '@/components/CoinDisplay';
 import { getXPForLevel } from '@/utils/xpCalculator';
+import { MigrateProfile } from '@/components/MigrateProfile';
 
 export default function Profile() {
   const { profile, resetProfile, awardXP, addXP } = useProfile();
@@ -87,6 +88,9 @@ export default function Profile() {
                 Customize your avatar and personal space
               </p>
             </div>
+
+            {/* Migration Tool */}
+            <MigrateProfile />
 
             {/* Avatar & Customization Section */}
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(400px,512px)_1fr] gap-6 mb-8 max-w-full">
