@@ -66,6 +66,10 @@ export const COIN_REWARDS: Record<Quadrant, number> = {
   "eliminate": 2,
 };
 
+// Bullet Journal task rewards (for Dojo tasks)
+export const BULLET_TASK_XP_REWARD = 10;
+export const BULLET_TASK_COIN_REWARD = 5;
+
 // Daily Quest System
 export const dailyQuestSchema = z.object({
   id: z.string(),                    // Quest ID (e.g., 'warm-up', 'urgent-master')

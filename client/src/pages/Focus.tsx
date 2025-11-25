@@ -2,13 +2,14 @@ import { useEffect } from "react";
 import { useFocus } from "@/hooks/useFocus";
 import FocusTimer from "@/components/FocusTimer";
 import FocusControls from "@/components/FocusControls";
+import FocusHistory from "@/components/FocusHistory";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Timer, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Focus() {
-  const { activeItemText, isRunning, startTimer, settings } = useFocus();
+  const { activeItemText, isRunning, startTimer, settings, sessions } = useFocus();
 
   // Preset durations in seconds
   const presets = [
@@ -117,6 +118,9 @@ export default function Focus() {
               ))}
             </div>
           </div>
+
+          {/* Session History */}
+          <FocusHistory sessions={sessions} />
         </div>
       </div>
     </div>

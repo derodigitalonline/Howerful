@@ -30,7 +30,8 @@ export default function TaskInput({
 
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === 'Enter') {
+      // Focus input when "/" is pressed (and not already in an input/textarea)
+      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
         e.preventDefault();
         inputRef.current?.focus();
       }
@@ -76,27 +77,24 @@ export default function TaskInput({
         <Input
           ref={inputRef}
           type="text"
-          placeholder="Type a task and press Enter..."
+          placeholder="What's on your mind? (Press / to focus, Enter to capture)"
           value={taskText}
           onChange={(e) => setTaskText(e.target.value)}
           onKeyDown={handleKeyDown}
           className={`h-12 text-base pr-32 ${isSelectingQuadrant ? quadrantInfo[selectedQuadrant].color : ''}`}
           data-testid="input-task"
+          autoFocus
         />
         {!taskText && !isSelectingQuadrant && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
             <kbd className="px-2 py-1 text-xs font-mono bg-muted text-muted-foreground rounded border">
-              Ctrl
-            </kbd>
-            <span className="text-muted-foreground/50">+</span>
-            <kbd className="px-2 py-1 text-xs font-mono bg-muted text-muted-foreground rounded border">
-              Enter
+              /
             </kbd>
           </div>
         )}
       </div>
       
-      {isSelectingQuadrant ? (
+      {isSelectingQuadrant && (
         <div className="text-center space-y-2">
           <p className="text-sm text-muted-foreground">
             Use arrow keys to select quadrant: <span className="font-medium text-foreground">{quadrantInfo[selectedQuadrant].name}</span>
@@ -113,10 +111,6 @@ export default function TaskInput({
             <span>Esc to cancel</span>
           </div>
         </div>
-      ) : (
-        <p className="text-center text-xs text-muted-foreground/60">
-          Press Enter to start selecting a quadrant
-        </p>
       )}
     </div>
   );

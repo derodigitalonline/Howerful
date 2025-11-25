@@ -1,6 +1,6 @@
 # Howerful Development Plan
 
-**Last Updated:** 2025-11-12
+**Last Updated:** 2025-11-24
 
 ---
 
@@ -60,6 +60,59 @@
 ---
 
 ## Recently Completed (Git History)
+
+- ✅ **Focus Session History & Bullet Journal Refactoring** (2025-11-24) - Session tracking, unified terminology, and XP integration
+  - **Focus Session History**: Added persistent localStorage tracking for all completed focus sessions
+    - Created `FocusHistory.tsx` component displaying last 10 sessions with completion status, duration, and relative timestamps
+    - Added session persistence to `useFocus.tsx` with localStorage key "howerful-focus-sessions"
+    - Integrated history display into Focus page below Quick Start section
+    - Shows phase type with color coding (work=primary, short break=blue, long break=purple)
+  - **Bullet Journal Refactoring**: Renamed all DailySpread terminology to BulletJournal/BulletItem across entire codebase
+    - Renamed `DailySpreadItem.tsx` → `BulletItem.tsx`
+    - Renamed `useDailySpread.tsx` → `useBulletJournal.tsx`
+    - Updated schema.ts types: `DailySpreadItem` → `BulletItem`, `DailySpreadItemType` → `BulletItemType`
+    - Changed localStorage key: "howerful-daily-spread" → "howerful-bullet-journal"
+    - Added legacy type aliases for backward compatibility
+    - Updated all imports across BucketView, DailySpread, Dojo, and useFocus
+  - **XP System Integration for Dojo**: Added gamification rewards for bullet journal task completion
+    - Added `BULLET_TASK_XP_REWARD = 10` and `BULLET_TASK_COIN_REWARD = 5` to schema.ts
+    - Modified `toggleItemCompletion` in useBulletJournal to accept onComplete/onUncomplete callbacks
+    - Integrated XP rewards in Dojo.tsx with level-up celebration toasts
+    - Now both Matrix and Dojo tasks award XP, creating unified gamification system
+  - **Task Input Unification**: Standardized input behavior across Matrix and Dojo
+    - Changed Dojo input from `w-full text-base font-mono` to `h-12 text-base` (matches Matrix)
+    - Updated Matrix TaskInput keyboard shortcut from Ctrl+Enter to "/" (matches Dojo)
+    - Added autofocus to Matrix TaskInput
+    - Removed tip text from both inputs, moved to Matrix page top
+    - Unified visual hints (single "/" kbd badge instead of two-key combo)
+  - **File Structure Cleanup**: Resolved naming confusion between page and component files
+    - Renamed `client/src/pages/Home.tsx` → `client/src/pages/Matrix.tsx`
+    - Renamed `client/src/components/Matrix.tsx` → `client/src/components/MatrixGrid.tsx`
+    - Updated imports in App.tsx routing
+    - Matrix page at /matrix now properly named throughout codebase
+  - **Matrix Page UX Improvements**:
+    - Moved TaskInput to top of page with tip text
+    - Removed TaskInput from bottom of page
+    - Hidden "Clean Completed Tasks" section for future repurposing
+    - Changed tip instructions to mention "/" shortcut instead of Ctrl+Enter
+  - **Files created**: `client/src/components/FocusHistory.tsx`
+  - **Files renamed**:
+    - `client/src/components/DailySpreadItem.tsx` → `client/src/components/BulletItem.tsx`
+    - `client/src/hooks/useDailySpread.tsx` → `client/src/hooks/useBulletJournal.tsx`
+    - `client/src/pages/Home.tsx` → `client/src/pages/Matrix.tsx`
+    - `client/src/components/Matrix.tsx` → `client/src/components/MatrixGrid.tsx`
+  - **Files modified**:
+    - `shared/schema.ts` (BulletItem types, XP rewards)
+    - `client/src/hooks/useFocus.tsx` (session persistence)
+    - `client/src/hooks/useBulletJournal.tsx` (completion callbacks)
+    - `client/src/pages/Focus.tsx` (history display)
+    - `client/src/pages/Dojo.tsx` (XP integration)
+    - `client/src/pages/Matrix.tsx` (renamed from Home.tsx)
+    - `client/src/components/MatrixGrid.tsx` (renamed from Matrix.tsx, TaskInput moved)
+    - `client/src/components/TaskInput.tsx` (keyboard shortcut change)
+    - `client/src/components/BucketView.tsx` (import updates)
+    - `client/src/components/DailySpread.tsx` (import updates)
+    - `client/src/App.tsx` (routing update)
 
 - ✅ **Pomodoro Focus Mode System** (2025-11-12) - Complete Pomodoro-style timer system with dual entry points
   - **Two Entry Points**:

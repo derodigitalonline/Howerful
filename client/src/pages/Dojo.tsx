@@ -5,10 +5,12 @@ import FocusedItemBanner from '@/components/FocusedItemBanner';
 import SwitchFocusDialog from '@/components/SwitchFocusDialog';
 import { useBulletJournal } from '@/hooks/useBulletJournal';
 import { useFocus } from '@/hooks/useFocus';
+import { useProfile } from '@/hooks/useProfile';
 import { parseBulletEntry } from '@/utils/bulletDetection';
 import { Input } from '@/components/ui/input';
 import { useMemo, useState, useRef, useEffect } from 'react';
-import { Bucket } from '@shared/schema';
+import { Bucket, BULLET_TASK_XP_REWARD, BULLET_TASK_COIN_REWARD } from '@shared/schema';
+import { toast } from 'sonner';
 import {
   DndContext,
   closestCenter,
@@ -24,6 +26,7 @@ import {
 export default function Dojo() {
   const { getItemsByBucket, addItem, deleteItem, updateItem, toggleItemCompletion, cycleItemType, changeItemType, reorderItems, moveItemToBucket, items: allItems } = useBulletJournal();
   const { startTimer, activeItemId, activeItemText } = useFocus();
+  const { awardXP, deductXP } = useProfile();
 
   const [activeBucket, setActiveBucket] = useState<Bucket>('today');
   const [newItemText, setNewItemText] = useState('');
@@ -34,6 +37,39 @@ export default function Dojo() {
   // Switch focus dialog state
   const [showSwitchDialog, setShowSwitchDialog] = useState(false);
   const [pendingFocus, setPendingFocus] = useState<{ itemId?: string; itemText?: string; duration?: number } | null>(null);
+
+  // Handle bullet item completion with XP rewards
+  const handleToggleItemCompletion = (id: string) => {
+    toggleItemCompletion(
+      id,
+      () => {
+        // Award XP and Coins when completing
+        const xpGained = BULLET_TASK_XP_REWARD;
+        const coinsGained = BULLET_TASK_COIN_REWARD;
+        const result = awardXP('schedule'); // Use 'schedule' quadrant as base for bullet tasks
+
+        if (result.leveledUp) {
+          toast.success(`🎉 Level Up! You're now level ${result.newLevel}!`, {
+            description: `+${xpGained} XP & +${coinsGained} coins earned`,
+            duration: 5000,
+          });
+        } else {
+          toast.success(`+${xpGained} XP & +${coinsGained} coins`, {
+            description: `Bullet task completed`,
+            duration: 2000,
+          });
+        }
+      },
+      () => {
+        // Deduct XP when uncompleting
+        deductXP('schedule'); // Use 'schedule' quadrant as base for bullet tasks
+        toast.info(`-${BULLET_TASK_XP_REWARD} XP`, {
+          description: 'Task uncompleted',
+          duration: 2000,
+        });
+      }
+    );
+  };
 
   // Get items for current bucket
   const items = getItemsByBucket(activeBucket);
@@ -171,12 +207,9 @@ export default function Dojo() {
               onChange={(e) => setNewItemText(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="What's on your mind? (Press / to focus, Enter to capture)"
-              className="w-full text-base font-mono"
+              className="h-12 text-base"
               autoFocus
             />
-            <p className="text-xs text-muted-foreground mt-2">
-              💡 Tip: Start with "tomorrow:" or "someday:" to route to different buckets
-            </p>
           </div>
 
           {/* Bucket Tabs */}
@@ -233,7 +266,7 @@ export default function Dojo() {
             items={items}
             deleteItem={deleteItem}
             updateItem={updateItem}
-            toggleItemCompletion={toggleItemCompletion}
+            toggleItemCompletion={handleToggleItemCompletion}
             cycleItemType={cycleItemType}
             changeItemType={changeItemType}
             reorderItems={reorderItems}

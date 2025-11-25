@@ -4,6 +4,7 @@ import { useBulletJournal } from "./useBulletJournal";
 
 const STORAGE_KEY = "howerful-focus-state";
 const SETTINGS_KEY = "howerful-focus-settings";
+const SESSIONS_KEY = "howerful-focus-sessions";
 
 interface FocusState {
   activeItemId: string | null;
@@ -88,10 +89,11 @@ export function FocusProvider({ children }: { children: ReactNode }) {
     return allItems.find((item) => item.id === id);
   }, [allItems]);
 
-  // Load state and settings from localStorage on mount
+  // Load state, settings, and sessions from localStorage on mount
   useEffect(() => {
     const storedState = localStorage.getItem(STORAGE_KEY);
     const storedSettings = localStorage.getItem(SETTINGS_KEY);
+    const storedSessions = localStorage.getItem(SESSIONS_KEY);
 
     if (storedSettings) {
       try {
@@ -99,6 +101,15 @@ export function FocusProvider({ children }: { children: ReactNode }) {
         setSettings({ ...DEFAULT_SETTINGS, ...parsed });
       } catch (e) {
         console.error("Failed to parse focus settings", e);
+      }
+    }
+
+    if (storedSessions) {
+      try {
+        const parsed = JSON.parse(storedSessions);
+        setSessions(parsed);
+      } catch (e) {
+        console.error("Failed to parse focus sessions", e);
       }
     }
 
@@ -136,6 +147,11 @@ export function FocusProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
+
+  // Save sessions to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+  }, [sessions]);
 
   // Save settings to localStorage whenever they change
   useEffect(() => {

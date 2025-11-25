@@ -57,11 +57,26 @@ export function useBulletJournal() {
     );
   };
 
-  const toggleItemCompletion = (id: string) => {
+  const toggleItemCompletion = (id: string, onComplete?: () => void, onUncomplete?: () => void) => {
     setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, completed: !item.completed } : item
-      )
+      prev.map((item) => {
+        if (item.id === id) {
+          const wasCompleted = item.completed;
+          const newCompleted = !wasCompleted;
+
+          // Only trigger callbacks for task-type items
+          if (item.type === 'task') {
+            if (newCompleted && onComplete) {
+              onComplete();
+            } else if (!newCompleted && onUncomplete) {
+              onUncomplete();
+            }
+          }
+
+          return { ...item, completed: newCompleted };
+        }
+        return item;
+      })
     );
   };
 

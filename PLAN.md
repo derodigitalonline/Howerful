@@ -11,16 +11,20 @@
 ## Current Sprint: UI/UX Refinement & Focus System
 
 ### Recently Completed ✅
-1. **Collapsible Sidebar Navigation** - YouTube-style hamburger menu in TopBar, sidebar collapses to icon-only (80px) with tooltips
-2. **Focus Page Optimization** - Compact vertical layout, removed custom duration and keyboard shortcuts sections, unified timer card
-3. **Button Styling Consistency** - Dynamic shadow colors matching button variants, chunky 3D effects for outline/secondary buttons
-4. **Dojo Tab Redesign** - Clean tabs with inactive=transparent, active=white background + colored text
-5. **Matrix Page Cleanup** - Removed Brain Dump section, expanded quadrants to full width
+1. **Focus Session History Tracking** - Added persistent session history with localStorage and comprehensive UI component (FocusHistory.tsx)
+2. **Bullet Journal Refactoring** - Renamed all DailySpread terminology to BulletJournal/BulletItem across codebase, added legacy type aliases for backward compatibility
+3. **XP System Integration for Dojo** - Added XP/coin rewards for bullet journal task completion, unified gamification across Matrix and Dojo
+4. **Task Input Unification** - Unified Dojo and Matrix inputs with identical h-12 styling, "/" keyboard shortcut, autofocus behavior
+5. **File Structure Cleanup** - Renamed Home.tsx → Matrix.tsx page, Matrix.tsx → MatrixGrid.tsx component for clarity
+6. **Collapsible Sidebar Navigation** - YouTube-style hamburger menu in TopBar, sidebar collapses to icon-only (80px) with tooltips
+7. **Focus Page Optimization** - Compact vertical layout, removed custom duration and keyboard shortcuts sections, unified timer card
+8. **Button Styling Consistency** - Dynamic shadow colors matching button variants, chunky 3D effects for outline/secondary buttons
+9. **Dojo Tab Redesign** - Clean tabs with inactive=transparent, active=white background + colored text
+10. **Matrix Page Cleanup** - Removed Brain Dump section, expanded quadrants to full width, moved task input to top
 
 ### Next Priorities 📋
 
 #### 1. Focus System Enhancements
-- Add session history tracking (completed focus sessions)
 - Add break notifications and auto-start
 - Add daily focus statistics widget
 - Add focus streak tracking
@@ -31,8 +35,7 @@
 - Add quest notification system
 - Add daily/weekly quest reset logic
 
-#### 3. Routine System Implementation
-- Create routine editor interface
+#### 3. Routine System Update
 - Add routine execution tracking
 - Add routine streak visualization
 - Add routine completion rewards
@@ -106,12 +109,12 @@ None currently - all systems operational.
 - `PUT /api/profile` - Update profile
 - `POST /api/profile/complete-onboarding` - Mark onboarding complete
 
-### Daily Spread (Dojo)
-- `GET /api/daily-spread` - Get all items
-- `POST /api/daily-spread/items` - Add item
-- `PUT /api/daily-spread/items/:id` - Update item
-- `DELETE /api/daily-spread/items/:id` - Delete item
-- `PUT /api/daily-spread/reorder` - Reorder items
+### Bullet Journal (Dojo)
+- `GET /api/bullet-journal` - Get all items
+- `POST /api/bullet-journal/items` - Add item
+- `PUT /api/bullet-journal/items/:id` - Update item
+- `DELETE /api/bullet-journal/items/:id` - Delete item
+- `PUT /api/bullet-journal/reorder` - Reorder items
 
 ### Matrix (Tasks)
 - `GET /api/tasks` - Get all tasks

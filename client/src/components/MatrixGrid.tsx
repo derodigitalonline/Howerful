@@ -191,8 +191,19 @@ export default function Matrix() {
       onDragCancel={handleDragCancel}
     >
       <div className="h-full flex flex-col">
-        {/* Action Buttons */}
-        <div className="border-b p-4 md:px-6 md:py-3 bg-background">
+        {/* Task Input at Top */}
+        <div className="flex-shrink-0 px-6 md:px-8 pt-6 md:pt-8 pb-4 bg-background border-b">
+          <TaskInput
+            onAddTask={handleAddTask}
+            selectedQuadrant={selectedQuadrant}
+            onQuadrantChange={setSelectedQuadrant}
+            isSelectingQuadrant={isSelectingQuadrant}
+            onSelectingChange={setIsSelectingQuadrant}
+          />
+        </div>
+
+        {/* Action Buttons - Hidden for now, will repurpose later */}
+        {/* <div className="border-b p-4 md:px-6 md:py-3 bg-background">
           <div className="flex items-center justify-end gap-4">
             <Button
               variant="outline"
@@ -204,7 +215,7 @@ export default function Matrix() {
               Clean Completed Tasks
             </Button>
           </div>
-        </div>
+        </div> */}
 
         <div className="flex-1 p-4 md:p-6 overflow-hidden flex flex-col gap-4">
           {/* Quadrants Grid */}
@@ -225,17 +236,6 @@ export default function Matrix() {
                 showRipple={rippleQuadrant === quadrant.id}
               />
             ))}
-          </div>
-
-          {/* TaskInput */}
-          <div className="border-t pt-4 bg-background">
-            <TaskInput
-              onAddTask={handleAddTask}
-              selectedQuadrant={selectedQuadrant}
-              onQuadrantChange={setSelectedQuadrant}
-              isSelectingQuadrant={isSelectingQuadrant}
-              onSelectingChange={setIsSelectingQuadrant}
-            />
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
-import { DailySpreadItem as DailySpreadItemType } from '@shared/schema';
-import DailySpreadItem from './DailySpreadItem';
+import { BulletItem as BulletItemType } from '@shared/schema';
+import BulletItem from './BulletItem';
 import {
   DndContext,
   closestCenter,
@@ -20,9 +20,9 @@ import {
 } from '@dnd-kit/sortable';
 
 interface DailySpreadProps {
-  items: DailySpreadItemType[];
+  items: BulletItemType[];
   deleteItem: (id: string) => void;
-  updateItem: (id: string, updates: Partial<DailySpreadItemType>) => void;
+  updateItem: (id: string, updates: Partial<BulletItemType>) => void;
   toggleItemCompletion: (id: string) => void;
   cycleItemType: (id: string) => void;
   reorderItems: (date: string, startIndex: number, endIndex: number) => void;
@@ -122,7 +122,7 @@ export default function DailySpread({
               ) : (
                 <>
                   {generalItems.map((item) => (
-                    <DailySpreadItem
+                    <BulletItem
                       key={item.id}
                       item={item}
                       onToggleComplete={toggleItemCompletion}
@@ -145,7 +145,7 @@ export default function DailySpread({
                 </h3>
                 <div className="space-y-1">
                   {scheduledItems.map((item) => (
-                    <DailySpreadItem
+                    <BulletItem
                       key={item.id}
                       item={item}
                       onToggleComplete={toggleItemCompletion}
