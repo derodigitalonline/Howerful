@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -55,6 +55,10 @@ function Router() {
 function AppContent() {
   const { profile, completeOnboarding } = useProfile();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [location] = useLocation();
+
+  // Check if we're on an auth page
+  const isAuthPage = location === '/login' || location === '/signup';
 
   return (
     <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed }}>
@@ -65,19 +69,26 @@ function AppContent() {
         onComplete={completeOnboarding}
       />
 
-      {/* Persistent Layout: NavigationDrawer + TopBar */}
-      <div className="flex h-screen">
-        <NavigationDrawer />
+      {isAuthPage ? (
+        // Auth pages: No navigation or top bar
+        <div className="h-screen overflow-hidden">
+          <Router />
+        </div>
+      ) : (
+        // App pages: Full layout with navigation
+        <div className="flex h-screen">
+          <NavigationDrawer />
 
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
-          <TopBar />
+          <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
+            <TopBar />
 
-          {/* Main content area with top padding for TopBar */}
-          <div className="flex-1 pt-16 overflow-hidden">
-            <Router />
+            {/* Main content area with top padding for TopBar */}
+            <div className="flex-1 pt-16 overflow-hidden">
+              <Router />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </SidebarContext.Provider>
   );
 }
