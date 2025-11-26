@@ -20,8 +20,8 @@ import NavigationDrawer from "@/components/NavigationDrawer";
 import TopBar from "@/components/TopBar";
 import { ProfileProvider, useProfile } from "@/hooks/useProfile";
 import { FocusProvider } from "@/hooks/useFocus";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { useState, createContext, useContext } from "react";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { useState, createContext, useContext, useEffect } from "react";
 
 // Sidebar context to share collapse state
 const SidebarContext = createContext<{
@@ -54,11 +54,27 @@ function Router() {
 
 function AppContent() {
   const { profile, completeOnboarding } = useProfile();
+  const { isAuthenticated } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [location] = useLocation();
 
   // Check if we're on an auth page
   const isAuthPage = location === '/login' || location === '/signup';
+
+  // Warn guest users before closing/refreshing to prevent data loss
+  useEffect(() => {
+    if (!isAuthenticated) {
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        // Modern browsers require returnValue to be set
+        e.returnValue = '';
+        return '';
+      };
+
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
+  }, [isAuthenticated]);
 
   return (
     <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed }}>

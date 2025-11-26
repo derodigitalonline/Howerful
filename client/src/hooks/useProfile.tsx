@@ -8,6 +8,21 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useSupabaseProfile, useUpdateProfile } from "./useSupabaseProfile";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import {
+  useSupabaseDailyQuests,
+  useUpsertDailyQuest,
+  useBulkUpsertDailyQuests,
+  useDeleteAllDailyQuests,
+  useSupabaseQuestInbox,
+  useAddToQuestInbox,
+  useRemoveFromQuestInbox,
+  useSupabaseClaimedQuests,
+  useAddClaimedQuest,
+  useSupabaseUnlockedCosmetics,
+  useUnlockCosmetic,
+  useSupabaseEquippedCosmetics,
+  useUpdateEquippedCosmetics,
+} from "./useSupabaseQuests";
 
 const STORAGE_KEY = "eisenhower-profile";
 
@@ -43,6 +58,23 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const { data: supabaseProfile, isLoading: supabaseLoading } = useSupabaseProfile();
   const updateProfile = useUpdateProfile();
 
+  // Quest hooks
+  const { data: supabaseDailyQuests, isLoading: questsLoading } = useSupabaseDailyQuests();
+  const upsertDailyQuest = useUpsertDailyQuest();
+  const bulkUpsertQuests = useBulkUpsertDailyQuests();
+  const deleteAllQuests = useDeleteAllDailyQuests();
+  const { data: supabaseInbox, isLoading: inboxLoading } = useSupabaseQuestInbox();
+  const addToInbox = useAddToQuestInbox();
+  const removeFromInbox = useRemoveFromQuestInbox();
+  const { data: supabaseClaimedQuests, isLoading: claimedLoading } = useSupabaseClaimedQuests();
+  const addClaimedQuest = useAddClaimedQuest();
+
+  // Cosmetic hooks
+  const { data: supabaseUnlockedCosmetics, isLoading: unlockedLoading } = useSupabaseUnlockedCosmetics();
+  const unlockCosmetic = useUnlockCosmetic();
+  const { data: supabaseEquippedCosmetics, isLoading: equippedLoading } = useSupabaseEquippedCosmetics();
+  const updateEquippedCosmetics = useUpdateEquippedCosmetics();
+
   const [profile, setProfile] = useState<UserProfile>({
     totalXP: 0,
     level: 1,
@@ -56,13 +88,13 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   // Load profile on mount: Supabase if logged in, otherwise localStorage
   useEffect(() => {
-    if (isAuthenticated && supabaseLoading) {
+    if (isAuthenticated && (supabaseLoading || questsLoading || inboxLoading || claimedLoading || unlockedLoading || equippedLoading)) {
       // Still loading from Supabase, wait
       return;
     }
 
     if (isAuthenticated && supabaseProfile) {
-      // Logged in: Load from Supabase, merge with localStorage for fields not in DB yet
+      // Logged in: Load from Supabase
       const stored = localStorage.getItem(STORAGE_KEY);
       let localData: Partial<UserProfile> = {};
 
@@ -74,6 +106,21 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // Merge quest definitions with Supabase progress data
+      const allQuests = generateDailyQuests();
+      const mergedQuests = allQuests.map(questDef => {
+        const supabaseQuest = supabaseDailyQuests?.find(q => q.id === questDef.id);
+        if (supabaseQuest) {
+          return {
+            ...questDef,
+            progress: supabaseQuest.progress,
+            completed: supabaseQuest.completed,
+            claimed: supabaseQuest.claimed,
+          };
+        }
+        return questDef;
+      });
+
       setProfile({
         // Basic fields from Supabase
         nickname: supabaseProfile.nickname,
@@ -84,13 +131,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         doFirstTasksCompleted: supabaseProfile.doFirstTasksCompleted,
         hasCompletedOnboarding: supabaseProfile.hasCompletedOnboarding,
         selectedSprite: supabaseProfile.selectedSprite || undefined,
-        // Complex fields from localStorage (Phase 3+)
-        dailyQuests: localData.dailyQuests || [],
-        lastDailyQuestReset: localData.lastDailyQuestReset,
-        inbox: localData.inbox || [],
-        claimedQuests: localData.claimedQuests || [],
-        unlockedCosmetics: localData.unlockedCosmetics || [],
-        equippedCosmetics: localData.equippedCosmetics,
+        // Quest fields from Supabase
+        dailyQuests: mergedQuests,
+        lastDailyQuestReset: localData.lastDailyQuestReset, // Still in localStorage for now
+        inbox: supabaseInbox || [],
+        claimedQuests: supabaseClaimedQuests || [],
+        // Cosmetic fields from Supabase
+        unlockedCosmetics: supabaseUnlockedCosmetics || [],
+        equippedCosmetics: supabaseEquippedCosmetics || undefined,
       });
       setIsLoading(false);
     } else {
@@ -106,7 +154,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       }
       setIsLoading(false);
     }
-  }, [isAuthenticated, supabaseProfile, supabaseLoading]);
+  }, [isAuthenticated, supabaseProfile, supabaseLoading, supabaseDailyQuests, questsLoading, supabaseInbox, inboxLoading, supabaseClaimedQuests, claimedLoading, supabaseUnlockedCosmetics, unlockedLoading, supabaseEquippedCosmetics, equippedLoading]);
 
   // Check and reset daily quests when profile loads
   useEffect(() => {
@@ -149,6 +197,23 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     isAuthenticated,
     user,
   ]);
+
+  // Sync quest data to Supabase when it changes
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && isSupabaseConfigured() && user && profile.dailyQuests) {
+      // Sync each quest to Supabase
+      profile.dailyQuests.forEach(quest => {
+        upsertDailyQuest.mutate(quest);
+      });
+    }
+  }, [profile.dailyQuests, isLoading, isAuthenticated, user]);
+
+  // Sync cosmetic data to Supabase when it changes
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && isSupabaseConfigured() && user && profile.equippedCosmetics) {
+      updateEquippedCosmetics.mutate(profile.equippedCosmetics);
+    }
+  }, [profile.equippedCosmetics, isLoading, isAuthenticated, user]);
 
   /**
    * Award XP and Coins for completing a task
@@ -325,6 +390,24 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           timestamp: new Date().toISOString(),
         }));
 
+      // Sync to Supabase if authenticated
+      if (isAuthenticated && isSupabaseConfigured()) {
+        // Add unclaimed rewards to Supabase inbox
+        unclaimedRewards.forEach(reward => {
+          addToInbox.mutate({
+            questId: reward.questId,
+            questName: reward.questName,
+            coinReward: reward.coinReward,
+            xpReward: reward.xpReward,
+          });
+        });
+
+        // Delete old quests and add new ones to Supabase
+        deleteAllQuests.mutate();
+        const newQuests = generateDailyQuests();
+        bulkUpsertQuests.mutate(newQuests);
+      }
+
       return {
         ...prev,
         dailyQuests: generateDailyQuests(),
@@ -345,6 +428,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       return false;
     }
 
+    // Sync to Supabase if authenticated
+    if (isAuthenticated && isSupabaseConfigured()) {
+      // Mark quest as claimed in Supabase
+      upsertDailyQuest.mutate({ ...quest, claimed: true });
+      // Add to claimed quests history
+      addClaimedQuest.mutate(questId);
+    }
+
     // Award rewards
     setProfile((prev) => ({
       ...prev,
@@ -354,6 +445,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       dailyQuests: (prev.dailyQuests || []).map((q) =>
         q.id === questId ? { ...q, claimed: true } : q
       ),
+      claimedQuests: [...(prev.claimedQuests || []), questId],
     }));
 
     return true;

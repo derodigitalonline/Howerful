@@ -127,7 +127,9 @@ export const userProfileSchema = z.object({
 export type UserProfile = z.infer<typeof userProfileSchema>;
 
 // Bullet Journal System
-export const bulletItemTypes = ["task", "event", "note"] as const;
+// Phase 1 Redesign: Simplified to task/event only (no more notes)
+// Tasks = default, Events = tasks with time
+export const bulletItemTypes = ["task", "event"] as const;
 export type BulletItemType = typeof bulletItemTypes[number];
 
 // Temporal buckets for ADHD-friendly task organization

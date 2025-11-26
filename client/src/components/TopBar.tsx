@@ -101,7 +101,7 @@ export default function TopBar() {
         ) : (
           <Link href="/login">
             <a>
-              <Button variant="default" size="sm" className="gap-2">
+              <Button variant="default" size="compact" className="gap-2">
                 <LogIn className="h-4 w-4" />
                 Login / Register
               </Button>

@@ -1,13 +1,12 @@
 import BucketTabs from '@/components/BucketTabs';
-import BucketView from '@/components/BucketView';
+import MasonryBucketView from '@/components/MasonryBucketView';
 import FocusDropZone from '@/components/FocusDropZone';
 import FocusedItemBanner from '@/components/FocusedItemBanner';
 import SwitchFocusDialog from '@/components/SwitchFocusDialog';
+import SlashInput, { SlashInputRef } from '@/components/SlashInput';
 import { useBulletJournal } from '@/hooks/useBulletJournal';
 import { useFocus } from '@/hooks/useFocus';
 import { useProfile } from '@/hooks/useProfile';
-import { parseBulletEntry } from '@/utils/bulletDetection';
-import { Input } from '@/components/ui/input';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { Bucket, BULLET_TASK_XP_REWARD, BULLET_TASK_COIN_REWARD } from '@shared/schema';
 import { toast } from 'sonner';
@@ -29,8 +28,7 @@ export default function Dojo() {
   const { awardXP, deductXP } = useProfile();
 
   const [activeBucket, setActiveBucket] = useState<Bucket>('today');
-  const [newItemText, setNewItemText] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<SlashInputRef>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
 
@@ -95,31 +93,17 @@ export default function Dojo() {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
 
-  const handleAddItem = (openDetail: boolean = false) => {
-    if (newItemText.trim()) {
-      // Parse the input using natural language processing
-      const parsed = parseBulletEntry(newItemText);
+  const handleAddItem = (text: string, time?: string) => {
+    // Determine type based on whether time is provided
+    const type = time ? 'event' : 'task';
 
-      // Add the item to the currently active bucket
-      addItem(parsed.text, parsed.type, parsed.bucket || activeBucket, parsed.time);
-      setNewItemText('');
-
-      // TODO: If openDetail is true, open the detail view for the newly created item
-      // This will be implemented when we add the detail view feature
-    }
+    // Add the item to the currently active bucket
+    addItem(text, type, activeBucket, time);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Shift + Enter: Capture and open detail view
-    if (e.key === 'Enter' && e.shiftKey) {
-      e.preventDefault();
-      handleAddItem(true);
-    }
-    // Enter: Instant capture
-    else if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
-      e.preventDefault();
-      handleAddItem(false);
-    }
+  const handleCardClick = (id: string) => {
+    // TODO: Phase 3 - Open edit modal
+    console.log('Card clicked:', id);
   };
 
   const formatTodayDate = () => {
@@ -201,14 +185,10 @@ export default function Dojo() {
         <div className="flex-shrink-0 px-6 md:px-8 pt-6 md:pt-8 bg-background">
           {/* Task Entry Input */}
           <div>
-            <Input
+            <SlashInput
               ref={inputRef}
-              value={newItemText}
-              onChange={(e) => setNewItemText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="What's on your mind? (Press / to focus, Enter to capture)"
-              className="h-12 text-base"
-              autoFocus
+              onAddItem={handleAddItem}
+              placeholder="Press / to add a task or event..."
             />
           </div>
 
@@ -260,20 +240,13 @@ export default function Dojo() {
             )}
           </div>
 
-          {/* Bucket Content View */}
-          <BucketView
+          {/* Bucket Content View - Masonry Grid */}
+          <MasonryBucketView
             bucket={activeBucket}
             items={items}
-            deleteItem={deleteItem}
-            updateItem={updateItem}
-            toggleItemCompletion={handleToggleItemCompletion}
-            cycleItemType={cycleItemType}
-            changeItemType={changeItemType}
-            reorderItems={reorderItems}
-            moveItemToBucket={moveItemToBucket}
-            onStartFocus={handleStartFocus}
+            onToggleComplete={handleToggleItemCompletion}
+            onCardClick={handleCardClick}
             activeId={activeId}
-            overId={overId}
           />
         </div>
 

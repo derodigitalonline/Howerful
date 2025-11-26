@@ -11,9 +11,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground btn-glass [--btn-color:var(--primary)] no-default-hover-elevate no-default-active-elevate",
+          "bg-primary text-primary-foreground btn-glass [--btn-color:var(--primary)] no-default-hover-elevate no-default-active-elevate rounded-lg",
         destructive:
-          "bg-destructive text-destructive-foreground btn-glass [--btn-color:var(--destructive)] no-default-hover-elevate no-default-active-elevate",
+          "bg-destructive text-destructive-foreground btn-glass [--btn-color:var(--destructive)] no-default-hover-elevate no-default-active-elevate rounded-lg",
         outline:
           // Shows the background color of whatever card / sidebar / accent background it is inside of.
           // Inherits the current text color.
@@ -28,6 +28,7 @@ const buttonVariants = cva(
       size: {
         default: "min-h-9 px-4 py-2",
         sm: "min-h-8 rounded-md px-3 text-xs",
+        compact: "min-h-7 rounded-sm px-3 py-1.5 text-[13px]",
         lg: "min-h-10 rounded-md px-8",
         icon: "h-9 w-9",
       },

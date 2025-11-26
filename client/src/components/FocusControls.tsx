@@ -18,7 +18,7 @@ interface FocusControlsProps {
 }
 
 export default function FocusControls({ variant = "default" }: FocusControlsProps) {
-  const { isRunning, isPaused, pauseTimer, resumeTimer, finishEarly, skipPhase, activeItemText } = useFocus();
+  const { isRunning, isPaused, pauseTimer, resumeTimer, startTimer, finishEarly, skipPhase, activeItemText } = useFocus();
   const [showFinishDialog, setShowFinishDialog] = useState(false);
 
   const buttonSize = variant === "compact" ? "sm" : "default";
@@ -40,9 +40,8 @@ export default function FocusControls({ variant = "default" }: FocusControlsProp
         {!isRunning || isPaused ? (
           <Button
             size={buttonSize}
-            onClick={resumeTimer}
+            onClick={isPaused ? resumeTimer : () => startTimer()}
             className="gap-2"
-            disabled={!isPaused && !isRunning}
           >
             <Play className={iconSize} />
             {variant === "default" && (isPaused ? "Resume" : "Start")}
