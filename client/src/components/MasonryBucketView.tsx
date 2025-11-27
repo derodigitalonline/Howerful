@@ -42,8 +42,9 @@ export default function MasonryBucketView({
 
   // Responsive breakpoints for masonry columns
   const breakpointColumns = {
-    default: 3,
-    1400: 2,
+    default: 4,
+    1400: 3,
+    1024: 2,
     768: 1,
   };
 

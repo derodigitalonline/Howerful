@@ -295,6 +295,7 @@ export function useAddBulletItem() {
 
   return useMutation({
     mutationFn: async ({
+      id,
       text,
       type,
       bucket,
@@ -302,6 +303,7 @@ export function useAddBulletItem() {
       date,
       order,
     }: {
+      id: string;
       text: string;
       type: BulletItemType;
       bucket?: Bucket;
@@ -313,7 +315,7 @@ export function useAddBulletItem() {
       if (!isSupabaseConfigured()) throw new Error('Supabase not configured');
 
       const newItem: Partial<BulletItem> = {
-        id: crypto.randomUUID(),
+        id,
         text,
         type,
         bucket: bucket || 'today',

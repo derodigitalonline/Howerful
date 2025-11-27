@@ -1,6 +1,5 @@
 import { BulletItem } from '@shared/schema';
 import { CheckSquare, Circle, Clock, GripVertical } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface BulletCardProps {
@@ -26,7 +25,7 @@ export default function BulletCard({
     <div
       className={cn(
         "bullet-card group relative bg-card border border-border rounded-xl p-4 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5",
-        "max-w-[320px] w-full",
+        "w-full",
         isDragging && "opacity-50 scale-95",
         isCompleted && "opacity-60"
       )}
@@ -43,26 +42,25 @@ export default function BulletCard({
 
       {/* Type Indicator & Content */}
       <div className="flex items-start gap-3 pl-6">
-        {/* Type Icon */}
+        {/* Type Icon - Clickable for both tasks and events */}
         <div className="flex-shrink-0 mt-0.5">
-          {isTask ? (
-            <div
-              className={cn(
-                "w-5 h-5 rounded border-2 flex items-center justify-center transition-colors",
-                isCompleted
-                  ? "bg-primary border-primary text-primary-foreground"
-                  : "border-muted-foreground hover:border-primary"
-              )}
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleComplete(item.id);
-              }}
-            >
-              {isCompleted && <CheckSquare className="w-3 h-3" />}
-            </div>
-          ) : (
-            <Circle className="w-5 h-5 text-muted-foreground" />
-          )}
+          <div
+            className={cn(
+              "w-5 h-5 border-2 flex items-center justify-center transition-colors cursor-pointer",
+              isEvent ? "rounded-full" : "rounded",
+              isCompleted
+                ? "bg-primary border-primary text-primary-foreground"
+                : "border-muted-foreground hover:border-primary"
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleComplete(item.id);
+            }}
+          >
+            {isCompleted && (
+              <CheckSquare className="w-3 h-3" />
+            )}
+          </div>
         </div>
 
         {/* Text Content */}
@@ -86,18 +84,17 @@ export default function BulletCard({
         </div>
       </div>
 
-      {/* Floating DONE Button - Shows on hover for incomplete tasks */}
-      {isTask && !isCompleted && (
-        <Button
-          size="sm"
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+      {/* Compact 3D DONE Button - Bottom Right - Shows on hover for incomplete items */}
+      {!isCompleted && (
+        <button
+          className="absolute bottom-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all duration-150 bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-1.5 rounded-md shadow-[0_3px_0_0_rgba(0,0,0,0.15)] hover:shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:-translate-y-[1px] active:shadow-[0_1px_0_0_rgba(0,0,0,0.15)] active:translate-y-[2px]"
           onClick={(e) => {
             e.stopPropagation();
             onToggleComplete(item.id);
           }}
         >
           DONE
-        </Button>
+        </button>
       )}
     </div>
   );

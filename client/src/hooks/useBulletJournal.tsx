@@ -79,9 +79,9 @@ export function useBulletJournal() {
     // Update local state immediately
     setItems((prev) => [...prev, newItem]);
 
-    // Sync to Supabase if logged in
+    // Sync to Supabase if logged in (pass the same ID)
     if (isAuthenticated && isSupabaseConfigured()) {
-      addItemMutation.mutate({ text, type, bucket, time, date, order });
+      addItemMutation.mutate({ id: newItem.id, text, type, bucket, time, date, order });
     }
   };
 
