@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useRef } from "react";
 import { UserProfile, Quadrant, XP_REWARDS, COIN_REWARDS, DailyQuest } from "@shared/schema";
 import { getLevelFromXP, willLevelUp } from "../utils/xpCalculator";
 import {
@@ -46,6 +46,8 @@ interface ProfileContextType {
   completeOnboarding: (nickname: string) => void;
   checkAndResetDailyQuests: () => void;
   claimDailyQuest: (questId: string) => boolean;
+  unlockCosmeticReward: (cosmeticId: string) => void;
+  addClaimedQuestToHistory: (questId: string) => void;
   trackRoutineCompletion: () => void;
   trackCosmeticChange: () => void;
   trackCleanupEvent: () => void;
@@ -85,6 +87,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     nickname: "Howie",
   });
   const [isLoading, setIsLoading] = useState(true);
+  const hasCheckedQuestReset = useRef(false); // Prevent infinite loop by only checking once per session
 
   // Load profile on mount: Supabase if logged in, otherwise localStorage
   useEffect(() => {
@@ -156,9 +159,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, supabaseProfile, supabaseLoading, supabaseDailyQuests, questsLoading, supabaseInbox, inboxLoading, supabaseClaimedQuests, claimedLoading, supabaseUnlockedCosmetics, unlockedLoading, supabaseEquippedCosmetics, equippedLoading]);
 
-  // Check and reset daily quests when profile loads
+  // Check and reset daily quests when profile loads (only once per session)
   useEffect(() => {
-    if (profile.hasCompletedOnboarding && !isLoading) {
+    if (profile.hasCompletedOnboarding && !isLoading && !hasCheckedQuestReset.current) {
+      hasCheckedQuestReset.current = true;
       checkAndResetDailyQuests();
     }
   }, [profile.hasCompletedOnboarding, isLoading]);
@@ -219,6 +223,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const newTotalXP = profile.totalXP + xpGained;
     const newLevel = getLevelFromXP(newTotalXP);
 
+    let questsToSync: DailyQuest[] = [];
+
     setProfile((prev) => {
       // Update daily quest progress
       const updatedDailyQuests = (prev.dailyQuests || []).map((quest) => {
@@ -236,11 +242,18 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
         const isNowCompleted = newProgress >= quest.requirement;
 
-        return {
+        const updatedQuest = {
           ...quest,
           progress: newProgress,
           completed: isNowCompleted,
         };
+
+        // Track quests that need to be synced to Supabase
+        if (newProgress !== quest.progress) {
+          questsToSync.push(updatedQuest);
+        }
+
+        return updatedQuest;
       });
 
       return {
@@ -255,6 +268,13 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         dailyQuests: updatedDailyQuests,
       };
     });
+
+    // Sync updated quests to Supabase
+    if (isAuthenticated && isSupabaseConfigured() && questsToSync.length > 0) {
+      questsToSync.forEach(quest => {
+        upsertDailyQuest.mutate(quest);
+      });
+    }
 
     return {
       xpGained,
@@ -445,10 +465,46 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   /**
+   * Unlock a cosmetic reward (for Story Quest completion)
+   * Syncs to Supabase if authenticated
+   */
+  const unlockCosmeticReward = (cosmeticId: string): void => {
+    // Update local state
+    setProfile((prev) => ({
+      ...prev,
+      unlockedCosmetics: [...(prev.unlockedCosmetics || []), cosmeticId],
+    }));
+
+    // Sync to Supabase if authenticated
+    if (isAuthenticated && isSupabaseConfigured()) {
+      unlockCosmetic.mutate(cosmeticId);
+    }
+  };
+
+  /**
+   * Add a quest to claimed quests history (for Story Quest completion)
+   * Syncs to Supabase if authenticated
+   */
+  const addClaimedQuestToHistory = (questId: string): void => {
+    // Update local state
+    setProfile((prev) => ({
+      ...prev,
+      claimedQuests: [...(prev.claimedQuests || []), questId],
+    }));
+
+    // Sync to Supabase if authenticated
+    if (isAuthenticated && isSupabaseConfigured()) {
+      addClaimedQuest.mutate(questId);
+    }
+  };
+
+  /**
    * Track routine completion for daily quests
    * Called when user completes a routine item
    */
   const trackRoutineCompletion = (): void => {
+    let questsToSync: DailyQuest[] = [];
+
     setProfile(prev => {
       const updatedDailyQuests = (prev.dailyQuests || []).map(quest => {
         if (quest.completed || quest.claimed) return quest;
@@ -456,11 +512,20 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
         const newProgress = quest.progress + 1;
         const isNowCompleted = newProgress >= quest.requirement;
-        return { ...quest, progress: newProgress, completed: isNowCompleted };
+        const updatedQuest = { ...quest, progress: newProgress, completed: isNowCompleted };
+        questsToSync.push(updatedQuest);
+        return updatedQuest;
       });
 
       return { ...prev, dailyQuests: updatedDailyQuests };
     });
+
+    // Sync updated quests to Supabase
+    if (isAuthenticated && isSupabaseConfigured() && questsToSync.length > 0) {
+      questsToSync.forEach(quest => {
+        upsertDailyQuest.mutate(quest);
+      });
+    }
   };
 
   /**
@@ -468,6 +533,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
    * Called when user equips a cosmetic
    */
   const trackCosmeticChange = (): void => {
+    let questsToSync: DailyQuest[] = [];
+
     setProfile(prev => {
       const updatedDailyQuests = (prev.dailyQuests || []).map(quest => {
         if (quest.completed || quest.claimed) return quest;
@@ -475,11 +542,20 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
         const newProgress = quest.progress + 1;
         const isNowCompleted = newProgress >= quest.requirement;
-        return { ...quest, progress: newProgress, completed: isNowCompleted };
+        const updatedQuest = { ...quest, progress: newProgress, completed: isNowCompleted };
+        questsToSync.push(updatedQuest);
+        return updatedQuest;
       });
 
       return { ...prev, dailyQuests: updatedDailyQuests };
     });
+
+    // Sync updated quests to Supabase
+    if (isAuthenticated && isSupabaseConfigured() && questsToSync.length > 0) {
+      questsToSync.forEach(quest => {
+        upsertDailyQuest.mutate(quest);
+      });
+    }
   };
 
   /**
@@ -487,6 +563,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
    * Called when user uses 'Clean Completed Tasks' button
    */
   const trackCleanupEvent = (): void => {
+    let questsToSync: DailyQuest[] = [];
+
     setProfile(prev => {
       const updatedDailyQuests = (prev.dailyQuests || []).map(quest => {
         if (quest.completed || quest.claimed) return quest;
@@ -494,11 +572,20 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
         const newProgress = quest.progress + 1;
         const isNowCompleted = newProgress >= quest.requirement;
-        return { ...quest, progress: newProgress, completed: isNowCompleted };
+        const updatedQuest = { ...quest, progress: newProgress, completed: isNowCompleted };
+        questsToSync.push(updatedQuest);
+        return updatedQuest;
       });
 
       return { ...prev, dailyQuests: updatedDailyQuests };
     });
+
+    // Sync updated quests to Supabase
+    if (isAuthenticated && isSupabaseConfigured() && questsToSync.length > 0) {
+      questsToSync.forEach(quest => {
+        upsertDailyQuest.mutate(quest);
+      });
+    }
   };
 
   return (
@@ -515,6 +602,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         completeOnboarding,
         checkAndResetDailyQuests,
         claimDailyQuest,
+        unlockCosmeticReward,
+        addClaimedQuestToHistory,
         trackRoutineCompletion,
         trackCosmeticChange,
         trackCleanupEvent,

@@ -28,7 +28,7 @@ const QUEST_COIN_REWARDS: Record<string, number> = {
 };
 
 export default function Quests() {
-  const { profile, setProfile, addCoins, claimDailyQuest } = useProfile();
+  const { profile, addCoins, claimDailyQuest, unlockCosmeticReward, addClaimedQuestToHistory } = useProfile();
   const timer = useTimeUntilMidnight();
   const currentLevel = profile.level;
   const claimedQuests = profile.claimedQuests || [];
@@ -44,22 +44,16 @@ export default function Quests() {
       return;
     }
 
-    // Add the cosmetic to unlocked cosmetics
-    const newUnlockedCosmetics = [...unlockedCosmetics, rewardCosmeticId];
-
-    // Mark quest as claimed
-    const newClaimedQuests = [...claimedQuests, questId];
-
     // Award coins
     if (coinReward > 0) {
       addCoins(coinReward);
     }
 
-    setProfile({
-      ...profile,
-      unlockedCosmetics: newUnlockedCosmetics,
-      claimedQuests: newClaimedQuests,
-    });
+    // Unlock cosmetic reward (syncs to Supabase automatically)
+    unlockCosmeticReward(rewardCosmeticId);
+
+    // Mark quest as claimed (syncs to Supabase automatically)
+    addClaimedQuestToHistory(questId);
 
     // Celebration!
     confetti({
