@@ -198,15 +198,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     user,
   ]);
 
-  // Sync quest data to Supabase when it changes
-  useEffect(() => {
-    if (!isLoading && isAuthenticated && isSupabaseConfigured() && user && profile.dailyQuests) {
-      // Sync each quest to Supabase
-      profile.dailyQuests.forEach(quest => {
-        upsertDailyQuest.mutate(quest);
-      });
-    }
-  }, [profile.dailyQuests, isLoading, isAuthenticated, user]);
+  // NOTE: We don't sync daily quests in a useEffect to avoid infinite loops.
+  // Quests are synced when they're actually modified (completed, claimed, reset).
 
   // Sync cosmetic data to Supabase when it changes
   useEffect(() => {

@@ -244,12 +244,12 @@ function bulletItemToDbRow(item: Partial<BulletItem>, userId: string) {
     date: item.date || null,
     time: item.time || null,
     completed: item.completed || false,
-    created_at: item.createdAt,
+    created_at: item.createdAt ? new Date(item.createdAt).toISOString() : new Date().toISOString(),
     order_index: item.order,
-    moved_to_someday_at: item.movedToSomedayAt || null,
+    moved_to_someday_at: item.movedToSomedayAt ? new Date(item.movedToSomedayAt).toISOString() : null,
     focus_state: item.focusState || 'idle',
-    focus_started_at: item.focusStartedAt || null,
-    focus_completed_at: item.focusCompletedAt || null,
+    focus_started_at: item.focusStartedAt ? new Date(item.focusStartedAt).toISOString() : null,
+    focus_completed_at: item.focusCompletedAt ? new Date(item.focusCompletedAt).toISOString() : null,
     pomodoros_completed: item.pomodorosCompleted || 0,
     estimated_pomodoros: item.estimatedPomodoros || null,
   };
@@ -327,6 +327,8 @@ export function useAddBulletItem() {
       };
 
       const dbRow = bulletItemToDbRow(newItem, user.id);
+      console.log('Inserting to database:', { ...dbRow, id: newItem.id });
+
       const { data, error } = await supabase
         .from('bullet_items')
         .insert({ ...dbRow, id: newItem.id })
@@ -338,10 +340,15 @@ export function useAddBulletItem() {
         throw error;
       }
 
+      console.log('Successfully inserted bullet item:', data);
       return dbRowToBulletItem(data);
     },
     onSuccess: () => {
+      console.log('Bullet item mutation succeeded, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['bulletItems', user?.id] });
+    },
+    onError: (error) => {
+      console.error('Failed to add bullet item to Supabase:', error);
     },
   });
 }

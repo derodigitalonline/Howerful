@@ -81,7 +81,10 @@ export function useBulletJournal() {
 
     // Sync to Supabase if logged in (pass the same ID)
     if (isAuthenticated && isSupabaseConfigured()) {
+      console.log('Adding bullet item to Supabase:', { id: newItem.id, text, type, bucket, time, date, order });
       addItemMutation.mutate({ id: newItem.id, text, type, bucket, time, date, order });
+    } else {
+      console.log('Not syncing to Supabase - authenticated:', isAuthenticated, 'configured:', isSupabaseConfigured());
     }
   };
 
