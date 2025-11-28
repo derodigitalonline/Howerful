@@ -3,7 +3,6 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User, Code2, RotateCcw, CheckCircle2, Zap, TrendingUp, Sparkles } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
-import { useTasks } from '@/hooks/useTasks';
 import { toast } from 'sonner';
 import LayeredAvatar from '@/components/LayeredAvatar';
 import XPBar from '@/components/XPBar';
@@ -11,8 +10,7 @@ import CoinDisplay from '@/components/CoinDisplay';
 import { getXPForLevel } from '@/utils/xpCalculator';
 
 export default function Profile() {
-  const { profile, resetProfile, awardXP, addXP } = useProfile();
-  const { addTask } = useTasks();
+  const { profile, resetProfile, addXP, trackBulletTaskCompletion } = useProfile();
 
   // Avatar customization - use equipped cosmetics from profile
   const hasSprite = Boolean(profile.selectedSprite);
@@ -27,26 +25,20 @@ export default function Profile() {
   };
 
   const handleComplete5Tasks = () => {
-    const quadrants = ['do-first', 'schedule', 'delegate', 'eliminate'] as const;
     for (let i = 0; i < 5; i++) {
-      const quadrant = quadrants[i % quadrants.length];
-      awardXP(quadrant);
-      addTask(`Test task ${i + 1}`, quadrant);
+      trackBulletTaskCompletion();
     }
-    toast.success('+5 tasks completed!', {
-      description: 'XP has been awarded for 5 completed tasks.',
+    toast.success('+5 bullet tasks completed!', {
+      description: 'Quest progress has been updated.',
     });
   };
 
   const handleComplete10Tasks = () => {
-    const quadrants = ['do-first', 'schedule', 'delegate', 'eliminate'] as const;
     for (let i = 0; i < 10; i++) {
-      const quadrant = quadrants[i % quadrants.length];
-      awardXP(quadrant);
-      addTask(`Test task ${i + 1}`, quadrant);
+      trackBulletTaskCompletion();
     }
-    toast.success('+10 tasks completed!', {
-      description: 'XP has been awarded for 10 completed tasks.',
+    toast.success('+10 bullet tasks completed!', {
+      description: 'Quest progress has been updated.',
     });
   };
 
@@ -82,7 +74,7 @@ export default function Profile() {
       >
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold mb-2">Your Profile</h1>
+              <h1 className="text-3xl font-bold mb-2">Hi {profile.userName || 'User'}</h1>
               <p className="text-muted-foreground">
                 Customize your avatar and personal space
               </p>
@@ -93,7 +85,7 @@ export default function Profile() {
               {/* Left: Avatar Display */}
               <Card className="p-8">
                 <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4">
-                  {profile.nickname || "Your Howie"}
+                  {profile.howieName || "Your Howie"}
                 </h2>
 
                 {/* 512x512 Container */}
@@ -198,8 +190,8 @@ export default function Profile() {
                   <p className="text-2xl font-bold text-primary">{profile.tasksCompleted}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Nickname</p>
-                  <p className="text-xs font-bold text-primary truncate">{profile.nickname || 'Howie'}</p>
+                  <p className="text-xs text-muted-foreground mb-1">Howie Name</p>
+                  <p className="text-xs font-bold text-primary truncate">{profile.howieName || 'Howie'}</p>
                 </div>
               </div>
 

@@ -1,5 +1,7 @@
 import BucketTabs from '@/components/BucketTabs';
 import MasonryBucketView from '@/components/MasonryBucketView';
+import FutureLogView from '@/components/FutureLogView';
+import FutureLogTaskSheet from '@/components/FutureLogTaskSheet';
 import FocusDropZone from '@/components/FocusDropZone';
 import FocusedItemBanner from '@/components/FocusedItemBanner';
 import SwitchFocusDialog from '@/components/SwitchFocusDialog';
@@ -25,7 +27,7 @@ import {
 export default function Dojo() {
   const { getItemsByBucket, addItem, deleteItem, updateItem, toggleItemCompletion, cycleItemType, changeItemType, reorderItems, moveItemToBucket, items: allItems } = useBulletJournal();
   const { startTimer, activeItemId, activeItemText } = useFocus();
-  const { awardXP, deductXP } = useProfile();
+  const { trackBulletTaskCompletion } = useProfile();
 
   const [activeBucket, setActiveBucket] = useState<Bucket>('today');
   const inputRef = useRef<SlashInputRef>(null);
@@ -36,33 +38,23 @@ export default function Dojo() {
   const [showSwitchDialog, setShowSwitchDialog] = useState(false);
   const [pendingFocus, setPendingFocus] = useState<{ itemId?: string; itemText?: string; duration?: number } | null>(null);
 
-  // Handle bullet item completion with XP rewards
+  // Future Log task sheet state
+  const [showFutureLogSheet, setShowFutureLogSheet] = useState(false);
+
+  // Handle bullet item completion with quest tracking
   const handleToggleItemCompletion = (id: string) => {
     toggleItemCompletion(
       id,
       () => {
-        // Award XP and Coins when completing
-        const xpGained = BULLET_TASK_XP_REWARD;
-        const coinsGained = BULLET_TASK_COIN_REWARD;
-        const result = awardXP('schedule'); // Use 'schedule' quadrant as base for bullet tasks
-
-        if (result.leveledUp) {
-          toast.success(`🎉 Level Up! You're now level ${result.newLevel}!`, {
-            description: `+${xpGained} XP & +${coinsGained} coins earned`,
-            duration: 5000,
-          });
-        } else {
-          toast.success(`+${xpGained} XP & +${coinsGained} coins`, {
-            description: `Bullet task completed`,
-            duration: 2000,
-          });
-        }
+        // Track completion for quests
+        trackBulletTaskCompletion();
+        toast.success('Task completed!', {
+          duration: 2000,
+        });
       },
       () => {
-        // Deduct XP when uncompleting
-        deductXP('schedule'); // Use 'schedule' quadrant as base for bullet tasks
-        toast.info(`-${BULLET_TASK_XP_REWARD} XP`, {
-          description: 'Task uncompleted',
+        // No deduction needed - quests track total completions
+        toast.info('Task uncompleted', {
           duration: 2000,
         });
       }
@@ -77,6 +69,7 @@ export default function Dojo() {
     today: getItemsByBucket('today').length,
     tomorrow: getItemsByBucket('tomorrow').length,
     someday: getItemsByBucket('someday').length,
+    'future-log': getItemsByBucket('future-log').length,
   }), [getItemsByBucket]);
 
   // Global keyboard shortcut: Press "/" to focus input from anywhere
@@ -99,6 +92,19 @@ export default function Dojo() {
 
     // Add the item to the currently active bucket
     addItem(text, type, activeBucket, time);
+  };
+
+  const handleAddToFutureLog = (text: string, scheduledDate: string, time?: string) => {
+    // Determine type based on whether time is provided
+    const type = time ? 'event' : 'task';
+
+    addItem(text, type, 'future-log', time, undefined, scheduledDate);
+    toast.success('Task added to Future Log!');
+  };
+
+  const handleAddToMonth = (monthKey: string) => {
+    // Open the side sheet for adding a task
+    setShowFutureLogSheet(true);
   };
 
   const handleCardClick = (id: string) => {
@@ -240,14 +246,24 @@ export default function Dojo() {
             )}
           </div>
 
-          {/* Bucket Content View - Masonry Grid */}
-          <MasonryBucketView
-            bucket={activeBucket}
-            items={items}
-            onToggleComplete={handleToggleItemCompletion}
-            onCardClick={handleCardClick}
-            activeId={activeId}
-          />
+          {/* Bucket Content View */}
+          {activeBucket === 'future-log' ? (
+            <FutureLogView
+              items={items}
+              onToggleComplete={handleToggleItemCompletion}
+              onCardClick={handleCardClick}
+              onAddToMonth={handleAddToMonth}
+              onOpenAddSheet={() => setShowFutureLogSheet(true)}
+            />
+          ) : (
+            <MasonryBucketView
+              bucket={activeBucket}
+              items={items}
+              onToggleComplete={handleToggleItemCompletion}
+              onCardClick={handleCardClick}
+              activeId={activeId}
+            />
+          )}
         </div>
 
         {/* Focus Drop Zone - shown only when dragging */}
@@ -262,6 +278,13 @@ export default function Dojo() {
         newItemText={pendingFocus?.itemText || ''}
         onConfirm={handleConfirmSwitch}
         onCancel={handleCancelSwitch}
+      />
+
+      {/* Future Log Task Sheet */}
+      <FutureLogTaskSheet
+        open={showFutureLogSheet}
+        onOpenChange={setShowFutureLogSheet}
+        onAddTask={handleAddToFutureLog}
       />
     </DndContext>
   );

@@ -22,8 +22,8 @@ export default function TopBar() {
   const [location] = useLocation();
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const coins = profile.coins || 0;
-  const nickname = profile.nickname || 'Howie';
-  const initial = nickname[0].toUpperCase();
+  const userName = profile.userName || 'User';
+  const initial = userName[0].toUpperCase();
   const isOnProfilePage = location === '/profile';
 
   const handleSignOut = async () => {

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { FocusPhase, FocusSession, FocusSettings } from "@shared/schema";
 import { useBulletJournal } from "./useBulletJournal";
+import { useProfile } from "./useProfile";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   useSupabaseFocusSettings,
@@ -99,6 +100,7 @@ export function FocusProvider({ children }: { children: ReactNode }) {
   const [sessionsLoaded, setSessionsLoaded] = useState(false);
 
   const { updateItem, items: allItems } = useBulletJournal();
+  const { trackFocusSessionCompletion } = useProfile();
 
   // Helper to get item by ID
   const getItemById = useCallback((id: string) => {
@@ -278,6 +280,9 @@ export function FocusProvider({ children }: { children: ReactNode }) {
       if (isAuthenticated && isSupabaseConfigured()) {
         addSession.mutate(completedSession);
       }
+
+      // Track completion for quests (count any completed session)
+      trackFocusSessionCompletion();
     }
 
     // Auto-complete task if it's a work session with an active item

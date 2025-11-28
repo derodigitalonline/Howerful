@@ -1,33 +1,5 @@
 import { z } from "zod";
 
-export const quadrants = ["do-first", "schedule", "delegate", "eliminate"] as const;
-export type Quadrant = typeof quadrants[number];
-
-// Workspace types for task organization
-export const workspaces = ["personal", "work"] as const;
-export type Workspace = typeof workspaces[number];
-
-// XP rewards per quadrant (Do First tasks worth more!)
-export const XP_REWARDS: Record<Quadrant, number> = {
-  "do-first": 20,
-  "schedule": 10,
-  "delegate": 10,
-  "eliminate": 5,
-};
-
-export const taskSchema = z.object({
-  id: z.string(),
-  text: z.string().min(1),
-  quadrant: z.enum(quadrants).optional(), // Optional for brain dump tasks
-  workspace: z.enum(workspaces).default("personal"), // Which matrix this task belongs to
-  createdAt: z.number(),
-  completed: z.boolean().default(false),
-  completedInQuadrant: z.enum(quadrants).optional(), // Track which quadrant task was completed in
-});
-
-export type Task = z.infer<typeof taskSchema>;
-export type InsertTask = Omit<Task, "id" | "createdAt">;
-
 // Avatar Customization System
 // Using literal types ensures TypeScript knows exactly which categories exist
 export const cosmeticCategories = ["hat", "shirt", "pants", "cape", "pet", "facewear"] as const;
@@ -58,14 +30,6 @@ export interface EquippedCosmetics {
   facewear?: string; // ID of equipped facewear (glasses, masks, etc.)
 }
 
-// Coin rewards per quadrant (bonus currency for shop purchases)
-export const COIN_REWARDS: Record<Quadrant, number> = {
-  "do-first": 10,
-  "schedule": 5,
-  "delegate": 5,
-  "eliminate": 2,
-};
-
 // Bullet Journal task rewards (for Dojo tasks)
 export const BULLET_TASK_XP_REWARD = 10;
 export const BULLET_TASK_COIN_REWARD = 5;
@@ -81,8 +45,7 @@ export const dailyQuestSchema = z.object({
   xpReward: z.number(),              // XP awarded on completion
   completed: z.boolean().default(false),
   claimed: z.boolean().default(false),
-  type: z.enum(['task-completion', 'quadrant-specific', 'routine-based', 'cosmetic-based', 'cleanup-based']),
-  quadrant: z.enum(quadrants).optional(), // For quadrant-specific quests
+  type: z.enum(['bullet-task-completion', 'focus-session', 'routine-based', 'cosmetic-based'])
 });
 
 export type DailyQuest = z.infer<typeof dailyQuestSchema>;
@@ -104,11 +67,12 @@ export const userProfileSchema = z.object({
   totalXP: z.number().default(0),
   level: z.number().default(1),
   coins: z.number().default(0), // Howie Coins - currency for the Bazaar shop
-  tasksCompleted: z.number().default(0),
-  doFirstTasksCompleted: z.number().default(0), // Track "Do First" quadrant completions
+  bulletTasksCompleted: z.number().default(0), // Track bullet journal task completions
+  focusSessionsCompleted: z.number().default(0), // Track focus session completions
   hasCompletedOnboarding: z.boolean().default(false),
   selectedSprite: z.string().optional(),
-  nickname: z.string().default("Howie"), // User's nickname for their avatar
+  userName: z.string().default("User"), // User's actual first name (for profile button)
+  howieName: z.string().default("Howie"), // User's nickname for their Howie companion
   equippedCosmetics: z.object({
     hat: z.string().optional(),
     shirt: z.string().optional(),
@@ -133,7 +97,7 @@ export const bulletItemTypes = ["task", "event"] as const;
 export type BulletItemType = typeof bulletItemTypes[number];
 
 // Temporal buckets for ADHD-friendly task organization
-export const buckets = ["today", "tomorrow", "someday"] as const;
+export const buckets = ["today", "tomorrow", "someday", "future-log"] as const;
 export type Bucket = typeof buckets[number];
 
 export const bulletItemSchema = z.object({
@@ -143,6 +107,7 @@ export const bulletItemSchema = z.object({
   bucket: z.enum(buckets).default("today"), // Temporal bucket instead of specific dates
   date: z.string().optional(), // Optional - only for scheduled events with specific dates
   time: z.string().optional(), // Optional time for events (HH:MM format)
+  scheduledDate: z.string().optional(), // YYYY-MM-DD format for Future Log items (auto-migration date)
   completed: z.boolean().default(false), // For tasks only
   createdAt: z.number(),
   order: z.number(), // For manual sorting within bucket

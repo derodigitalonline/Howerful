@@ -4,7 +4,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Matrix from "@/pages/Matrix";
 import Dojo from "@/pages/Dojo";
 import Focus from "@/pages/Focus";
 import Profile from "@/pages/Profile";
@@ -38,7 +37,6 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dojo} />
-      <Route path="/matrix" component={Matrix} />
       <Route path="/focus" component={Focus} />
       <Route path="/routines" component={Routines} />
       <Route path="/profile" component={Profile} />

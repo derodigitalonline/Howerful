@@ -6,12 +6,13 @@ import type { Profile } from '@shared/schema';
 // Helper: Convert database row to Profile type
 function dbRowToProfile(row: any): Profile {
   return {
-    nickname: row.nickname || 'Howie',
+    userName: row.user_name || 'User',
+    howieName: row.howie_name || 'Howie',
     totalXP: row.total_xp || 0,
     level: row.level || 1,
     coins: row.coins || 0,
-    tasksCompleted: row.tasks_completed || 0,
-    doFirstTasksCompleted: row.do_first_tasks_completed || 0,
+    bulletTasksCompleted: row.bullet_tasks_completed || 0,
+    focusSessionsCompleted: row.focus_sessions_completed || 0,
     hasCompletedOnboarding: row.has_completed_onboarding || false,
     selectedSprite: row.selected_sprite || null,
   };
@@ -20,12 +21,13 @@ function dbRowToProfile(row: any): Profile {
 // Helper: Convert Profile type to database row
 function profileToDbRow(profile: Profile) {
   return {
-    nickname: profile.nickname,
+    user_name: profile.userName,
+    howie_name: profile.howieName,
     total_xp: profile.totalXP,
     level: profile.level,
     coins: profile.coins,
-    tasks_completed: profile.tasksCompleted,
-    do_first_tasks_completed: profile.doFirstTasksCompleted,
+    bullet_tasks_completed: profile.bulletTasksCompleted,
+    focus_sessions_completed: profile.focusSessionsCompleted,
     has_completed_onboarding: profile.hasCompletedOnboarding,
     selected_sprite: profile.selectedSprite,
   };
@@ -175,45 +177,42 @@ export function useDeductCoins() {
 }
 
 /**
- * Hook to increment tasks completed
+ * Hook to update userName (user's actual first name)
  */
-export function useIncrementTasksCompleted() {
+export function useUpdateUserName() {
   const { data: profile } = useSupabaseProfile();
   const updateProfile = useUpdateProfile();
 
   return useMutation({
-    mutationFn: async ({ isDoFirst = false }: { isDoFirst?: boolean } = {}): Promise<void> => {
+    mutationFn: async ({ userName }: { userName: string }): Promise<void> => {
       if (!profile) {
         throw new Error('Profile not loaded');
       }
 
       await updateProfile.mutateAsync({
         ...profile,
-        tasksCompleted: profile.tasksCompleted + 1,
-        doFirstTasksCompleted: isDoFirst
-          ? profile.doFirstTasksCompleted + 1
-          : profile.doFirstTasksCompleted,
+        userName,
       });
     },
   });
 }
 
 /**
- * Hook to update nickname
+ * Hook to update howieName (Howie companion's nickname)
  */
-export function useUpdateNickname() {
+export function useUpdateHowieName() {
   const { data: profile } = useSupabaseProfile();
   const updateProfile = useUpdateProfile();
 
   return useMutation({
-    mutationFn: async ({ nickname }: { nickname: string }): Promise<void> => {
+    mutationFn: async ({ howieName }: { howieName: string }): Promise<void> => {
       if (!profile) {
         throw new Error('Profile not loaded');
       }
 
       await updateProfile.mutateAsync({
         ...profile,
-        nickname,
+        howieName,
       });
     },
   });

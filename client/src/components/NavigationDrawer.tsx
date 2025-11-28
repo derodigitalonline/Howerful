@@ -22,6 +22,9 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
   const { profile } = useProfile();
   const { isCollapsed, setIsCollapsed } = useSidebar();
 
+  const userName = profile.userName || 'User';
+  const userInitial = userName[0].toUpperCase();
+
   // Get level badge color based on tier
   const getLevelBadgeStyle = (level: number) => {
     if (level >= 50) {
@@ -45,12 +48,6 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
       path: '/',
       icon: Home,
       description: 'Your training grounds',
-    },
-    {
-      label: 'Matrix',
-      path: '/matrix',
-      icon: CheckSquare,
-      description: 'Manage your tasks',
     },
     {
       label: 'Focus',
@@ -164,7 +161,7 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
                     // Collapsed: Just avatar with level badge (no container)
                     <div className="relative flex justify-center">
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-chart-2/20 border-2 border-primary/30 flex items-center justify-center hover:ring-2 hover:ring-primary/50 transition-all">
-                        <span className="text-lg font-bold text-primary">D</span>
+                        <span className="text-lg font-bold text-primary">{userInitial}</span>
                       </div>
                       <div className="absolute -bottom-1 -right-1">
                         <Badge
@@ -186,7 +183,7 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
                     <div className="flex flex-col items-center text-center gap-3">
                       <div className="relative">
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-chart-2/20 border-2 border-primary/30 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-primary">D</span>
+                          <span className="text-2xl font-bold text-primary">{userInitial}</span>
                         </div>
                         <div className="absolute -bottom-1 left-0 right-0 flex justify-center">
                           <Badge
@@ -207,8 +204,8 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
                         </div>
                       </div>
                       <div>
-                        <p className="font-semibold text-sm">Dero Digital</p>
-                        <p className="text-xs text-muted-foreground">@derodigital</p>
+                        <p className="font-semibold text-sm">{userName}</p>
+                        <p className="text-xs text-muted-foreground">Level {profile.level}</p>
                       </div>
                     </div>
                   )}
@@ -217,7 +214,7 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
             </TooltipTrigger>
             {isCollapsed && (
               <TooltipContent side="right">
-                <p className="font-medium">Dero Digital</p>
+                <p className="font-medium">{userName}</p>
                 <p className="text-xs text-muted-foreground">Level {profile.level}</p>
               </TooltipContent>
             )}

@@ -222,6 +222,7 @@ function dbRowToBulletItem(row: any): BulletItem {
     bucket: row.bucket || 'today',
     date: row.date || undefined,
     time: row.time || undefined,
+    scheduledDate: row.scheduled_date || undefined,
     completed: row.completed || false,
     createdAt: row.created_at,
     order: row.order_index,
@@ -243,6 +244,7 @@ function bulletItemToDbRow(item: Partial<BulletItem>, userId: string) {
     bucket: item.bucket || 'today',
     date: item.date || null,
     time: item.time || null,
+    scheduled_date: item.scheduledDate || null,
     completed: item.completed || false,
     created_at: item.createdAt ? new Date(item.createdAt).toISOString() : new Date().toISOString(),
     order_index: item.order,
@@ -301,6 +303,7 @@ export function useAddBulletItem() {
       bucket,
       time,
       date,
+      scheduledDate,
       order,
     }: {
       id: string;
@@ -309,6 +312,7 @@ export function useAddBulletItem() {
       bucket?: Bucket;
       time?: string;
       date?: string;
+      scheduledDate?: string;
       order: number;
     }): Promise<BulletItem> => {
       if (!user?.id) throw new Error('User not authenticated');
@@ -321,6 +325,7 @@ export function useAddBulletItem() {
         bucket: bucket || 'today',
         time,
         date,
+        scheduledDate,
         completed: false,
         createdAt: Date.now(),
         order,

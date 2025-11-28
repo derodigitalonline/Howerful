@@ -1,5 +1,5 @@
 import { BulletItem } from '@shared/schema';
-import { CheckSquare, Circle, Clock, GripVertical } from 'lucide-react';
+import { CheckSquare, Circle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface BulletCardProps {
@@ -7,7 +7,6 @@ interface BulletCardProps {
   onToggleComplete: (id: string) => void;
   onClick: (id: string) => void;
   isDragging?: boolean;
-  dragHandleProps?: any;
 }
 
 export default function BulletCard({
@@ -15,7 +14,6 @@ export default function BulletCard({
   onToggleComplete,
   onClick,
   isDragging,
-  dragHandleProps,
 }: BulletCardProps) {
   const isTask = item.type === 'task';
   const isEvent = item.type === 'event';
@@ -31,17 +29,8 @@ export default function BulletCard({
       )}
       onClick={() => onClick(item.id)}
     >
-      {/* Drag Handle - Top Left */}
-      <div
-        {...dragHandleProps}
-        className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <GripVertical className="w-4 h-4 text-muted-foreground" />
-      </div>
-
       {/* Type Indicator & Content */}
-      <div className="flex items-start gap-3 pl-6">
+      <div className="flex items-start gap-3">
         {/* Type Icon - Clickable for both tasks and events */}
         <div className="flex-shrink-0 mt-0.5">
           <div

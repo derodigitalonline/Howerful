@@ -11,20 +11,20 @@ import confetti from 'canvas-confetti';
 // Quest IDs
 const QUEST_GET_UR_GLASSES = 'quest-get-ur-glasses';
 const QUEST_TASK_MASTER = 'quest-task-master';
-const QUEST_PERFORMATIVE_PRODUCTIVITY = 'quest-performative-productivity';
+const QUEST_FOCUS_MASTER = 'quest-focus-master';
 
 // Quest Rewards (mapping quest ID to cosmetic ID)
 const QUEST_REWARDS: Record<string, string> = {
   [QUEST_GET_UR_GLASSES]: 'facewear-howerful-glasses',
   [QUEST_TASK_MASTER]: 'hat-baseball-cap',
-  [QUEST_PERFORMATIVE_PRODUCTIVITY]: 'shirt-tuxedo',
+  [QUEST_FOCUS_MASTER]: 'shirt-tuxedo',
 };
 
 // Quest Coin Rewards (bonus coins for completing quests)
 const QUEST_COIN_REWARDS: Record<string, number> = {
   [QUEST_GET_UR_GLASSES]: 25,
   [QUEST_TASK_MASTER]: 50,
-  [QUEST_PERFORMATIVE_PRODUCTIVITY]: 75,
+  [QUEST_FOCUS_MASTER]: 75,
 };
 
 export default function Quests() {
@@ -152,13 +152,13 @@ export default function Quests() {
               {/* Get Ur Glasses Quest */}
               <Quest
                 name="Get Ur Glasses"
-                requirement="Reach Level 2"
+                requirement="Complete 5 bullet tasks"
                 rewardName="Howerful Glasses"
                 rewardIcon={Glasses}
-                progress={Math.min(currentLevel, 2)}
-                total={2}
+                progress={Math.min(profile.bulletTasksCompleted || 0, 5)}
+                total={5}
                 isNew={true}
-                isCompleted={currentLevel >= 2}
+                isCompleted={(profile.bulletTasksCompleted || 0) >= 5}
                 isClaimed={claimedQuests.includes(QUEST_GET_UR_GLASSES)}
                 onClaim={() => handleClaimQuest(QUEST_GET_UR_GLASSES, 'Get Ur Glasses')}
               />
@@ -166,29 +166,29 @@ export default function Quests() {
               {/* Task Master Quest */}
               <Quest
                 name="Task Master"
-                requirement="Complete 10 tasks"
+                requirement="Complete 15 bullet tasks"
                 rewardName="Baseball Cap"
                 rewardIcon={Crown}
-                progress={Math.min(profile.tasksCompleted, 10)}
-                total={10}
+                progress={Math.min(profile.bulletTasksCompleted || 0, 15)}
+                total={15}
                 isNew={false}
-                isCompleted={profile.tasksCompleted >= 10}
+                isCompleted={(profile.bulletTasksCompleted || 0) >= 15}
                 isClaimed={claimedQuests.includes(QUEST_TASK_MASTER)}
                 onClaim={() => handleClaimQuest(QUEST_TASK_MASTER, 'Task Master')}
               />
 
-              {/* Performative Productivity Quest */}
+              {/* Focus Master Quest */}
               <Quest
-                name="Performative Productivity"
-                requirement="Complete 5 'Do First' tasks"
+                name="Focus Master"
+                requirement="Complete 3 focus sessions"
                 rewardName="Tuxedo"
                 rewardIcon={Shirt}
-                progress={Math.min(profile.doFirstTasksCompleted || 0, 5)}
-                total={5}
+                progress={Math.min(profile.focusSessionsCompleted || 0, 3)}
+                total={3}
                 isNew={false}
-                isCompleted={(profile.doFirstTasksCompleted || 0) >= 5}
-                isClaimed={claimedQuests.includes(QUEST_PERFORMATIVE_PRODUCTIVITY)}
-                onClaim={() => handleClaimQuest(QUEST_PERFORMATIVE_PRODUCTIVITY, 'Performative Productivity')}
+                isCompleted={(profile.focusSessionsCompleted || 0) >= 3}
+                isClaimed={claimedQuests.includes(QUEST_FOCUS_MASTER)}
+                onClaim={() => handleClaimQuest(QUEST_FOCUS_MASTER, 'Focus Master')}
               />
             </div>
       </motion.div>

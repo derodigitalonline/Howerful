@@ -1,9 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useRef } from "react";
-import { UserProfile, Quadrant, XP_REWARDS, COIN_REWARDS, DailyQuest } from "@shared/schema";
+import { UserProfile, DailyQuest } from "@shared/schema";
 import { getLevelFromXP, willLevelUp } from "../utils/xpCalculator";
 import {
   generateDailyQuests,
   shouldResetDailyQuests,
+  getDailyQuestDefinition,
 } from "../constants/dailyQuests";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSupabaseProfile, useUpdateProfile } from "./useSupabaseProfile";
@@ -37,20 +38,19 @@ export interface XPGainResult {
 interface ProfileContextType {
   profile: UserProfile;
   setProfile: (profile: UserProfile) => void;
-  awardXP: (quadrant: Quadrant) => XPGainResult;
   addXP: (amount: number) => void;
-  deductXP: (quadrant: Quadrant) => void;
   addCoins: (amount: number) => void;
   deductCoins: (amount: number) => boolean;
   resetProfile: () => void;
-  completeOnboarding: (nickname: string) => void;
+  completeOnboarding: (userName: string, howieName: string) => void;
   checkAndResetDailyQuests: () => void;
   claimDailyQuest: (questId: string) => boolean;
   unlockCosmeticReward: (cosmeticId: string) => void;
   addClaimedQuestToHistory: (questId: string) => void;
   trackRoutineCompletion: () => void;
   trackCosmeticChange: () => void;
-  trackCleanupEvent: () => void;
+  trackBulletTaskCompletion: () => void;
+  trackFocusSessionCompletion: () => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -81,10 +81,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     totalXP: 0,
     level: 1,
     coins: 0,
-    tasksCompleted: 0,
+    bulletTasksCompleted: 0,
+    focusSessionsCompleted: 0,
     hasCompletedOnboarding: false,
     selectedSprite: undefined,
-    nickname: "Howie",
+    userName: "User",
+    howieName: "Howie",
   });
   const [isLoading, setIsLoading] = useState(true);
   const hasCheckedQuestReset = useRef(false); // Prevent infinite loop by only checking once per session
@@ -109,20 +111,40 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Merge quest definitions with Supabase progress data
-      const allQuests = generateDailyQuests();
-      const mergedQuests = allQuests.map(questDef => {
-        const supabaseQuest = supabaseDailyQuests?.find(q => q.id === questDef.id);
-        if (supabaseQuest) {
-          return {
-            ...questDef,
-            progress: supabaseQuest.progress,
-            completed: supabaseQuest.completed,
-            claimed: supabaseQuest.claimed,
-          };
+      // Load daily quests: use Supabase data if available, otherwise generate new
+      let mergedQuests: DailyQuest[] = [];
+
+      if (supabaseDailyQuests && supabaseDailyQuests.length > 0) {
+        // Load quests from Supabase and merge with definitions
+        // Filter out any old/invalid quests that don't exist in the current quest pool
+        mergedQuests = supabaseDailyQuests
+          .map(supabaseQuest => {
+            const questDef = getDailyQuestDefinition(supabaseQuest.id);
+            if (questDef) {
+              return {
+                ...questDef,
+                progress: supabaseQuest.progress,
+                completed: supabaseQuest.completed,
+                claimed: supabaseQuest.claimed,
+              };
+            }
+            // Quest definition not found (old Matrix quest) - filter it out
+            return null;
+          })
+          .filter((quest): quest is DailyQuest => quest !== null);
+
+        // If no valid quests remain after filtering, generate new ones
+        if (mergedQuests.length === 0) {
+          mergedQuests = generateDailyQuests();
+        } else if (mergedQuests.length > 3) {
+          // Safety check: If somehow we have more than 3 quests, only keep the first 3
+          mergedQuests = mergedQuests.slice(0, 3);
         }
-        return questDef;
-      });
+      } else {
+        // No quests in Supabase, generate new ones
+        // (This will be synced to Supabase by checkAndResetDailyQuests)
+        mergedQuests = generateDailyQuests();
+      }
 
       setProfile({
         // Basic fields from Supabase
@@ -130,8 +152,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         totalXP: supabaseProfile.totalXP,
         level: supabaseProfile.level,
         coins: supabaseProfile.coins,
-        tasksCompleted: supabaseProfile.tasksCompleted,
-        doFirstTasksCompleted: supabaseProfile.doFirstTasksCompleted,
+        bulletTasksCompleted: supabaseProfile.bulletTasksCompleted || 0,
+        focusSessionsCompleted: supabaseProfile.focusSessionsCompleted || 0,
         hasCompletedOnboarding: supabaseProfile.hasCompletedOnboarding,
         selectedSprite: supabaseProfile.selectedSprite || undefined,
         // Quest fields from Supabase
@@ -163,7 +185,29 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (profile.hasCompletedOnboarding && !isLoading && !hasCheckedQuestReset.current) {
       hasCheckedQuestReset.current = true;
-      checkAndResetDailyQuests();
+
+      // Force reset if we have the wrong number of quests (not exactly 3)
+      const questCount = (profile.dailyQuests || []).length;
+      if (questCount !== 3 && questCount !== 0) {
+        console.log(`Invalid quest count (${questCount}), forcing reset...`);
+
+        const newQuests = generateDailyQuests();
+
+        // Clear old quests and add new ones to Supabase
+        if (isAuthenticated && isSupabaseConfigured()) {
+          deleteAllQuests.mutate();
+          bulkUpsertQuests.mutate(newQuests);
+        }
+
+        setProfile(prev => ({
+          ...prev,
+          dailyQuests: newQuests,
+          lastDailyQuestReset: new Date().toISOString(),
+        }));
+      } else {
+        // Normal daily quest check
+        checkAndResetDailyQuests();
+      }
     }
   }, [profile.hasCompletedOnboarding, isLoading]);
 
@@ -182,8 +226,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         totalXP: profile.totalXP,
         level: profile.level,
         coins: profile.coins,
-        tasksCompleted: profile.tasksCompleted,
-        doFirstTasksCompleted: profile.doFirstTasksCompleted,
+        bulletTasksCompleted: profile.bulletTasksCompleted,
+        focusSessionsCompleted: profile.focusSessionsCompleted,
         hasCompletedOnboarding: profile.hasCompletedOnboarding,
         selectedSprite: profile.selectedSprite || null,
       });
@@ -193,8 +237,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     profile.totalXP,
     profile.level,
     profile.coins,
-    profile.tasksCompleted,
-    profile.doFirstTasksCompleted,
+    profile.bulletTasksCompleted,
+    profile.focusSessionsCompleted,
     profile.hasCompletedOnboarding,
     profile.selectedSprite,
     isLoading,
@@ -213,79 +257,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, [profile.equippedCosmetics, isLoading, isAuthenticated, user]);
 
   /**
-   * Award XP and Coins for completing a task
-   */
-  const awardXP = (quadrant: Quadrant): XPGainResult => {
-    const xpGained = XP_REWARDS[quadrant];
-    const coinsGained = COIN_REWARDS[quadrant];
-    const oldLevel = profile.level;
-    const leveledUp = willLevelUp(profile.totalXP, xpGained);
-    const newTotalXP = profile.totalXP + xpGained;
-    const newLevel = getLevelFromXP(newTotalXP);
-
-    let questsToSync: DailyQuest[] = [];
-
-    setProfile((prev) => {
-      // Update daily quest progress
-      const updatedDailyQuests = (prev.dailyQuests || []).map((quest) => {
-        if (quest.completed || quest.claimed) return quest;
-
-        let newProgress = quest.progress;
-
-        // Update progress based on quest type
-        if (quest.type === 'task-completion') {
-          newProgress = quest.progress + 1;
-        } else if (quest.type === 'quadrant-specific' && quest.quadrant === quadrant) {
-          newProgress = quest.progress + 1;
-        }
-        // Note: routine-based, cosmetic-based, cleanup-based are tracked via separate functions
-
-        const isNowCompleted = newProgress >= quest.requirement;
-
-        const updatedQuest = {
-          ...quest,
-          progress: newProgress,
-          completed: isNowCompleted,
-        };
-
-        // Track quests that need to be synced to Supabase
-        if (newProgress !== quest.progress) {
-          questsToSync.push(updatedQuest);
-        }
-
-        return updatedQuest;
-      });
-
-      return {
-        ...prev,
-        totalXP: newTotalXP,
-        level: newLevel,
-        coins: (prev.coins || 0) + coinsGained,
-        tasksCompleted: prev.tasksCompleted + 1,
-        doFirstTasksCompleted: quadrant === 'do-first'
-          ? (prev.doFirstTasksCompleted || 0) + 1
-          : (prev.doFirstTasksCompleted || 0),
-        dailyQuests: updatedDailyQuests,
-      };
-    });
-
-    // Sync updated quests to Supabase
-    if (isAuthenticated && isSupabaseConfigured() && questsToSync.length > 0) {
-      questsToSync.forEach(quest => {
-        upsertDailyQuest.mutate(quest);
-      });
-    }
-
-    return {
-      xpGained,
-      coinsGained,
-      leveledUp,
-      newLevel,
-      oldLevel,
-    };
-  };
-
-  /**
    * Add XP directly without incrementing tasks completed (for dev tools)
    */
   const addXP = (amount: number): void => {
@@ -300,32 +271,17 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * Deduct XP when uncompleting a task (optional feature)
+   * Complete onboarding with userName and howieName
    */
-  const deductXP = (quadrant: Quadrant): void => {
-    const xpLost = XP_REWARDS[quadrant];
-    const newTotalXP = Math.max(0, profile.totalXP - xpLost);
-    const newLevel = getLevelFromXP(newTotalXP);
-
-    setProfile((prev) => ({
-      ...prev,
-      totalXP: newTotalXP,
-      level: newLevel,
-      tasksCompleted: Math.max(0, prev.tasksCompleted - 1),
-    }));
-  };
-
-  /**
-   * Complete onboarding with nickname
-   */
-  const completeOnboarding = (nickname: string): void => {
-    console.log('useProfile: completeOnboarding called with nickname:', nickname);
+  const completeOnboarding = (userName: string, howieName: string): void => {
+    console.log('useProfile: completeOnboarding called with:', { userName, howieName });
     setProfile((prev) => {
       const newProfile = {
         ...prev,
         hasCompletedOnboarding: true,
         selectedSprite: 'default', // Always assign default sprite on onboarding
-        nickname: nickname || 'Howie', // Fallback to "Howie" if empty
+        userName: userName || 'User', // Fallback to "User" if empty
+        howieName: howieName || 'Howie', // Fallback to "Howie" if empty
       };
       console.log('useProfile: New profile state:', newProfile);
       return newProfile;
@@ -367,7 +323,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       totalXP: 0,
       level: 1,
       coins: 0,
-      tasksCompleted: 0,
+      bulletTasksCompleted: 0,
+      focusSessionsCompleted: 0,
       hasCompletedOnboarding: false,
       selectedSprite: undefined,
       nickname: "Howie",
@@ -559,16 +516,16 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * Track cleanup event for daily quests
-   * Called when user uses 'Clean Completed Tasks' button
+   * Track bullet task completion for quests
+   * Called when user completes a bullet journal task
    */
-  const trackCleanupEvent = (): void => {
+  const trackBulletTaskCompletion = (): void => {
     let questsToSync: DailyQuest[] = [];
 
     setProfile(prev => {
       const updatedDailyQuests = (prev.dailyQuests || []).map(quest => {
         if (quest.completed || quest.claimed) return quest;
-        if (quest.type !== 'cleanup-based') return quest;
+        if (quest.type !== 'bullet-task-completion') return quest;
 
         const newProgress = quest.progress + 1;
         const isNowCompleted = newProgress >= quest.requirement;
@@ -577,7 +534,45 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         return updatedQuest;
       });
 
-      return { ...prev, dailyQuests: updatedDailyQuests };
+      return {
+        ...prev,
+        bulletTasksCompleted: (prev.bulletTasksCompleted || 0) + 1,
+        dailyQuests: updatedDailyQuests,
+      };
+    });
+
+    // Sync updated quests to Supabase
+    if (isAuthenticated && isSupabaseConfigured() && questsToSync.length > 0) {
+      questsToSync.forEach(quest => {
+        upsertDailyQuest.mutate(quest);
+      });
+    }
+  };
+
+  /**
+   * Track focus session completion for quests
+   * Called when user completes a focus session
+   */
+  const trackFocusSessionCompletion = (): void => {
+    let questsToSync: DailyQuest[] = [];
+
+    setProfile(prev => {
+      const updatedDailyQuests = (prev.dailyQuests || []).map(quest => {
+        if (quest.completed || quest.claimed) return quest;
+        if (quest.type !== 'focus-session') return quest;
+
+        const newProgress = quest.progress + 1;
+        const isNowCompleted = newProgress >= quest.requirement;
+        const updatedQuest = { ...quest, progress: newProgress, completed: isNowCompleted };
+        questsToSync.push(updatedQuest);
+        return updatedQuest;
+      });
+
+      return {
+        ...prev,
+        focusSessionsCompleted: (prev.focusSessionsCompleted || 0) + 1,
+        dailyQuests: updatedDailyQuests,
+      };
     });
 
     // Sync updated quests to Supabase
@@ -593,9 +588,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       value={{
         profile,
         setProfile,
-        awardXP,
         addXP,
-        deductXP,
         addCoins,
         deductCoins,
         resetProfile,
@@ -606,7 +599,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         addClaimedQuestToHistory,
         trackRoutineCompletion,
         trackCosmeticChange,
-        trackCleanupEvent,
+        trackBulletTaskCompletion,
+        trackFocusSessionCompletion,
       }}
     >
       {children}

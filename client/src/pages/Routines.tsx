@@ -41,7 +41,7 @@ export default function Routines() {
   const updateRoutine = useUpdateRoutine();
   const upsertMetadata = useUpsertRoutineMetadata();
 
-  const { profile, awardXP, trackRoutineCompletion } = useProfile();
+  const { profile, trackRoutineCompletion } = useProfile();
   const [isSetup, setIsSetup] = useState(false);
   const [setupRoutines, setSetupRoutines] = useState<string[]>(['']);
   const [routines, setRoutines] = useState<DailyRoutine[]>([]);
@@ -241,11 +241,9 @@ export default function Routines() {
 
     const newCompleted = !routine.completed;
 
-    // If completing the routine (not uncompleting), award XP and trigger animation
+    // If completing the routine (not uncompleting), track for quests
     // But only if XP hasn't been awarded for this routine today
     if (newCompleted && !metadata.xpAwardedToday.includes(id)) {
-      awardXP('do-first'); // Awards 20 XP
-
       // Track routine completion for daily quests
       trackRoutineCompletion();
 
@@ -299,11 +297,6 @@ export default function Routines() {
 
   const handleClaimBounty = () => {
     const today = new Date().toDateString();
-
-    // Award XP multiple times to reach 1000 (50 chunks of 20 XP each)
-    for (let i = 0; i < 50; i++) {
-      awardXP('do-first');
-    }
 
     const updatedMetadata: RoutineMetadata = {
       ...metadata,

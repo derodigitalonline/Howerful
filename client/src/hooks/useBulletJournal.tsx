@@ -56,7 +56,47 @@ export function useBulletJournal() {
     }
   }, [items, isLoading]);
 
-  const addItem = (text: string, type: BulletItemType, bucket: Bucket = 'today', time?: string, date?: string) => {
+  // Auto-migrate Future Log items to Today when their scheduled date arrives
+  useEffect(() => {
+    if (isLoading) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of today
+
+    const itemsToMigrate = items.filter(item =>
+      item.bucket === 'future-log' &&
+      item.scheduledDate &&
+      new Date(item.scheduledDate) <= today
+    );
+
+    if (itemsToMigrate.length > 0) {
+      console.log(`Auto-migrating ${itemsToMigrate.length} items from Future Log to Today`);
+
+      itemsToMigrate.forEach(item => {
+        // Update the item to move it to "today" bucket
+        const updatedItem = {
+          ...item,
+          bucket: 'today' as Bucket,
+          scheduledDate: undefined, // Clear scheduled date after migration
+        };
+
+        // Update local state
+        setItems(prev =>
+          prev.map(i => (i.id === item.id ? updatedItem : i))
+        );
+
+        // Sync to Supabase
+        if (isAuthenticated && isSupabaseConfigured()) {
+          updateItemMutation.mutate({
+            id: item.id,
+            updates: { bucket: 'today', scheduledDate: undefined },
+          });
+        }
+      });
+    }
+  }, [items, isLoading, isAuthenticated]);
+
+  const addItem = (text: string, type: BulletItemType, bucket: Bucket = 'today', time?: string, date?: string, scheduledDate?: string) => {
     // Find the highest order for this bucket
     const bucketItems = items.filter(item => item.bucket === bucket);
     const maxOrder = bucketItems.length > 0
@@ -71,6 +111,7 @@ export function useBulletJournal() {
       bucket,
       date, // Optional - only for scheduled events
       time,
+      scheduledDate, // Optional - for Future Log auto-migration
       completed: false,
       createdAt: Date.now(),
       order, // New items get next order (will appear at top after sort)
@@ -81,8 +122,8 @@ export function useBulletJournal() {
 
     // Sync to Supabase if logged in (pass the same ID)
     if (isAuthenticated && isSupabaseConfigured()) {
-      console.log('Adding bullet item to Supabase:', { id: newItem.id, text, type, bucket, time, date, order });
-      addItemMutation.mutate({ id: newItem.id, text, type, bucket, time, date, order });
+      console.log('Adding bullet item to Supabase:', { id: newItem.id, text, type, bucket, time, date, scheduledDate, order });
+      addItemMutation.mutate({ id: newItem.id, text, type, bucket, time, date, scheduledDate, order });
     } else {
       console.log('Not syncing to Supabase - authenticated:', isAuthenticated, 'configured:', isSupabaseConfigured());
     }

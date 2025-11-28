@@ -205,8 +205,8 @@ export default function Customize() {
                     <span className="text-sm font-bold text-primary">{profile.level}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Nickname</span>
-                    <span className="text-sm font-bold text-primary truncate">{profile.nickname || 'Howie'}</span>
+                    <span className="text-sm text-muted-foreground">Howie Name</span>
+                    <span className="text-sm font-bold text-primary truncate">{profile.howieName || 'Howie'}</span>
                   </div>
                 </div>
               </Card>

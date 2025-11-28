@@ -1,6 +1,6 @@
 import { Bucket } from '@shared/schema';
 import { cn } from '@/lib/utils';
-import { Plus } from 'lucide-react';
+import { Plus, Cloud } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface BucketTabsProps {
@@ -10,14 +10,24 @@ interface BucketTabsProps {
     today: number;
     tomorrow: number;
     someday: number;
+    'future-log': number;
   };
 }
 
 export default function BucketTabs({ activeBucket, onBucketChange, counts }: BucketTabsProps) {
-  const tabs: { bucket: Bucket; label: string }[] = [
+  const tabs: { bucket: Bucket; label: string; icon?: React.ReactNode }[] = [
     { bucket: 'today', label: 'Today' },
     { bucket: 'tomorrow', label: 'Tomorrow' },
     { bucket: 'someday', label: 'Someday' },
+    {
+      bucket: 'future-log',
+      label: 'Future Log',
+      icon: (
+        <div className="w-4 h-4 bg-gradient-to-br from-blue-400 to-blue-600 rounded flex items-center justify-center">
+          <Cloud className="w-3 h-3 text-white" />
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -41,6 +51,7 @@ export default function BucketTabs({ activeBucket, onBucketChange, counts }: Buc
             >
               {/* Tab Content */}
               <div className="flex items-center gap-2">
+                {tab.icon}
                 <span className="text-sm">{tab.label}</span>
                 {count > 0 && (
                   <motion.span
