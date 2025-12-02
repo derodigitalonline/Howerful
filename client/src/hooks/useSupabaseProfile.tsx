@@ -1,13 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Profile } from '@shared/schema';
+import type { UserProfile } from '@shared/schema';
 
-// Helper: Convert database row to Profile type
-function dbRowToProfile(row: any): Profile {
+// Helper: Convert database row to UserProfile type
+function dbRowToProfile(row: any): UserProfile {
   return {
     userName: row.user_name || 'User',
     howieName: row.howie_name || 'Howie',
+    profilePictureUrl: row.profile_picture_url || undefined,
     totalXP: row.total_xp || 0,
     level: row.level || 1,
     coins: row.coins || 0,
@@ -18,11 +19,12 @@ function dbRowToProfile(row: any): Profile {
   };
 }
 
-// Helper: Convert Profile type to database row
-function profileToDbRow(profile: Profile) {
+// Helper: Convert UserProfile type to database row
+function profileToDbRow(profile: UserProfile) {
   return {
     user_name: profile.userName,
     howie_name: profile.howieName,
+    profile_picture_url: profile.profilePictureUrl || null,
     total_xp: profile.totalXP,
     level: profile.level,
     coins: profile.coins,
@@ -43,7 +45,7 @@ export function useSupabaseProfile() {
 
   return useQuery({
     queryKey: ['profile', user?.id],
-    queryFn: async (): Promise<Profile | null> => {
+    queryFn: async (): Promise<UserProfile | null> => {
       if (!user?.id) return null;
 
       const { data, error } = await supabase
@@ -73,7 +75,7 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (profile: Partial<Profile>): Promise<Profile> => {
+    mutationFn: async (profile: Partial<UserProfile>): Promise<UserProfile> => {
       if (!user?.id) {
         throw new Error('User not authenticated');
       }
@@ -82,7 +84,7 @@ export function useUpdateProfile() {
         throw new Error('Supabase not configured');
       }
 
-      const dbRow = profileToDbRow(profile as Profile);
+      const dbRow = profileToDbRow(profile as UserProfile);
 
       const { data, error } = await supabase
         .from('profiles')
@@ -256,6 +258,88 @@ export function useSelectSprite() {
         ...profile,
         selectedSprite: spriteId,
       });
+    },
+  });
+}
+
+/**
+ * Hook to upload profile picture
+ * Uploads image to Supabase Storage and updates profile with URL
+ * Max file size: 1MB
+ */
+export function useUploadProfilePicture() {
+  const { user } = useAuth();
+  const { data: profile } = useSupabaseProfile();
+  const updateProfile = useUpdateProfile();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (file: File): Promise<string> => {
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
+
+      if (!profile) {
+        throw new Error('Profile not loaded');
+      }
+
+      if (!isSupabaseConfigured()) {
+        throw new Error('Supabase not configured');
+      }
+
+      // Validate file size (1MB max)
+      const MAX_SIZE = 1 * 1024 * 1024; // 1MB in bytes
+      if (file.size > MAX_SIZE) {
+        throw new Error('File size must be less than 1MB');
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('File must be an image');
+      }
+
+      // Delete old profile picture if exists
+      if (profile.profilePictureUrl) {
+        const oldPath = profile.profilePictureUrl.split('/').pop();
+        if (oldPath) {
+          await supabase.storage
+            .from('profile-pictures')
+            .remove([`${user.id}/${oldPath}`]);
+        }
+      }
+
+      // Upload new file with unique name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('profile-pictures')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-pictures')
+        .getPublicUrl(filePath);
+
+      // Update profile with new URL
+      await updateProfile.mutateAsync({
+        ...profile,
+        profilePictureUrl: publicUrl,
+      });
+
+      return publicUrl;
+    },
+    onSuccess: () => {
+      // Invalidate profile query to refetch
+      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
     },
   });
 }

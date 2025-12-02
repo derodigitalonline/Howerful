@@ -148,7 +148,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
       setProfile({
         // Basic fields from Supabase
-        nickname: supabaseProfile.nickname,
+        userName: supabaseProfile.userName,
+        howieName: supabaseProfile.howieName,
         totalXP: supabaseProfile.totalXP,
         level: supabaseProfile.level,
         coins: supabaseProfile.coins,

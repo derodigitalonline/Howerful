@@ -1,321 +1,156 @@
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, Code2, RotateCcw, CheckCircle2, Zap, TrendingUp, Sparkles } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Sparkles, Trophy, Target, Flame } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
-import { toast } from 'sonner';
-import LayeredAvatar from '@/components/LayeredAvatar';
+import HowieViewer3D from '@/components/HowieViewer3D';
 import XPBar from '@/components/XPBar';
 import CoinDisplay from '@/components/CoinDisplay';
-import { getXPForLevel } from '@/utils/xpCalculator';
+import ProfilePictureUpload from '@/components/ProfilePictureUpload';
 
 export default function Profile() {
-  const { profile, resetProfile, addXP, trackBulletTaskCompletion } = useProfile();
+  const { profile } = useProfile();
 
-  // Avatar customization - use equipped cosmetics from profile
-  const hasSprite = Boolean(profile.selectedSprite);
-
-  const handleResetProgress = () => {
-    if (confirm('⚠️ Are you sure? This will reset ALL progress (XP, level, tasks completed, and quest progress). This cannot be undone!')) {
-      resetProfile();
-      toast.success('Progress reset!', {
-        description: 'All XP, level, and quest progress has been cleared.',
-      });
-    }
-  };
-
-  const handleComplete5Tasks = () => {
-    for (let i = 0; i < 5; i++) {
-      trackBulletTaskCompletion();
-    }
-    toast.success('+5 bullet tasks completed!', {
-      description: 'Quest progress has been updated.',
-    });
-  };
-
-  const handleComplete10Tasks = () => {
-    for (let i = 0; i < 10; i++) {
-      trackBulletTaskCompletion();
-    }
-    toast.success('+10 bullet tasks completed!', {
-      description: 'Quest progress has been updated.',
-    });
-  };
-
-  const handleAddXP = (amount: number) => {
-    // Use the addXP function which directly adds XP without incrementing tasks
-    addXP(amount);
-    toast.success(`+${amount} XP awarded!`, {
-      description: `Your new level: ${profile.level}`,
-    });
-  };
-
-  const handleSetLevel = (targetLevel: number) => {
-    // Calculate XP needed for target level using the real XP formula
-    const targetXP = getXPForLevel(targetLevel);
-    const xpDifference = targetXP - profile.totalXP;
-
-    if (xpDifference !== 0) {
-      addXP(xpDifference);
-    }
-
-    toast.success(`Level set to ${targetLevel}!`, {
-      description: `XP set to ${targetXP.toLocaleString()}`,
-    });
+  // Get level tier for styling
+  const getLevelBadgeStyle = (level: number) => {
+    if (level >= 50) return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-black border-yellow-300 border-2';
+    if (level >= 40) return 'bg-gradient-to-r from-purple-500 to-pink-500 text-white';
+    if (level >= 30) return 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white';
+    if (level >= 20) return 'bg-gradient-to-r from-green-500 to-emerald-500 text-white';
+    if (level >= 10) return 'bg-gradient-to-r from-orange-500 to-red-500 text-white';
+    return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white';
   };
 
   return (
-    <div className="h-full p-6 md:p-8 overflow-y-auto">
+    <div className="h-full overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-[1150px] mx-auto"
       >
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold mb-2">Hi {profile.userName || 'User'}</h1>
-              <p className="text-muted-foreground">
-                Customize your avatar and personal space
-              </p>
-            </div>
+        {/* Full-Width 3D Viewer Header */}
+        <div className="relative h-[400px] bg-gradient-to-br from-background via-muted/30 to-background border-b-2 border-border overflow-hidden">
+          {/* 3D Viewer */}
+          <div className="absolute inset-0">
+            <HowieViewer3D
+              equippedCosmetics={profile.equippedCosmetics}
+              autoRotate={true}
+              enableZoom={true}
+              enablePan={false}
+              pixelSize={2}
+            />
+          </div>
 
-            {/* Avatar & Customization Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-[minmax(400px,512px)_1fr] gap-6 mb-8 max-w-full">
-              {/* Left: Avatar Display */}
-              <Card className="p-8">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4">
-                  {profile.howieName || "Your Howie"}
-                </h2>
+          {/* Overlay Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none" />
 
-                {/* 512x512 Container */}
-                <div className="relative w-full aspect-square bg-gradient-to-br from-muted/50 to-muted/20 rounded-xl border-2 border-border overflow-hidden">
-                  {hasSprite ? (
-                    <div className="w-full h-full flex items-center justify-center p-8">
-                      {/* LayeredAvatar Component - renders base sprite + equipped cosmetics */}
-                      <LayeredAvatar
-                        equippedCosmetics={profile.equippedCosmetics || {}}
-                        size={168}
-                        showPet={true}
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <User className="w-12 h-12 text-primary" />
-                        </div>
-                        <p className="text-sm text-muted-foreground font-medium">
-                          No Howie Selected
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          512 × 512 pixels
-                        </p>
-                      </div>
-                    </div>
-                  )}
+          {/* Profile Info Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex items-end gap-6">
+                {/* User Info */}
+                <div className="flex-1 pb-2">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-4xl md:text-5xl font-bold text-foreground drop-shadow-lg">
+                      {profile.userName || 'User'}
+                    </h1>
+                    <Badge
+                      className={`text-sm px-3 py-1 font-bold ${getLevelBadgeStyle(profile.level)}`}
+                    >
+                      LVL {profile.level}
+                    </Badge>
+                  </div>
+                  <p className="text-lg text-muted-foreground">
+                    {profile.howieName || "Howie"}'s Trainer
+                  </p>
                 </div>
 
                 {/* Customize Button */}
-                <div className="mt-6">
-                  <Button
-                    size="lg"
-                    className="w-full text-base font-bold gap-2"
-                    onClick={() => window.location.href = '/customize'}
-                  >
-                    <Sparkles className="w-5 h-5" />
-                    Customize My Howie
-                  </Button>
-                </div>
-              </Card>
-
-              {/* Right: Stats & Customization Button */}
-              <Card className="p-8 flex flex-col">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-6">
-                  Your Stats
-                </h2>
-
-                {/* XP Progress Bar */}
-                <div className="mb-6">
-                  <XPBar profile={profile} />
-                </div>
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  <div className="p-4 bg-accent/50 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">Level</p>
-                    <p className="text-3xl font-bold text-primary">{profile.level}</p>
-                  </div>
-                  <div className="p-4 bg-accent/50 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">Total XP</p>
-                    <p className="text-3xl font-bold text-primary">{profile.totalXP.toLocaleString()}</p>
-                  </div>
-                  <div className="p-4 bg-accent/50 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">Tasks Completed</p>
-                    <p className="text-3xl font-bold text-primary">{profile.tasksCompleted}</p>
-                  </div>
-                  <div className="p-4 bg-accent/50 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">Howie Coins</p>
-                    <div className="mt-1">
-                      <CoinDisplay coins={profile.coins || 0} size="sm" />
-                    </div>
-                  </div>
-                </div>
-              </Card>
+                <Button
+                  size="lg"
+                  className="gap-2 font-bold"
+                  onClick={() => window.location.href = '/customize'}
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Customize Howie
+                </Button>
+              </div>
             </div>
+          </div>
 
-            {/* Developer Tools */}
-            <Card className="p-6 max-w-2xl border-2 border-primary/20 bg-primary/5">
-              <div className="flex items-center gap-2 mb-4">
-                <Code2 className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-bold">Developer Tools</h2>
+          {/* Controls Hint */}
+          <div className="absolute top-4 right-4">
+            <p className="text-xs text-muted-foreground bg-background/80 px-3 py-1.5 rounded-full">
+              Drag to rotate • Scroll to zoom
+            </p>
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <div className="max-w-7xl mx-auto p-6 md:p-8">
+          {/* XP Progress */}
+          <Card className="p-6 mb-6">
+            <XPBar profile={profile} />
+          </Card>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Level */}
+            <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Trophy className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Level</p>
+                  <p className="text-3xl font-bold text-primary">{profile.level}</p>
+                </div>
               </div>
+            </Card>
 
-              <p className="text-sm text-muted-foreground mb-6">
-                Test XP systems, quests, and other features. Use these tools to stress test the gamification system.
-              </p>
-
-              {/* Current Stats Display */}
-              <div className="grid grid-cols-4 gap-3 mb-6 p-4 bg-background/50 rounded-lg">
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Level</p>
-                  <p className="text-2xl font-bold text-primary">{profile.level}</p>
+            {/* Total XP */}
+            <Card className="p-6 bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-blue-500" />
                 </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Total XP</p>
-                  <p className="text-2xl font-bold text-primary">{profile.totalXP.toLocaleString()}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Tasks Done</p>
-                  <p className="text-2xl font-bold text-primary">{profile.tasksCompleted}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Howie Name</p>
-                  <p className="text-xs font-bold text-primary truncate">{profile.howieName || 'Howie'}</p>
+                <div>
+                  <p className="text-xs text-muted-foreground">Total XP</p>
+                  <p className="text-3xl font-bold text-blue-500">{profile.totalXP.toLocaleString()}</p>
                 </div>
               </div>
+            </Card>
 
-              {/* Tool Buttons */}
-              <div className="space-y-3">
-                {/* Progress Controls */}
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Progress Controls</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={handleResetProgress}
-                      className="gap-2"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                      Reset All Progress
-                    </Button>
-                  </div>
+            {/* Tasks Completed */}
+            <Card className="p-6 bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <Target className="w-5 h-5 text-green-500" />
                 </div>
-
-                {/* Task Generation */}
                 <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Task Generation</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleComplete5Tasks}
-                      className="gap-2"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      Complete 5 Tasks
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleComplete10Tasks}
-                      className="gap-2"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      Complete 10 Tasks
-                    </Button>
-                  </div>
+                  <p className="text-xs text-muted-foreground">Tasks</p>
+                  <p className="text-3xl font-bold text-green-500">{profile.bulletTasksCompleted || 0}</p>
                 </div>
+              </div>
+            </Card>
 
-                {/* XP Manipulation */}
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">XP Manipulation</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAddXP(100)}
-                      className="gap-2"
-                    >
-                      <Zap className="w-4 h-4" />
-                      +100 XP
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAddXP(500)}
-                      className="gap-2"
-                    >
-                      <Zap className="w-4 h-4" />
-                      +500 XP
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAddXP(1000)}
-                      className="gap-2"
-                    >
-                      <Zap className="w-4 h-4" />
-                      +1000 XP
-                    </Button>
-                  </div>
+            {/* Howie Coins */}
+            <Card className="p-6 bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border-yellow-500/20">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                  <Flame className="w-5 h-5 text-yellow-500" />
                 </div>
-
-                {/* Level Jumps */}
                 <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Quick Level Jumps</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSetLevel(5)}
-                      className="gap-2"
-                    >
-                      <TrendingUp className="w-4 h-4" />
-                      Jump to Level 5
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSetLevel(10)}
-                      className="gap-2"
-                    >
-                      <TrendingUp className="w-4 h-4" />
-                      Jump to Level 10
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSetLevel(25)}
-                      className="gap-2"
-                    >
-                      <TrendingUp className="w-4 h-4" />
-                      Jump to Level 25
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSetLevel(50)}
-                      className="gap-2"
-                    >
-                      <TrendingUp className="w-4 h-4" />
-                      Jump to Level 50 (MAX)
-                    </Button>
+                  <p className="text-xs text-muted-foreground">Howie Coins</p>
+                  <div className="mt-1">
+                    <CoinDisplay coins={profile.coins || 0} size="md" />
                   </div>
                 </div>
               </div>
             </Card>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

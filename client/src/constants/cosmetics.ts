@@ -33,6 +33,7 @@ export const COSMETICS_LIBRARY: CosmeticItem[] = [
     name: 'Baseball Cap',
     category: 'hat',
     imagePath: '/assets/cosmetics/hats/baseball_cap.png',
+    modelPath: '/models/cosmetics/Hat_Baseball-Red.glb',
     description: 'A classic sporty look',
     unlockQuest: 'quest-task-master',
     rarity: 'common',
@@ -42,6 +43,7 @@ export const COSMETICS_LIBRARY: CosmeticItem[] = [
     name: 'Wizard Hat',
     category: 'hat',
     imagePath: '/assets/cosmetics/hats/wizard-hat.png',
+    modelPath: '/models/cosmetics/Hat_Wizard-Blue.glb',
     description: 'Channel your inner magic',
     rarity: 'rare',
     coinPrice: 150,
@@ -135,36 +137,6 @@ export const COSMETICS_LIBRARY: CosmeticItem[] = [
     description: 'Mysterious and powerful',
     unlockLevel: 15,
     rarity: 'epic',
-  },
-
-  // ======================
-  // PETS (Companions)
-  // ======================
-  {
-    id: 'pet-none',
-    name: 'No Pet',
-    category: 'pet',
-    imagePath: '',
-    description: 'Solo adventurer',
-    rarity: 'common',
-  },
-  {
-    id: 'pet-cat',
-    name: 'Tabby Cat',
-    category: 'pet',
-    imagePath: '/assets/cosmetics/pets/cat.png',
-    description: 'A loyal feline companion',
-    unlockLevel: 8,
-    rarity: 'rare',
-  },
-  {
-    id: 'pet-dog',
-    name: 'Golden Retriever',
-    category: 'pet',
-    imagePath: '/assets/cosmetics/pets/dog.png',
-    description: "Your best friend and productivity buddy",
-    rarity: 'epic',
-    coinPrice: 300,
   },
 
   // ======================
@@ -296,7 +268,6 @@ export function getDefaultCosmetics(): Record<CosmeticCategory, CosmeticItem> {
     shirt: getCosmeticById('shirt-none')!,
     pants: getCosmeticById('pants-none')!,
     cape: getCosmeticById('cape-none')!,
-    pet: getCosmeticById('pet-none')!,
     facewear: getCosmeticById('facewear-none')!,
   };
 }

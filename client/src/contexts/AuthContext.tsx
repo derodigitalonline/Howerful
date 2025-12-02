@@ -108,6 +108,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const { error } = await supabase.auth.signOut();
+
+    // Clear all localStorage data on logout to prevent data leakage
+    localStorage.clear();
+
     return { error };
   };
 

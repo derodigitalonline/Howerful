@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Shirt, Crown, Glasses, Wind, Sparkles, ArrowLeft } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
-import LayeredAvatar from '@/components/LayeredAvatar';
+import HowieViewer3D from '@/components/HowieViewer3D';
 import {
   COSMETICS_LIBRARY,
   getCosmeticsByCategory,
@@ -189,13 +189,16 @@ export default function Customize() {
 
                 {/* Avatar Preview Container */}
                 <div className="relative w-full aspect-square bg-gradient-to-br from-muted/50 to-muted/20 rounded-xl border-2 border-border overflow-hidden mb-4">
-                  <div className="w-full h-full flex items-center justify-center p-8">
-                    <LayeredAvatar
-                      equippedCosmetics={equippedCosmetics}
-                      size={168}
-                      showPet={true}
-                    />
-                  </div>
+                  <HowieViewer3D
+                    equippedCosmetics={equippedCosmetics}
+                    enableZoom={true}
+                    enablePan={false}
+                    autoRotate={false}
+                    pixelSize={2}
+                  />
+                  <p className="absolute bottom-2 left-0 right-0 text-xs text-muted-foreground text-center">
+                    Drag to rotate • Scroll to zoom
+                  </p>
                 </div>
 
                 {/* Level & Stats */}
@@ -218,7 +221,7 @@ export default function Customize() {
                   className="w-full"
                   onValueChange={(value) => setSelectedCategory(value as CosmeticCategory)}
                 >
-                  <TabsList className="grid w-full grid-cols-6 mb-6">
+                  <TabsList className="grid w-full grid-cols-5 mb-6">
                     <TabsTrigger value="hat" className="gap-2">
                       <Crown className="w-4 h-4" />
                       <span className="hidden sm:inline">Hats</span>
@@ -238,10 +241,6 @@ export default function Customize() {
                     <TabsTrigger value="cape" className="gap-2">
                       <Wind className="w-4 h-4" />
                       <span className="hidden sm:inline">Capes</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="pet" className="gap-2">
-                      <Sparkles className="w-4 h-4" />
-                      <span className="hidden sm:inline">Pets</span>
                     </TabsTrigger>
                   </TabsList>
 
@@ -293,16 +292,6 @@ export default function Customize() {
                       </p>
                     </div>
                     {renderCosmeticGrid('cape')}
-                  </TabsContent>
-
-                  <TabsContent value="pet" className="space-y-4">
-                    <div>
-                      <h3 className="text-lg font-semibold mb-2">Pets</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Choose a companion to accompany you
-                      </p>
-                    </div>
-                    {renderCosmeticGrid('pet')}
                   </TabsContent>
                 </Tabs>
               </Card>

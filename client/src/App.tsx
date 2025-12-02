@@ -79,7 +79,7 @@ function AppContent() {
       <Toaster />
       <Sonner position="top-right" richColors />
       <OnboardingDialog
-        open={!profile.hasCompletedOnboarding}
+        open={isAuthenticated && !profile.hasCompletedOnboarding}
         onComplete={completeOnboarding}
       />
 

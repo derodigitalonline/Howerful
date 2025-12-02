@@ -111,13 +111,12 @@ export default function Bazaar() {
 
             {/* Shop Tabs by Category */}
             <Tabs defaultValue="hat" className="w-full">
-              <TabsList className="grid w-full grid-cols-6 mb-6">
+              <TabsList className="grid w-full grid-cols-5 mb-6">
                 <TabsTrigger value="hat">Hats</TabsTrigger>
                 <TabsTrigger value="facewear">Facewear</TabsTrigger>
                 <TabsTrigger value="shirt">Shirts</TabsTrigger>
                 <TabsTrigger value="pants">Pants</TabsTrigger>
                 <TabsTrigger value="cape">Capes</TabsTrigger>
-                <TabsTrigger value="pet">Pets</TabsTrigger>
               </TabsList>
 
               {Object.entries(categorizedCosmetics).map(([category, items]) => (

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Avatar Customization System
 // Using literal types ensures TypeScript knows exactly which categories exist
-export const cosmeticCategories = ["hat", "shirt", "pants", "cape", "pet", "facewear"] as const;
+export const cosmeticCategories = ["hat", "shirt", "pants", "cape", "facewear"] as const;
 export type CosmeticCategory = typeof cosmeticCategories[number];
 
 // CosmeticItem represents a single cosmetic asset
@@ -10,13 +10,16 @@ export interface CosmeticItem {
   id: string;                    // Unique identifier (e.g., 'hat-wizard')
   name: string;                  // Display name for UI
   category: CosmeticCategory;    // Which slot it occupies
-  imagePath: string;             // Path to the PNG asset
+  imagePath: string;             // Path to the PNG asset (for UI previews)
+  modelPath?: string;            // Path to the 3D .glb model file
   description?: string;          // Optional flavor text
   unlockLevel?: number;          // Level requirement to use this item
   unlockQuest?: string;          // Quest ID requirement (for future)
   coinPrice?: number;            // Cost in Howie Coins (if purchasable from Bazaar)
   rarity?: 'common' | 'rare' | 'epic' | 'legendary'; // Visual styling hint
-  zIndex?: number;               // Custom layering order (optional)
+  zIndex?: number;               // Custom layering order (deprecated for 3D)
+  hasAnimation?: boolean;        // True if cosmetic has its own animations
+  animationName?: string;        // Name of animation to play (e.g., 'CapeFlow')
 }
 
 // EquippedCosmetics tracks what the user currently has equipped
@@ -73,6 +76,7 @@ export const userProfileSchema = z.object({
   selectedSprite: z.string().optional(),
   userName: z.string().default("User"), // User's actual first name (for profile button)
   howieName: z.string().default("Howie"), // User's nickname for their Howie companion
+  profilePictureUrl: z.string().optional(), // Supabase Storage URL for profile picture (max 1MB)
   equippedCosmetics: z.object({
     hat: z.string().optional(),
     shirt: z.string().optional(),
