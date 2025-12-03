@@ -1,66 +1,160 @@
 # Howerful Documentation
 
-Welcome to the Howerful documentation! This directory contains comprehensive information about the project.
+Welcome to Howerful's documentation hub! Everything you need to understand, set up, and contribute to the project.
 
-## 📚 Documentation Files
+---
+
+## Quick Links
+
+### For AI Assistants & Rapid Onboarding
+- **[🚀 Quick Primer](PRIMER.md)** - Start here! Compact overview of the entire codebase
+- **[📚 API Reference](API_REFERENCE.md)** - Complete reference for endpoints, hooks, and schemas
+- **[📝 Current Sprint](../PLAN.md)** - Latest priorities and recent completions (root level)
+
+### For Developers
+- **[⚙️ Setup Guide](SETUP.md)** - Installation and Supabase configuration
+- **[🏗️ Architecture](ARCHITECTURE.md)** - System design and technical patterns
+- **[🎨 Design System](DESIGN_SYSTEM.md)** - UI/UX patterns and component guidelines
+- **[📋 Changelog](CHANGELOG.md)** - Complete development history
+
+---
+
+## Documentation Guide
+
+### Start Here
+
+**New to the project?** Read in this order:
+1. [PRIMER.md](PRIMER.md) - 10-minute overview of everything
+2. [SETUP.md](SETUP.md) - Get your environment running
+3. [ARCHITECTURE.md](ARCHITECTURE.md) - Understand the system design
+
+**Need API details?** Go straight to [API_REFERENCE.md](API_REFERENCE.md)
+
+**Working on UI?** Check [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)
+
+---
+
+## What's in Each Document
+
+### [PRIMER.md](PRIMER.md)
+**Quick Reference (200-300 lines)**
+
+Optimized for rapid context loading:
+- Project overview and tech stack
+- Core systems summary (Dojo, Focus, Quests, etc.)
+- Key hooks and their purposes
+- Database tables overview
+- Important patterns and gotchas
+- File locations and commands
+
+**Use when:** Onboarding, priming AI, quick reference
+
+---
+
+### [SETUP.md](SETUP.md)
+**Installation & Configuration Guide**
+
+Complete setup instructions:
+- Prerequisites and dependencies
+- Supabase project creation
+- Environment variables
+- Database migrations
+- Authentication configuration
+- Troubleshooting guide
+
+**Use when:** First-time setup, environment issues, deploying
+
+---
+
+### [API_REFERENCE.md](API_REFERENCE.md)
+**Complete API Documentation**
+
+Comprehensive reference for:
+- REST API endpoints
+- Custom React hooks (detailed signatures)
+- Database schema (all 12 tables)
+- TypeScript interfaces
+- Data relationships
+- Migration history
+
+**Use when:** Implementing features, debugging data flow, adding endpoints
+
+---
 
 ### [ARCHITECTURE.md](ARCHITECTURE.md)
-Complete system architecture, database schema, and technical design patterns.
+**System Design & Technical Patterns**
 
-**Read this for**:
-- Understanding how the app works
-- Database schema reference
-- API endpoint specifications
-- Component architecture
-- UI/UX patterns and design system
+Deep dive into:
+- Core systems (7 detailed sections)
+- Data flow architecture
+- UI/UX patterns
+- Performance optimizations
+- Security considerations
+- Deployment pipeline
+
+**Use when:** Understanding system design, making architectural decisions
+
+---
+
+### [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)
+**UI/UX Patterns & Guidelines**
+
+Design specifications:
+- Color palette and themes
+- Typography system
+- Component library
+- Button variants and effects
+- Layout patterns
+- Responsive behavior
+
+**Use when:** Building UI, ensuring consistency, styling components
+
+---
 
 ### [CHANGELOG.md](CHANGELOG.md)
-Complete development history with all features, fixes, and changes.
+**Development History**
 
-**Read this for**:
-- Historical context
-- Feature implementation details
-- Bug fix history
-- Design decision rationale
+Historical record:
+- Feature implementations
+- Bug fixes
+- Design decisions
+- Refactoring notes
+- Migration details
 
-## 🚀 Quick Start for AI Assistants
+**Use when:** Understanding why something was built a certain way
 
-Start with [`../PLAN.md`](../PLAN.md) - it contains:
-- AI Quick Start guide (system overview)
-- Current sprint priorities
+---
+
+### [PLAN.md](../PLAN.md)
+**Current Sprint & Priorities** *(in root directory)*
+
+Living document:
 - Recently completed features
-- Known blockers and technical debt
-- API endpoints quick reference
+- Next priorities
+- Known blockers
+- Technical debt
+- Quick commands
 
-Then reference:
-1. **ARCHITECTURE.md** for technical details
-2. **CHANGELOG.md** for historical context
+**Use when:** Planning work, tracking progress, checking status
 
 ---
 
 ## Project Overview
 
-**Howerful** is a gamified productivity app combining:
-- **Dojo**: Brain dump and task triage (bullet journal style)
-- **Matrix**: Eisenhower Matrix for task prioritization
-- **Focus**: Pomodoro-style focus sessions with time tracking
-- **Quests**: Achievement system with XP and coin rewards
-- **Routines**: Daily habit tracking with streaks
-- **Bazaar**: Cosmetics shop for profile customization
+**Howerful** is a gamified productivity app combining bullet journaling, focus sessions, habit tracking, and RPG-style progression.
+
+### Core Features
+- **Dojo**: Temporal bucket system for task management (Today/Tomorrow/Someday/Future-Log)
+- **Focus Mode**: Pomodoro timer with session tracking
+- **Quest System**: Daily challenges with XP/coin rewards
+- **Routines**: Habit tracking with streaks
+- **Profile & Cosmetics**: 3D avatar customization with unlockable items
 
 ### Tech Stack
-- React + TypeScript + Vite
-- Express.js + PostgreSQL
-- Tailwind CSS + shadcn/ui
-- Framer Motion + dnd-kit
-
-### Key Features
-- XP-based leveling system
-- Drag & drop task management
-- Natural language task parsing
-- Focus session tracking with breaks
-- Customizable profile cosmetics
-- Collapsible navigation sidebar
+- **Frontend:** React 18, TypeScript, TailwindCSS, shadcn/ui, Three.js
+- **Backend:** Supabase (PostgreSQL + Auth + RLS)
+- **State:** React Query, Context API
+- **Build:** Vite
 
 ---
 
@@ -68,55 +162,70 @@ Then reference:
 
 ```
 howerful/
-├── client/                 # React frontend
+├── client/                      # React frontend
 │   ├── src/
-│   │   ├── pages/         # Page components
-│   │   ├── components/    # Reusable components
-│   │   ├── hooks/         # Custom React hooks
-│   │   ├── lib/           # Utilities and config
-│   │   └── App.tsx        # Main app component
-│   └── index.html
+│   │   ├── pages/              # Route components
+│   │   ├── components/         # Reusable UI components
+│   │   ├── hooks/              # Custom hooks (business logic)
+│   │   ├── contexts/           # React Context providers
+│   │   ├── constants/          # Static data (cosmetics)
+│   │   └── lib/                # Utilities (supabase, utils)
+│   └── public/
+│       ├── models/             # 3D assets (.glb files)
+│       └── assets/             # Images, cosmetics PNGs
 │
-├── server/                # Express backend
-│   ├── index.ts          # Server entry point
-│   ├── routes.ts         # API routes
-│   └── ...
+├── server/                      # Express backend (optional)
+│   └── index.ts
 │
-├── db/                    # Database
-│   ├── schema.ts         # Drizzle schema definitions
-│   └── index.ts          # Database connection
+├── shared/                      # Shared types
+│   └── schema.ts               # Zod schemas
 │
-├── shared/               # Shared types
-│   └── schema.ts        # Shared TypeScript types
+├── supabase/                    # Database
+│   ├── migrations/             # Version-controlled schema
+│   └── README.md               # Module-level docs
 │
-├── docs/                # Documentation
-│   ├── README.md        # This file
-│   ├── ARCHITECTURE.md  # System architecture
-│   └── CHANGELOG.md     # Development history
+├── docs/                        # Documentation (you are here!)
+│   ├── README.md               # This file
+│   ├── PRIMER.md               # Quick reference
+│   ├── SETUP.md                # Setup guide
+│   ├── API_REFERENCE.md        # API docs
+│   ├── ARCHITECTURE.md         # System design
+│   ├── DESIGN_SYSTEM.md        # UI/UX patterns
+│   └── CHANGELOG.md            # Development history
 │
-└── PLAN.md             # Current development plan
+├── archive/                     # Historical documents
+│   ├── README.md
+│   ├── PHASE_5_COMPLETE.md
+│   ├── SUPABASE_SETUP.md
+│   └── cosmetics_3d_plan.md
+│
+└── PLAN.md                     # Current sprint (root level)
 ```
 
 ---
 
 ## Development Workflow
 
-### Local Development
+### Quick Start
 ```bash
-npm run dev    # Start both client and server
+npm install              # Install dependencies
+cp .env.example .env.local  # Configure environment
+npm run dev              # Start development server
 ```
 
-### Deployment
-- **Platform**: Vercel (auto-deploys on push to main)
-- **Database**: Neon PostgreSQL
-- **Workflow**: Local testing → Commit → Push → Auto-deploy
-
-### Key Commands
+### Common Commands
 ```bash
-npm run dev          # Start dev servers
+npm run dev          # Start dev server (client + server)
 npm run build        # Build for production
-npm run db:push      # Push schema changes
-npm run db:seed      # Seed database
+npm run preview      # Preview production build
+```
+
+### Git Workflow
+```bash
+git status                # Check changes
+git add .                 # Stage all changes
+git commit -m "message"   # Commit with message
+git push                  # Deploy to Vercel (auto)
 ```
 
 ---
@@ -125,17 +234,34 @@ npm run db:seed      # Seed database
 
 When working on Howerful:
 
-1. **Test locally first** - Always verify changes work before deploying
-2. **Commit frequently** - Small, focused commits with clear messages
-3. **Update PLAN.md** - Keep current priorities and completed features up to date
-4. **Document decisions** - Add significant changes to CHANGELOG.md
-5. **Follow patterns** - Refer to ARCHITECTURE.md for established patterns
+1. **Read PRIMER.md first** - Understand the codebase before making changes
+2. **Follow established patterns** - See ARCHITECTURE.md for conventions
+3. **Test locally** - Verify changes work before committing
+4. **Update documentation** - Keep PLAN.md and CHANGELOG.md current
+5. **Commit frequently** - Small, focused commits with clear messages
+
+---
+
+## Deployment
+
+- **Platform**: Vercel (auto-deploys on push to `main`)
+- **Database**: Supabase (PostgreSQL with RLS)
+- **Environment**: Configure in Vercel dashboard
 
 ---
 
 ## Need Help?
 
-- **Technical details**: See [ARCHITECTURE.md](ARCHITECTURE.md)
-- **Historical context**: See [CHANGELOG.md](CHANGELOG.md)
-- **Current work**: See [`../PLAN.md`](../PLAN.md)
-- **Code issues**: Check the codebase directly
+**Setup issues?** → [SETUP.md](SETUP.md#troubleshooting)
+
+**API questions?** → [API_REFERENCE.md](API_REFERENCE.md)
+
+**System design?** → [ARCHITECTURE.md](ARCHITECTURE.md)
+
+**Current work?** → [../PLAN.md](../PLAN.md)
+
+**Historical context?** → [CHANGELOG.md](CHANGELOG.md)
+
+---
+
+**Last Updated:** December 2025

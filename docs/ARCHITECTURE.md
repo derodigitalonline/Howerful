@@ -1,5 +1,8 @@
 # Howerful Architecture
 
+> **Quick Reference:** For compact overview, see [PRIMER.md](PRIMER.md)
+> **API Details:** For complete database schema and endpoints, see [API_REFERENCE.md](API_REFERENCE.md)
+
 ## System Overview
 
 Howerful is a gamified productivity app that combines task management, focus sessions, and habit tracking with RPG-style progression mechanics.

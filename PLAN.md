@@ -1,10 +1,11 @@
 # Howerful Development Plan
 
 ## 🤖 AI Quick Start
-- **Stack**: React + TypeScript + Express + PostgreSQL
-- **Key Files**: See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for system design
-- **History**: See [docs/CHANGELOG.md](docs/CHANGELOG.md) for complete development history
-- **Overview**: See [docs/README.md](docs/README.md) for project overview
+- **Stack**: React + TypeScript + Supabase (PostgreSQL + Auth + RLS)
+- **Quick Reference**: See [docs/PRIMER.md](docs/PRIMER.md) for compact codebase overview
+- **API Details**: See [docs/API_REFERENCE.md](docs/API_REFERENCE.md) for endpoints, hooks, schemas
+- **System Design**: See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for technical architecture
+- **Setup**: See [docs/SETUP.md](docs/SETUP.md) for installation and configuration
 
 ---
 
@@ -79,74 +80,9 @@ None currently - all systems operational.
 
 ---
 
-## Design System Status 🎨
-
-### Active Cosmetics System
-- **Themes**: Light, Dark (currently hardcoded)
-- **Avatars**: Default initial-based avatar (extensible)
-- **Banners**: System in place, ready for content
-- **Titles**: System in place, ready for content
-
-### Button Variants
-- `default` - Primary actions (blue, 3D glass effect)
-- `destructive` - Dangerous actions (red, 3D glass effect)
-- `outline` - Secondary actions (border, subtle 3D chunky)
-- `secondary` - Tertiary actions (muted, subtle 3D chunky)
-- `ghost` - Minimal actions (transparent)
-- `link` - Text-style actions
-
-### Layout Components
-- **NavigationDrawer**: Collapsible sidebar (256px expanded, 80px collapsed)
-- **TopBar**: Fixed header with hamburger menu, coins, profile
-- **BucketTabs**: Clean tab navigation with badges
-
----
-
-## API Endpoints Reference
-
-### Profile
-- `GET /api/profile` - Get user profile
-- `PUT /api/profile` - Update profile
-- `POST /api/profile/complete-onboarding` - Mark onboarding complete
-
-### Bullet Journal (Dojo)
-- `GET /api/bullet-journal` - Get all items
-- `POST /api/bullet-journal/items` - Add item
-- `PUT /api/bullet-journal/items/:id` - Update item
-- `DELETE /api/bullet-journal/items/:id` - Delete item
-- `PUT /api/bullet-journal/reorder` - Reorder items
-
-### Matrix (Tasks)
-- `GET /api/tasks` - Get all tasks
-- `POST /api/tasks` - Create task
-- `PUT /api/tasks/:id` - Update task
-- `DELETE /api/tasks/:id` - Delete task
-- `PUT /api/tasks/:id/complete` - Toggle completion
-
-### Focus System
-- `POST /api/focus/session` - Start session
-- `PUT /api/focus/session/:id` - Update session
-- `GET /api/focus/settings` - Get focus settings
-- `PUT /api/focus/settings` - Update settings
-
-### Quests
-- `GET /api/quests` - Get all quests
-- `POST /api/quests/:id/claim` - Claim quest reward
-
-### Routines
-- `GET /api/routines` - Get all routines
-- `POST /api/routines` - Create routine
-- `PUT /api/routines/:id` - Update routine
-- `DELETE /api/routines/:id` - Delete routine
-
-### Cosmetics
-- `GET /api/cosmetics` - Get all cosmetics
-- `POST /api/cosmetics/purchase` - Purchase cosmetic
-- `POST /api/cosmetics/equip` - Equip cosmetic
-
----
-
 ## Development Workflow
+
+> **Note:** For complete API reference (endpoints, hooks, schemas), see [docs/API_REFERENCE.md](docs/API_REFERENCE.md)
 
 ### Local Development
 ```bash

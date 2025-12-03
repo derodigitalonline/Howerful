@@ -1,13 +1,82 @@
-# Supabase Setup Guide
+# Supabase Module
 
-This guide will help you set up Supabase for Howerful's user authentication and data persistence.
+This directory contains Supabase-specific files for Howerful's backend.
 
-## Prerequisites
+> **For complete setup instructions**, see [../docs/SETUP.md](../docs/SETUP.md)
 
-- A Supabase account ([sign up here](https://supabase.com))
-- Basic understanding of SQL (the migration file is provided)
+## Contents
 
-## Step 1: Create a Supabase Project
+- `migrations/` - Database schema versions (run in order)
+  - `001_initial_schema.sql` - Initial 12-table schema with RLS
+  - `002_remove_matrix_add_tracking.sql` - Quest tracking fields
+  - `003_add_future_log_scheduled_date.sql` - Future Log auto-migration
+  - `004_add_user_name_rename_nickname.sql` - User name fields
+
+## Database Tables (12 total)
+
+**User Data:**
+- `profiles` - User profile, XP, level, coins
+- `equipped_cosmetics` - Currently equipped items
+- `unlocked_cosmetics` - Unlocked cosmetic IDs
+
+**Tasks & Journal:**
+- `bullet_items` - Bullet journal with buckets and focus tracking
+
+**Focus System:**
+- `focus_settings` - Timer preferences
+- `focus_sessions` - Session history
+
+**Routines:**
+- `routines` - Habit tracking
+- `routine_metadata` - Reset state
+
+**Quests:**
+- `daily_quests` - Active quests
+- `quest_inbox` - Unclaimed rewards
+- `claimed_quests` - Completion history
+
+**Complete schema:** See [../docs/API_REFERENCE.md](../docs/API_REFERENCE.md)
+
+---
+
+## Running Migrations
+
+### Option A: Supabase Dashboard
+
+1. Go to **SQL Editor** in Supabase dashboard
+2. Click **New Query**
+3. Copy contents of `001_initial_schema.sql`
+4. Click **Run**
+5. Repeat for migrations 002, 003, 004 in order
+
+### Option B: Supabase CLI
+
+```bash
+supabase db push
+```
+
+---
+
+## Setup Instructions
+
+For complete step-by-step setup guide, see [../docs/SETUP.md](../docs/SETUP.md)
+
+This includes:
+- Creating Supabase project
+- Getting API credentials
+- Configuring environment variables
+- Running migrations
+- Setting up authentication
+- Troubleshooting
+
+---
+
+**Old Step-by-Step Guide Below** (deprecated - use docs/SETUP.md instead)
+
+<details>
+<summary>Click to expand legacy instructions</summary>
+
+## Step 1: Create a Supabase Project (Legacy)
 
 1. Go to [https://app.supabase.com](https://app.supabase.com)
 2. Click "New Project"
@@ -173,3 +242,5 @@ If you encounter issues:
 1. Check Supabase project logs (Dashboard → Logs)
 2. Search [Supabase Discussions](https://github.com/supabase/supabase/discussions)
 3. Ask in [Supabase Discord](https://discord.supabase.com)
+
+</details>
