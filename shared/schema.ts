@@ -72,11 +72,11 @@ export const userProfileSchema = z.object({
   coins: z.number().default(0), // Howie Coins - currency for the Bazaar shop
   bulletTasksCompleted: z.number().default(0), // Track bullet journal task completions
   focusSessionsCompleted: z.number().default(0), // Track focus session completions
+  totalQuestsCompleted: z.number().default(0), // Track total quests completed (daily + story)
   hasCompletedOnboarding: z.boolean().default(false),
   selectedSprite: z.string().optional(),
   userName: z.string().default("User"), // User's actual first name (for profile button)
   howieName: z.string().default("Howie"), // User's nickname for their Howie companion
-  profilePictureUrl: z.string().optional(), // Supabase Storage URL for profile picture (max 1MB)
   equippedCosmetics: z.object({
     hat: z.string().optional(),
     shirt: z.string().optional(),
@@ -116,6 +116,7 @@ export const bulletItemSchema = z.object({
   createdAt: z.number(),
   order: z.number(), // For manual sorting within bucket
   movedToSomedayAt: z.number().optional(), // Timestamp when item was moved to Someday bucket
+  archivedAt: z.number().optional(), // Timestamp when item was archived (30 days retention)
 
   // Focus Mode tracking
   focusState: z.enum(['idle', 'queued', 'active', 'completed']).default('idle').optional(),

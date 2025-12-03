@@ -108,9 +108,9 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
 
             const navLink = (
               <Link key={item.path} href={item.path}>
-                <a
+                <div
                   className={cn(
-                    'block flex items-center rounded-lg transition-colors',
+                    'block flex items-center rounded-lg transition-colors cursor-pointer',
                     'hover:bg-accent hover:text-accent-foreground',
                     isActive && 'bg-primary/10 text-primary font-medium',
                     isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-2'
@@ -125,7 +125,7 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
                       </div>
                     </div>
                   )}
-                </a>
+                </div>
               </Link>
             );
 

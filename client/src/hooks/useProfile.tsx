@@ -83,6 +83,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     coins: 0,
     bulletTasksCompleted: 0,
     focusSessionsCompleted: 0,
+    totalQuestsCompleted: 0,
     hasCompletedOnboarding: false,
     selectedSprite: undefined,
     userName: "User",
@@ -155,6 +156,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         coins: supabaseProfile.coins,
         bulletTasksCompleted: supabaseProfile.bulletTasksCompleted || 0,
         focusSessionsCompleted: supabaseProfile.focusSessionsCompleted || 0,
+        totalQuestsCompleted: supabaseProfile.totalQuestsCompleted || 0,
         hasCompletedOnboarding: supabaseProfile.hasCompletedOnboarding,
         selectedSprite: supabaseProfile.selectedSprite || undefined,
         // Quest fields from Supabase
@@ -223,23 +225,27 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isLoading && isAuthenticated && isSupabaseConfigured() && user) {
       updateProfile.mutate({
-        nickname: profile.nickname,
+        userName: profile.userName,
+        howieName: profile.howieName,
         totalXP: profile.totalXP,
         level: profile.level,
         coins: profile.coins,
         bulletTasksCompleted: profile.bulletTasksCompleted,
         focusSessionsCompleted: profile.focusSessionsCompleted,
+        totalQuestsCompleted: profile.totalQuestsCompleted,
         hasCompletedOnboarding: profile.hasCompletedOnboarding,
         selectedSprite: profile.selectedSprite || null,
       });
     }
   }, [
-    profile.nickname,
+    profile.userName,
+    profile.howieName,
     profile.totalXP,
     profile.level,
     profile.coins,
     profile.bulletTasksCompleted,
     profile.focusSessionsCompleted,
+    profile.totalQuestsCompleted,
     profile.hasCompletedOnboarding,
     profile.selectedSprite,
     isLoading,
@@ -326,9 +332,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       coins: 0,
       bulletTasksCompleted: 0,
       focusSessionsCompleted: 0,
+      totalQuestsCompleted: 0,
       hasCompletedOnboarding: false,
       selectedSprite: undefined,
-      nickname: "Howie",
+      userName: "User",
+      howieName: "Howie",
       dailyQuests: [],
       lastDailyQuestReset: undefined,
       inbox: [],

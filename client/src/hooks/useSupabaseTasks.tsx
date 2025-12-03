@@ -227,6 +227,7 @@ function dbRowToBulletItem(row: any): BulletItem {
     createdAt: row.created_at,
     order: row.order_index,
     movedToSomedayAt: row.moved_to_someday_at || undefined,
+    archivedAt: row.archived_at || undefined,
     focusState: row.focus_state || 'idle',
     focusStartedAt: row.focus_started_at || undefined,
     focusCompletedAt: row.focus_completed_at || undefined,
@@ -249,6 +250,7 @@ function bulletItemToDbRow(item: Partial<BulletItem>, userId: string) {
     created_at: item.createdAt ? new Date(item.createdAt).toISOString() : new Date().toISOString(),
     order_index: item.order,
     moved_to_someday_at: item.movedToSomedayAt ? new Date(item.movedToSomedayAt).toISOString() : null,
+    archived_at: item.archivedAt ? new Date(item.archivedAt).toISOString() : null,
     focus_state: item.focusState || 'idle',
     focus_started_at: item.focusStartedAt ? new Date(item.focusStartedAt).toISOString() : null,
     focus_completed_at: item.focusCompletedAt ? new Date(item.focusCompletedAt).toISOString() : null,
@@ -379,6 +381,7 @@ export function useUpdateBulletItem() {
       if (updates.completed !== undefined) dbUpdates.completed = updates.completed;
       if (updates.order !== undefined) dbUpdates.order_index = updates.order;
       if (updates.movedToSomedayAt !== undefined) dbUpdates.moved_to_someday_at = updates.movedToSomedayAt || null;
+      if (updates.archivedAt !== undefined) dbUpdates.archived_at = updates.archivedAt || null;
       if (updates.focusState !== undefined) dbUpdates.focus_state = updates.focusState;
       if (updates.focusStartedAt !== undefined) dbUpdates.focus_started_at = updates.focusStartedAt || null;
       if (updates.focusCompletedAt !== undefined) dbUpdates.focus_completed_at = updates.focusCompletedAt || null;

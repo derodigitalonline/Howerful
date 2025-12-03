@@ -306,6 +306,39 @@ export function useBulletJournal() {
     }
   };
 
+  const archiveItem = (id: string) => {
+    const archivedAt = Date.now();
+
+    // Update local state immediately - mark item as archived
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, archivedAt } : item
+      )
+    );
+
+    // Sync to Supabase if logged in
+    if (isAuthenticated && isSupabaseConfigured()) {
+      updateItemMutation.mutate({ id, updates: { archivedAt } });
+    }
+  };
+
+  // Clean up archived items older than 30 days on load
+  useEffect(() => {
+    if (isLoading) return;
+
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    const itemsToDelete = items.filter(
+      item => item.archivedAt && item.archivedAt < thirtyDaysAgo
+    );
+
+    if (itemsToDelete.length > 0) {
+      console.log(`Cleaning up ${itemsToDelete.length} archived items older than 30 days`);
+      itemsToDelete.forEach(item => {
+        deleteItem(item.id);
+      });
+    }
+  }, [isLoading]); // Only run once on initial load
+
   // Calculate streak data
   const streakData = useMemo(() => calculateStreak(items), [items]);
 
@@ -321,6 +354,7 @@ export function useBulletJournal() {
     getItemsByBucket,
     moveItemToBucket,
     reorderItems,
+    archiveItem,
     streakData,
   };
 }

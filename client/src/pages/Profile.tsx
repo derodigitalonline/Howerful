@@ -2,12 +2,10 @@ import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Trophy, Target, Flame } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import HowieViewer3D from '@/components/HowieViewer3D';
-import XPBar from '@/components/XPBar';
 import CoinDisplay from '@/components/CoinDisplay';
-import ProfilePictureUpload from '@/components/ProfilePictureUpload';
 
 export default function Profile() {
   const { profile } = useProfile();
@@ -21,6 +19,12 @@ export default function Profile() {
     if (level >= 10) return 'bg-gradient-to-r from-orange-500 to-red-500 text-white';
     return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white';
   };
+
+  // Calculate XP for current level and next level
+  const currentLevelXP = (profile.level - 1) * 100;
+  const nextLevelXP = profile.level * 100;
+  const xpInCurrentLevel = profile.totalXP - currentLevelXP;
+  const xpNeededForNextLevel = nextLevelXP - profile.totalXP;
 
   return (
     <div className="h-full overflow-y-auto">
@@ -61,9 +65,23 @@ export default function Profile() {
                       LVL {profile.level}
                     </Badge>
                   </div>
-                  <p className="text-lg text-muted-foreground">
+                  <p className="text-lg text-muted-foreground mb-2">
                     {profile.howieName || "Howie"}'s Trainer
                   </p>
+
+                  {/* Compact XP Bar */}
+                  <div className="max-w-md">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                      <span>{xpInCurrentLevel} / 100 XP</span>
+                      <span>{xpNeededForNextLevel} XP to next level</span>
+                    </div>
+                    <div className="relative h-[10px] bg-muted/30 rounded-full overflow-hidden">
+                      <div
+                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-500"
+                        style={{ width: `${(xpInCurrentLevel / 100) * 100}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Customize Button */}
@@ -89,65 +107,38 @@ export default function Profile() {
 
         {/* Stats Section */}
         <div className="max-w-7xl mx-auto p-6 md:p-8">
-          {/* XP Progress */}
-          <Card className="p-6 mb-6">
-            <XPBar profile={profile} />
-          </Card>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {/* Level */}
-            <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Trophy className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Level</p>
-                  <p className="text-3xl font-bold text-primary">{profile.level}</p>
-                </div>
+          {/* Stats Grid - 4 columns on desktop */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Howie Coins - Spans 2 columns */}
+            <Card className="md:col-span-2 p-6 bg-[#FAF6F0] dark:bg-[#2A2520] border-[#E7E4E2]">
+              <p className="text-xs uppercase tracking-wide text-[#8B8680] mb-3">Howie Coins</p>
+              <div className="flex items-center gap-3">
+                <CoinDisplay coins={profile.coins || 0} size="md" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="ml-auto"
+                  onClick={() => window.location.href = '/bazaar'}
+                >
+                  Shop Items
+                </Button>
               </div>
             </Card>
 
-            {/* Total XP */}
-            <Card className="p-6 bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Total XP</p>
-                  <p className="text-3xl font-bold text-blue-500">{profile.totalXP.toLocaleString()}</p>
-                </div>
-              </div>
+            {/* Tasks Tracked */}
+            <Card className="p-6 bg-transparent border-[#E7E4E2]">
+              <p className="text-xs uppercase tracking-wide text-[#8B8680] mb-2">Tasks Tracked</p>
+              <p className="text-4xl font-semibold italic text-foreground" style={{ fontFamily: 'Funnel Sans, sans-serif' }}>
+                {profile.bulletTasksCompleted || 0}
+              </p>
             </Card>
 
-            {/* Tasks Completed */}
-            <Card className="p-6 bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <Target className="w-5 h-5 text-green-500" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Tasks</p>
-                  <p className="text-3xl font-bold text-green-500">{profile.bulletTasksCompleted || 0}</p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Howie Coins */}
-            <Card className="p-6 bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border-yellow-500/20">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                  <Flame className="w-5 h-5 text-yellow-500" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Howie Coins</p>
-                  <div className="mt-1">
-                    <CoinDisplay coins={profile.coins || 0} size="md" />
-                  </div>
-                </div>
-              </div>
+            {/* Quests Completed */}
+            <Card className="p-6 bg-transparent border-[#E7E4E2]">
+              <p className="text-xs uppercase tracking-wide text-[#8B8680] mb-2">Quests Completed</p>
+              <p className="text-4xl font-semibold italic text-foreground" style={{ fontFamily: 'Funnel Sans, sans-serif' }}>
+                {profile.totalQuestsCompleted || 0}
+              </p>
             </Card>
           </div>
         </div>

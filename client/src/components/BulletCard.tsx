@@ -1,11 +1,12 @@
 import { BulletItem } from '@shared/schema';
-import { CheckSquare, Circle, Clock } from 'lucide-react';
+import { CheckSquare, Circle, Clock, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface BulletCardProps {
   item: BulletItem;
   onToggleComplete: (id: string) => void;
   onClick: (id: string) => void;
+  onArchive?: (id: string) => void;
   isDragging?: boolean;
 }
 
@@ -13,6 +14,7 @@ export default function BulletCard({
   item,
   onToggleComplete,
   onClick,
+  onArchive,
   isDragging,
 }: BulletCardProps) {
   const isTask = item.type === 'task';
@@ -83,6 +85,20 @@ export default function BulletCard({
           }}
         >
           DONE
+        </button>
+      )}
+
+      {/* Trash Icon - Bottom Center - Shows on hover for completed items */}
+      {isCompleted && onArchive && (
+        <button
+          className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 transition-all duration-150 text-muted-foreground hover:text-destructive p-2 rounded-md bg-card hover:bg-red-50 dark:hover:bg-red-950/30 border border-border hover:border-destructive/50"
+          onClick={(e) => {
+            e.stopPropagation();
+            onArchive(item.id);
+          }}
+          title="Archive task (removed after 30 days)"
+        >
+          <Trash2 className="w-5 h-5" />
         </button>
       )}
     </div>

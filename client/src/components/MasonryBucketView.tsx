@@ -8,6 +8,7 @@ interface MasonryBucketViewProps {
   items: BulletItem[];
   onToggleComplete: (id: string) => void;
   onCardClick: (id: string) => void;
+  onArchive?: (id: string) => void;
   activeId?: string | null;
 }
 
@@ -31,14 +32,18 @@ export default function MasonryBucketView({
   items,
   onToggleComplete,
   onCardClick,
+  onArchive,
   activeId,
 }: MasonryBucketViewProps) {
+  // Filter out archived items
+  const activeItems = items.filter((i) => !i.archivedAt);
+
   // Separate scheduled items (events with time) from general items
-  const scheduledItems = items
+  const scheduledItems = activeItems
     .filter((i) => i.type === 'event' && i.time)
     .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
 
-  const generalItems = items.filter((i) => !(i.type === 'event' && i.time));
+  const generalItems = activeItems.filter((i) => !(i.type === 'event' && i.time));
 
   // Responsive breakpoints for masonry columns
   const breakpointColumns = {
@@ -49,7 +54,7 @@ export default function MasonryBucketView({
   };
 
   // Empty state
-  if (items.length === 0) {
+  if (activeItems.length === 0) {
     const emptyState = EMPTY_STATES[bucket];
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -83,6 +88,7 @@ export default function MasonryBucketView({
                 item={item}
                 onToggleComplete={onToggleComplete}
                 onClick={onCardClick}
+                onArchive={onArchive}
                 isDragging={activeId === item.id}
               />
             ))}
@@ -109,6 +115,7 @@ export default function MasonryBucketView({
                 item={item}
                 onToggleComplete={onToggleComplete}
                 onClick={onCardClick}
+                onArchive={onArchive}
                 isDragging={activeId === item.id}
               />
             ))}

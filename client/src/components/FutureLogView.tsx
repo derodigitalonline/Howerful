@@ -9,7 +9,7 @@ interface FutureLogViewProps {
   items: BulletItem[];
   onToggleComplete: (id: string) => void;
   onCardClick: (id: string) => void;
-  onAddToMonth: (month: string) => void;
+  onArchive?: (id: string) => void;
   onOpenAddSheet: () => void;
 }
 
@@ -24,10 +24,13 @@ export default function FutureLogView({
   items,
   onToggleComplete,
   onCardClick,
-  onAddToMonth,
+  onArchive,
   onOpenAddSheet,
 }: FutureLogViewProps) {
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
+
+  // Filter out archived items
+  const activeItems = items.filter((i) => !i.archivedAt);
 
   // Group items by month
   const monthSections: MonthSection[] = [];
@@ -35,7 +38,7 @@ export default function FutureLogView({
   const today = new Date();
 
   // Collect items by month
-  items.forEach((item) => {
+  activeItems.forEach((item) => {
     if (item.scheduledDate) {
       const date = parseISO(item.scheduledDate);
       const monthKey = format(startOfMonth(date), 'yyyy-MM');
@@ -93,7 +96,7 @@ export default function FutureLogView({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="w-full max-w-[1250px] mx-auto space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">
@@ -165,17 +168,16 @@ export default function FutureLogView({
                       item={item}
                       onToggleComplete={onToggleComplete}
                       onClick={onCardClick}
+                      onArchive={onArchive}
                     />
                   ))}
 
-                  {/* Add Button */}
-                  <button
-                    onClick={() => onAddToMonth(section.monthKey)}
-                    className="w-full py-2 px-3 border-2 border-dashed border-border rounded-lg hover:border-primary hover:bg-primary/5 transition-colors text-sm text-muted-foreground hover:text-primary flex items-center justify-center gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add to {format(parseISO(`${section.monthKey}-01`), 'MMMM')}
-                  </button>
+                  {/* Empty State */}
+                  {section.items.length === 0 && (
+                    <div className="py-8 text-center text-sm text-muted-foreground">
+                      No tasks scheduled for this month
+                    </div>
+                  )}
                 </div>
               )}
             </div>

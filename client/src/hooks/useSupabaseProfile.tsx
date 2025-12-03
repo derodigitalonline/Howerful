@@ -8,12 +8,12 @@ function dbRowToProfile(row: any): UserProfile {
   return {
     userName: row.user_name || 'User',
     howieName: row.howie_name || 'Howie',
-    profilePictureUrl: row.profile_picture_url || undefined,
     totalXP: row.total_xp || 0,
     level: row.level || 1,
     coins: row.coins || 0,
     bulletTasksCompleted: row.bullet_tasks_completed || 0,
     focusSessionsCompleted: row.focus_sessions_completed || 0,
+    totalQuestsCompleted: row.total_quests_completed || 0,
     hasCompletedOnboarding: row.has_completed_onboarding || false,
     selectedSprite: row.selected_sprite || null,
   };
@@ -24,12 +24,12 @@ function profileToDbRow(profile: UserProfile) {
   return {
     user_name: profile.userName,
     howie_name: profile.howieName,
-    profile_picture_url: profile.profilePictureUrl || null,
     total_xp: profile.totalXP,
     level: profile.level,
     coins: profile.coins,
     bullet_tasks_completed: profile.bulletTasksCompleted,
     focus_sessions_completed: profile.focusSessionsCompleted,
+    total_quests_completed: profile.totalQuestsCompleted,
     has_completed_onboarding: profile.hasCompletedOnboarding,
     selected_sprite: profile.selectedSprite,
   };
@@ -258,88 +258,6 @@ export function useSelectSprite() {
         ...profile,
         selectedSprite: spriteId,
       });
-    },
-  });
-}
-
-/**
- * Hook to upload profile picture
- * Uploads image to Supabase Storage and updates profile with URL
- * Max file size: 1MB
- */
-export function useUploadProfilePicture() {
-  const { user } = useAuth();
-  const { data: profile } = useSupabaseProfile();
-  const updateProfile = useUpdateProfile();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (file: File): Promise<string> => {
-      if (!user?.id) {
-        throw new Error('User not authenticated');
-      }
-
-      if (!profile) {
-        throw new Error('Profile not loaded');
-      }
-
-      if (!isSupabaseConfigured()) {
-        throw new Error('Supabase not configured');
-      }
-
-      // Validate file size (1MB max)
-      const MAX_SIZE = 1 * 1024 * 1024; // 1MB in bytes
-      if (file.size > MAX_SIZE) {
-        throw new Error('File size must be less than 1MB');
-      }
-
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        throw new Error('File must be an image');
-      }
-
-      // Delete old profile picture if exists
-      if (profile.profilePictureUrl) {
-        const oldPath = profile.profilePictureUrl.split('/').pop();
-        if (oldPath) {
-          await supabase.storage
-            .from('profile-pictures')
-            .remove([`${user.id}/${oldPath}`]);
-        }
-      }
-
-      // Upload new file with unique name
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${user.id}/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('profile-pictures')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-        });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('profile-pictures')
-        .getPublicUrl(filePath);
-
-      // Update profile with new URL
-      await updateProfile.mutateAsync({
-        ...profile,
-        profilePictureUrl: publicUrl,
-      });
-
-      return publicUrl;
-    },
-    onSuccess: () => {
-      // Invalidate profile query to refetch
-      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
     },
   });
 }

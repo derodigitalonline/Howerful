@@ -5,7 +5,8 @@ import FutureLogTaskSheet from '@/components/FutureLogTaskSheet';
 import FocusDropZone from '@/components/FocusDropZone';
 import FocusedItemBanner from '@/components/FocusedItemBanner';
 import SwitchFocusDialog from '@/components/SwitchFocusDialog';
-import SlashInput, { SlashInputRef } from '@/components/SlashInput';
+import FloatingTaskInput from '@/components/FloatingTaskInput';
+import { SlashInputRef } from '@/components/SlashInput';
 import { useBulletJournal } from '@/hooks/useBulletJournal';
 import { useFocus } from '@/hooks/useFocus';
 import { useProfile } from '@/hooks/useProfile';
@@ -25,7 +26,7 @@ import {
 } from '@dnd-kit/core';
 
 export default function Dojo() {
-  const { getItemsByBucket, addItem, deleteItem, updateItem, toggleItemCompletion, cycleItemType, changeItemType, reorderItems, moveItemToBucket, items: allItems } = useBulletJournal();
+  const { getItemsByBucket, addItem, deleteItem, updateItem, toggleItemCompletion, cycleItemType, changeItemType, reorderItems, moveItemToBucket, archiveItem, items: allItems } = useBulletJournal();
   const { startTimer, activeItemId, activeItemText } = useFocus();
   const { trackBulletTaskCompletion } = useProfile();
 
@@ -100,11 +101,6 @@ export default function Dojo() {
 
     addItem(text, type, 'future-log', time, undefined, scheduledDate);
     toast.success('Task added to Future Log!');
-  };
-
-  const handleAddToMonth = (monthKey: string) => {
-    // Open the side sheet for adding a task
-    setShowFutureLogSheet(true);
   };
 
   const handleCardClick = (id: string) => {
@@ -189,17 +185,8 @@ export default function Dojo() {
       <div className="h-full flex flex-col overflow-hidden">
         {/* Fixed Top Section */}
         <div className="flex-shrink-0 px-6 md:px-8 pt-6 md:pt-8 bg-background">
-          {/* Task Entry Input */}
-          <div>
-            <SlashInput
-              ref={inputRef}
-              onAddItem={handleAddItem}
-              placeholder="Press / to add a task or event..."
-            />
-          </div>
-
           {/* Bucket Tabs */}
-          <div className="mt-6">
+          <div>
             <BucketTabs
               activeBucket={activeBucket}
               onBucketChange={setActiveBucket}
@@ -209,7 +196,7 @@ export default function Dojo() {
         </div>
 
         {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto px-6 md:px-8 py-6">
+        <div className="flex-1 overflow-y-auto px-6 md:px-8 pt-6 pb-32">
           {/* Focused Item Banner */}
           <FocusedItemBanner />
 
@@ -218,7 +205,6 @@ export default function Dojo() {
             {activeBucket === 'today' && (
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-2xl font-bold">Today</h1>
                   <p className="text-sm text-muted-foreground mt-1">{formatTodayDate()}</p>
                 </div>
                 {items.length > 0 && (
@@ -231,7 +217,6 @@ export default function Dojo() {
 
             {activeBucket === 'tomorrow' && (
               <div>
-                <h1 className="text-2xl font-bold">Tomorrow</h1>
                 <p className="text-sm text-muted-foreground mt-1">
                   {new Date(Date.now() + 86400000).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                 </p>
@@ -240,7 +225,6 @@ export default function Dojo() {
 
             {activeBucket === 'someday' && (
               <div>
-                <h1 className="text-2xl font-bold">Someday</h1>
                 <p className="text-sm text-muted-foreground mt-1">You'll get to it eventually</p>
               </div>
             )}
@@ -252,7 +236,7 @@ export default function Dojo() {
               items={items}
               onToggleComplete={handleToggleItemCompletion}
               onCardClick={handleCardClick}
-              onAddToMonth={handleAddToMonth}
+              onArchive={archiveItem}
               onOpenAddSheet={() => setShowFutureLogSheet(true)}
             />
           ) : (
@@ -261,6 +245,7 @@ export default function Dojo() {
               items={items}
               onToggleComplete={handleToggleItemCompletion}
               onCardClick={handleCardClick}
+              onArchive={archiveItem}
               activeId={activeId}
             />
           )}
@@ -269,6 +254,13 @@ export default function Dojo() {
         {/* Focus Drop Zone - shown only when dragging */}
         <FocusDropZone isVisible={activeId !== null} />
       </div>
+
+      {/* Floating Task Input - bottom of screen */}
+      <FloatingTaskInput
+        ref={inputRef}
+        onAddItem={handleAddItem}
+        placeholder="Press / to add a task or event..."
+      />
 
       {/* Switch Focus Dialog */}
       <SwitchFocusDialog

@@ -125,33 +125,28 @@ function HowieModel({
   modelPath?: string;
   onSceneLoaded?: (scene: THREE.Object3D) => void;
 }) {
-  try {
-    const { scene, animations } = useGLTF(modelPath);
-    const { actions } = useAnimations(animations, scene);
+  const { scene, animations } = useGLTF(modelPath);
+  const { actions } = useAnimations(animations, scene);
 
-    useEffect(() => {
-      // Play the Idle animation
-      if (actions['Idle']) {
-        actions['Idle'].reset().fadeIn(0.5).play();
-      }
+  useEffect(() => {
+    // Play the Idle animation
+    if (actions['Idle']) {
+      actions['Idle'].reset().fadeIn(0.5).play();
+    }
 
-      // Notify parent that scene is ready for cosmetic attachment
-      if (onSceneLoaded) {
-        onSceneLoaded(scene);
-      }
-    }, [actions, scene, onSceneLoaded]);
+    // Notify parent that scene is ready for cosmetic attachment
+    if (onSceneLoaded) {
+      onSceneLoaded(scene);
+    }
+  }, [actions, scene, onSceneLoaded]);
 
-    return (
-      <primitive
-        object={scene}
-        scale={1}
-        position={[0, -0.5, 0]}
-      />
-    );
-  } catch (error) {
-    console.error('Error loading Howie model:', error);
-    return null;
-  }
+  return (
+    <primitive
+      object={scene}
+      scale={1}
+      position={[0, -0.5, 0]}
+    />
+  );
 }
 
 // Cosmetic Attachment Component
@@ -295,9 +290,9 @@ export default function HowieViewer3D({
   modelPath = '/models/Howie.glb',
   equippedCosmetics,
   autoRotate = false,
-  enableZoom = true,
+  enableZoom = false,
   enablePan = false,
-  pixelSize = 6,
+  pixelSize = 6 ,
 }: HowieViewer3DProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);

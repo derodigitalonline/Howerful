@@ -1,7 +1,7 @@
-# Eisenhower Matrix Task Tracker - Design Guidelines
+# Howerful Design Guidelines
 
-## Design Approach: Productivity System Design
-**Selected Framework:** Linear/Todoist-inspired productivity tool design
+## Design Approach: Gamified Productivity System Design
+**Selected Framework:** Linear/Todoist-inspired productivity tool
 **Rationale:** Utility-focused task management requires clean, distraction-free interface with emphasis on keyboard efficiency and visual clarity
 
 ## Core Design Elements
@@ -13,12 +13,6 @@
 - Surface: 222 13% 15% (elevated surface)
 - Border: 222 10% 25% (subtle separation)
 
-**Quadrant Color System:**
-- Do First (Urgent/Important): 142 76% 36% (vibrant green)
-- Schedule (Not Urgent/Important): 221 83% 53% (calm blue)
-- Delegate (Urgent/Not Important): 25 95% 63% (coral orange)
-- Eliminate (Not Urgent/Not Important): 340 82% 52% (soft red)
-
 **Typography & UI:**
 - Text Primary: 0 0% 95% 
 - Text Secondary: 0 0% 65%
@@ -26,12 +20,7 @@
 - Focus Ring: Match active quadrant color
 
 ### B. Typography
-**Font Stack:** Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui
-- App Title: 24px, font-semibold
-- Task Input: 16px, font-normal
-- Task Text: 15px, font-normal
-- Quadrant Labels: 14px, font-medium, uppercase, tracking-wide
-- Helper Text: 13px, font-normal, opacity 60%
+**Font Stack:** Funnel Display for large text, Funnel Sans for smaller text
 
 ### C. Layout System
 **Spacing Primitives:** Consistent use of 2, 3, 4, 6, 8, 12 units
@@ -61,14 +50,6 @@
 - Background: Quadrant color at 3-5% opacity
 - Minimum height: min-h-[400px]
 - Padding: p-6
-
-**Task Card:**
-- Compact card design with rounded-lg
-- Background: Surface color
-- Border-left accent (4px solid, quadrant color)
-- Padding: px-4 py-3
-- Hover: Slight elevation (shadow-sm)
-- Delete button: Absolute top-right, opacity-0 group-hover:opacity-100
 
 **Header Section:**
 - App title with icon/logo
