@@ -95,9 +95,8 @@ export const userProfileSchema = z.object({
 export type UserProfile = z.infer<typeof userProfileSchema>;
 
 // Bullet Journal System
-// Phase 1 Redesign: Simplified to task/event only (no more notes)
-// Tasks = default, Events = tasks with time
-export const bulletItemTypes = ["task", "event"] as const;
+// Simplified: Everything is a task. Time is just an optional property.
+export const bulletItemTypes = ["task"] as const;
 export type BulletItemType = typeof bulletItemTypes[number];
 
 // Temporal buckets for ADHD-friendly task organization
@@ -106,13 +105,13 @@ export type Bucket = typeof buckets[number];
 
 export const bulletItemSchema = z.object({
   id: z.string(),
-  type: z.enum(bulletItemTypes),
+  type: z.enum(bulletItemTypes).default("task"),
   text: z.string().min(1),
   bucket: z.enum(buckets).default("today"), // Temporal bucket instead of specific dates
-  date: z.string().optional(), // Optional - only for scheduled events with specific dates
-  time: z.string().optional(), // Optional time for events (HH:MM format)
+  date: z.string().optional(), // Optional - only for scheduled tasks with specific dates
+  time: z.string().optional(), // Optional time for tasks (HH:MM format)
   scheduledDate: z.string().optional(), // YYYY-MM-DD format for Future Log items (auto-migration date)
-  completed: z.boolean().default(false), // For tasks only
+  completed: z.boolean().default(false),
   createdAt: z.number(),
   order: z.number(), // For manual sorting within bucket
   movedToSomedayAt: z.number().optional(), // Timestamp when item was moved to Someday bucket

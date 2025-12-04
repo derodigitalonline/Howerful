@@ -6,16 +6,16 @@ Welcome to Howerful's documentation hub! Everything you need to understand, set 
 
 ## Quick Links
 
-### For AI Assistants & Rapid Onboarding
-- **[🚀 Quick Primer](PRIMER.md)** - Start here! Compact overview of the entire codebase
-- **[📚 API Reference](API_REFERENCE.md)** - Complete reference for endpoints, hooks, and schemas
-- **[📝 Current Sprint](../PLAN.md)** - Latest priorities and recent completions (root level)
+### Onboarding
+- **[Quick Primer](PRIMER.md)** - Start here! Compact overview of the entire codebase
+- **[API Reference](API_REFERENCE.md)** - Complete reference for endpoints, hooks, and schemas
+- **[Current Sprint](../PLAN.md)** - Latest priorities and recent completions (root level)
 
 ### For Developers
-- **[⚙️ Setup Guide](SETUP.md)** - Installation and Supabase configuration
-- **[🏗️ Architecture](ARCHITECTURE.md)** - System design and technical patterns
-- **[🎨 Design System](DESIGN_SYSTEM.md)** - UI/UX patterns and component guidelines
-- **[📋 Changelog](CHANGELOG.md)** - Complete development history
+- **[Setup Guide](SETUP.md)** - Installation and Supabase configuration
+- **[Architecture](ARCHITECTURE.md)** - System design and technical patterns
+- **[Design System](DESIGN_SYSTEM.md)** - UI/UX patterns and component guidelines
+- **[Changelog](CHANGELOG.md)** - Complete development history
 
 ---
 
@@ -25,12 +25,12 @@ Welcome to Howerful's documentation hub! Everything you need to understand, set 
 
 **New to the project?** Read in this order:
 1. [PRIMER.md](PRIMER.md) - 10-minute overview of everything
-2. [SETUP.md](SETUP.md) - Get your environment running
+2. [SETUP.md](SETUP.md) - Get the environment running
 3. [ARCHITECTURE.md](ARCHITECTURE.md) - Understand the system design
 
 **Need API details?** Go straight to [API_REFERENCE.md](API_REFERENCE.md)
 
-**Working on UI?** Check [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)
+**Want to contribute to the UI?** UI for Howerful is a work in progress. I've established chunky buttons and animation to help push the app towards a gamified feel, but any and all feedback or changes are welcome. Check [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)
 
 ---
 
@@ -39,15 +39,13 @@ Welcome to Howerful's documentation hub! Everything you need to understand, set 
 ### [PRIMER.md](PRIMER.md)
 **Quick Reference (200-300 lines)**
 
-Optimized for rapid context loading:
+Optimized for rapid context loading if you use agents / LLM:
 - Project overview and tech stack
 - Core systems summary (Dojo, Focus, Quests, etc.)
 - Key hooks and their purposes
 - Database tables overview
 - Important patterns and gotchas
 - File locations and commands
-
-**Use when:** Onboarding, priming AI, quick reference
 
 ---
 
@@ -62,8 +60,6 @@ Complete setup instructions:
 - Authentication configuration
 - Troubleshooting guide
 
-**Use when:** First-time setup, environment issues, deploying
-
 ---
 
 ### [API_REFERENCE.md](API_REFERENCE.md)
@@ -76,8 +72,6 @@ Comprehensive reference for:
 - TypeScript interfaces
 - Data relationships
 - Migration history
-
-**Use when:** Implementing features, debugging data flow, adding endpoints
 
 ---
 
@@ -92,8 +86,6 @@ Deep dive into:
 - Security considerations
 - Deployment pipeline
 
-**Use when:** Understanding system design, making architectural decisions
-
 ---
 
 ### [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)
@@ -107,8 +99,6 @@ Design specifications:
 - Layout patterns
 - Responsive behavior
 
-**Use when:** Building UI, ensuring consistency, styling components
-
 ---
 
 ### [CHANGELOG.md](CHANGELOG.md)
@@ -121,8 +111,6 @@ Historical record:
 - Refactoring notes
 - Migration details
 
-**Use when:** Understanding why something was built a certain way
-
 ---
 
 ### [PLAN.md](../PLAN.md)
@@ -134,8 +122,6 @@ Living document:
 - Known blockers
 - Technical debt
 - Quick commands
-
-**Use when:** Planning work, tracking progress, checking status
 
 ---
 
@@ -252,16 +238,6 @@ When working on Howerful:
 
 ## Need Help?
 
-**Setup issues?** → [SETUP.md](SETUP.md#troubleshooting)
-
-**API questions?** → [API_REFERENCE.md](API_REFERENCE.md)
-
-**System design?** → [ARCHITECTURE.md](ARCHITECTURE.md)
-
-**Current work?** → [../PLAN.md](../PLAN.md)
-
-**Historical context?** → [CHANGELOG.md](CHANGELOG.md)
+Email me at john@derodigital.art or add me on Discord: @derodigital
 
 ---
-
-**Last Updated:** December 2025

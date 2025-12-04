@@ -13,6 +13,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { Bucket, BULLET_TASK_XP_REWARD, BULLET_TASK_COIN_REWARD } from '@shared/schema';
 import { toast } from 'sonner';
+import { useLocation } from 'wouter';
 import {
   DndContext,
   closestCenter,
@@ -26,9 +27,10 @@ import {
 } from '@dnd-kit/core';
 
 export default function Dojo() {
-  const { getItemsByBucket, addItem, deleteItem, updateItem, toggleItemCompletion, cycleItemType, changeItemType, reorderItems, moveItemToBucket, archiveItem, items: allItems } = useBulletJournal();
+  const { getItemsByBucket, addItem, deleteItem, updateItem, toggleItemCompletion, reorderItems, moveItemToBucket, archiveItem, items: allItems } = useBulletJournal();
   const { startTimer, activeItemId, activeItemText } = useFocus();
   const { trackBulletTaskCompletion } = useProfile();
+  const [, navigate] = useLocation();
 
   const [activeBucket, setActiveBucket] = useState<Bucket>('today');
   const inputRef = useRef<SlashInputRef>(null);
@@ -65,12 +67,12 @@ export default function Dojo() {
   // Get items for current bucket
   const items = getItemsByBucket(activeBucket);
 
-  // Calculate bucket counts for tab badges
+  // Calculate bucket counts for tab badges (only uncompleted tasks)
   const bucketCounts = useMemo(() => ({
-    today: getItemsByBucket('today').length,
-    tomorrow: getItemsByBucket('tomorrow').length,
-    someday: getItemsByBucket('someday').length,
-    'future-log': getItemsByBucket('future-log').length,
+    today: getItemsByBucket('today').filter(item => !item.completed).length,
+    tomorrow: getItemsByBucket('tomorrow').filter(item => !item.completed).length,
+    someday: getItemsByBucket('someday').filter(item => !item.completed).length,
+    'future-log': getItemsByBucket('future-log').filter(item => !item.completed).length,
   }), [getItemsByBucket]);
 
   // Global keyboard shortcut: Press "/" to focus input from anywhere
@@ -88,18 +90,13 @@ export default function Dojo() {
   }, []);
 
   const handleAddItem = (text: string, time?: string) => {
-    // Determine type based on whether time is provided
-    const type = time ? 'event' : 'task';
-
-    // Add the item to the currently active bucket
-    addItem(text, type, activeBucket, time);
+    // Add the item to the currently active bucket (always as a task)
+    addItem(text, activeBucket, time);
   };
 
   const handleAddToFutureLog = (text: string, scheduledDate: string, time?: string) => {
-    // Determine type based on whether time is provided
-    const type = time ? 'event' : 'task';
-
-    addItem(text, type, 'future-log', time, undefined, scheduledDate);
+    // Add the task to future-log (always as a task)
+    addItem(text, 'future-log', time, undefined, scheduledDate);
     toast.success('Task added to Future Log!');
   };
 
@@ -119,16 +116,13 @@ export default function Dojo() {
     useSensor(KeyboardSensor)
   );
 
-  // Handle starting focus with switch dialog check
+  // Handle starting focus - navigate to start page
   const handleStartFocus = (itemId?: string, itemText?: string, duration?: number) => {
-    // If there's already an active focus session, show switch dialog
-    if (activeItemId) {
-      setPendingFocus({ itemId, itemText, duration });
-      setShowSwitchDialog(true);
-    } else {
-      // No active session, start immediately
-      startTimer(itemId, itemText, duration);
-    }
+    // Navigate to focus start page with query params
+    const params = new URLSearchParams();
+    if (itemId) params.set('itemId', itemId);
+    if (itemText) params.set('itemText', itemText);
+    navigate(`/focus/start?${params.toString()}`);
   };
 
   const handleConfirmSwitch = () => {
@@ -203,15 +197,8 @@ export default function Dojo() {
           {/* Bucket Headers */}
           <div className="mb-6">
             {activeBucket === 'today' && (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground mt-1">{formatTodayDate()}</p>
-                </div>
-                {items.length > 0 && (
-                  <div className="text-sm text-muted-foreground">
-                    <span className="font-semibold text-primary">{items.length}</span> {items.length === 1 ? 'thought' : 'thoughts'}
-                  </div>
-                )}
+              <div>
+                <p className="text-sm text-muted-foreground mt-1">{formatTodayDate()}</p>
               </div>
             )}
 
@@ -237,6 +224,7 @@ export default function Dojo() {
               onToggleComplete={handleToggleItemCompletion}
               onCardClick={handleCardClick}
               onArchive={archiveItem}
+              onStartFocus={handleStartFocus}
               onOpenAddSheet={() => setShowFutureLogSheet(true)}
             />
           ) : (
@@ -246,6 +234,7 @@ export default function Dojo() {
               onToggleComplete={handleToggleItemCompletion}
               onCardClick={handleCardClick}
               onArchive={archiveItem}
+              onStartFocus={handleStartFocus}
               activeId={activeId}
             />
           )}
@@ -255,12 +244,14 @@ export default function Dojo() {
         <FocusDropZone isVisible={activeId !== null} />
       </div>
 
-      {/* Floating Task Input - bottom of screen */}
-      <FloatingTaskInput
-        ref={inputRef}
-        onAddItem={handleAddItem}
-        placeholder="Press / to add a task or event..."
-      />
+      {/* Floating Task Input - bottom of screen (hidden for Future Log) */}
+      {activeBucket !== 'future-log' && (
+        <FloatingTaskInput
+          ref={inputRef}
+          onAddItem={handleAddItem}
+          placeholder="Press / to add a task..."
+        />
+      )}
 
       {/* Switch Focus Dialog */}
       <SwitchFocusDialog

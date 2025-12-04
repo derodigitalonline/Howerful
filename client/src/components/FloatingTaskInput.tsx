@@ -23,9 +23,9 @@ interface FloatingTaskInputProps {
 }
 
 const TIME_PRESETS = [
-  { label: 'Morning', value: '08:00', icon: '🌅' },
-  { label: 'Afternoon', value: '12:00', icon: '☀️' },
-  { label: 'Evening', value: '18:00', icon: '🌆' },
+  { label: 'Morning', value: '08:00' },
+  { label: 'Afternoon', value: '12:00' },
+  { label: 'Evening', value: '18:00' },
 ] as const;
 
 const FloatingTaskInput = forwardRef<SlashInputRef, FloatingTaskInputProps>(
@@ -142,7 +142,13 @@ const FloatingTaskInput = forwardRef<SlashInputRef, FloatingTaskInputProps>(
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 onFocus={() => setIsFocused(true)}
-                onBlur={() => !text && setIsFocused(false)}
+                onBlur={(e) => {
+                  // Keep focused if clicking within the container
+                  if (containerRef.current?.contains(e.relatedTarget as Node)) {
+                    return;
+                  }
+                  if (!text) setIsFocused(false);
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder={isFocused ? "What needs to be done?" : placeholder}
                 className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground text-base font-light"
@@ -183,7 +189,6 @@ const FloatingTaskInput = forwardRef<SlashInputRef, FloatingTaskInputProps>(
                       selected={selectedTime === preset.value}
                       onClick={() => handleTimePreset(preset.value)}
                     >
-                      <span>{preset.icon}</span>
                       <span>{preset.label}</span>
                       <span className="font-mono text-xs">{preset.value}</span>
                     </Chip>
@@ -214,7 +219,7 @@ const FloatingTaskInput = forwardRef<SlashInputRef, FloatingTaskInputProps>(
                 {selectedTime && (
                   <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-2">
                     <Clock className="w-3 h-3" />
-                    <span>This will be saved as an event at {selectedTime}</span>
+                    <span>Task scheduled for {selectedTime}</span>
                   </div>
                 )}
               </div>

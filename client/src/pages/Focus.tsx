@@ -43,17 +43,8 @@ export default function Focus() {
   return (
     <div className="h-full flex flex-col overflow-hidden bg-background">
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-6 py-6 space-y-6">
-          {/* Header */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Timer className="w-6 h-6 text-primary" />
-              <h1 className="text-3xl font-bold">Focus Mode</h1>
-            </div>
-            <p className="text-muted-foreground text-sm">
-              Deep work sessions to help you stay focused and productive
-            </p>
-          </div>
+        <div className="max-w-4xl mx-auto px-6 py-6 space-y-6">
+
 
           {/* Compact Timer + Controls + Active Item */}
           <Card className="border-2">
@@ -76,48 +67,28 @@ export default function Focus() {
                 <FocusControls variant="default" />
               </div>
 
-              {/* Session Info - Compact */}
-              <div className="grid grid-cols-4 gap-3 pt-4 border-t">
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Work</p>
-                  <p className="text-sm font-semibold">{Math.floor(settings.workDuration / 60)}m</p>
+              {/* Quick Start */}
+              <div className="space-y-3 pt-4 border-t">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <h2 className="text-base font-semibold">Quick Start</h2>
                 </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Short Break</p>
-                  <p className="text-sm font-semibold">{Math.floor(settings.shortBreakDuration / 60)}m</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Long Break</p>
-                  <p className="text-sm font-semibold">{Math.floor(settings.longBreakDuration / 60)}m</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Interval</p>
-                  <p className="text-sm font-semibold">{settings.longBreakInterval}</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {presets.map((preset) => (
+                    <Button
+                      key={preset.label}
+                      variant="outline"
+                      onClick={() => handlePresetClick(preset.seconds)}
+                      disabled={isRunning}
+                      className="h-12 font-medium"
+                    >
+                      {preset.label}
+                    </Button>
+                  ))}
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          {/* Preset Durations - Compact */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-muted-foreground" />
-              <h2 className="text-base font-semibold">Quick Start</h2>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {presets.map((preset) => (
-                <Button
-                  key={preset.label}
-                  variant="outline"
-                  onClick={() => handlePresetClick(preset.seconds)}
-                  disabled={isRunning}
-                  className="h-12 font-medium"
-                >
-                  {preset.label}
-                </Button>
-              ))}
-            </div>
-          </div>
 
           {/* Session History */}
           <FocusHistory sessions={sessions} />

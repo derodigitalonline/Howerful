@@ -155,6 +155,7 @@ export const COSMETICS_LIBRARY: CosmeticItem[] = [
     name: 'Howerful Glasses',
     category: 'facewear',
     imagePath: '/assets/cosmetics/facewear/howerful_glasses.png',
+    modelPath: '/models/cosmetics/howerful_glasses.glb',
     description: 'Stylish glasses for the productive Howie',
     unlockQuest: 'quest-get-ur-glasses',
     rarity: 'rare',

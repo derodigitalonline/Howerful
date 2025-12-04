@@ -10,6 +10,7 @@ interface FutureLogViewProps {
   onToggleComplete: (id: string) => void;
   onCardClick: (id: string) => void;
   onArchive?: (id: string) => void;
+  onStartFocus?: (id: string, text: string) => void;
   onOpenAddSheet: () => void;
 }
 
@@ -25,6 +26,7 @@ export default function FutureLogView({
   onToggleComplete,
   onCardClick,
   onArchive,
+  onStartFocus,
   onOpenAddSheet,
 }: FutureLogViewProps) {
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
@@ -96,7 +98,7 @@ export default function FutureLogView({
   };
 
   return (
-    <div className="w-full max-w-[1250px] mx-auto space-y-4">
+    <div className="w-full max-w-[820px] mx-auto space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">
@@ -169,6 +171,7 @@ export default function FutureLogView({
                       onToggleComplete={onToggleComplete}
                       onClick={onCardClick}
                       onArchive={onArchive}
+                      onStartFocus={onStartFocus}
                     />
                   ))}
 

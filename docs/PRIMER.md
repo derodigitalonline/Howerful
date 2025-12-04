@@ -48,28 +48,26 @@ Quick reference guide for understanding Howerful's codebase. Optimized for rapid
 - **Future Log** - scheduled items with specific dates (auto-migrate to Today on date)
 
 **Key Features:**
-- Task/Event types (events have time, tasks don't)
-- Drag & drop reordering and bucket changes
-- Drag to Focus Zone to start pomodoro
+- All items are tasks (with optional time/date)
 - Archive completed tasks (30-day soft delete)
-- Type cycling: task ↔ event
 
 **Rewards:** 10 XP + 5 coins per completed task
 
 ---
 
 ### 2. Focus Mode (Pomodoro)
-**Files:** `client/src/pages/Focus.tsx`, `client/src/hooks/useFocus.tsx`
+**Files:** `client/src/pages/Focus.tsx`, `client/src/pages/FocusStart.tsx`, `client/src/hooks/useFocus.tsx`
 
 **Purpose:** Pomodoro timer with task tracking and session history
 
 **Features:**
+- Right-click context menu on tasks → fullscreen start page
+- Custom duration selection (5/10/25 min presets + custom 1-180 min)
 - Configurable durations (default: 25min work, 5min short break, 15min long break)
-- Session cycle: Work → Short Break → Work → ... → Long Break (every 4 sessions)
-- Quick presets: 5min, 10min, 25min
+- Session cycle: Work → Short Break → Work → Long Break (every 4 sessions)
 - Active item tracking (linked to bullet items)
-- Switch focus dialog (prevents accidentally changing focus mid-session)
-- Session persistence (survives page refresh via localStorage)
+- Switch focus dialog
+- Session persistence via localStorage
 - History tracking in Supabase
 
 **State persisted:**
@@ -97,7 +95,7 @@ Quick reference guide for understanding Howerful's codebase. Optimized for rapid
 3. User claims rewards → XP/coins added, quest moves to inbox
 4. Unclaimed quests expire after 24h → move to inbox
 
-**Tracking:** Progress tracked in `useProfile` via `trackBulletTaskCompletion()` and `trackFocusSessionCompletion()`
+**Tracking:** Progress tracked in `useProfile` via `trackBulletTaskCompletion()`, `trackCosmeticChange()`, and `trackFocusSessionCompletion()`
 
 ---
 
@@ -133,8 +131,8 @@ Quick reference guide for understanding Howerful's codebase. Optimized for rapid
 **Features:**
 - Schedule by days of week (0-6 = Sun-Sat)
 - Optional time for reminders
-- Streak calculation (consecutive check-ins)
-- Reset tracking (prevents double check-ins same day)
+- Streak calculation
+- Reset tracking
 
 **Database:** `routines` table + `routine_metadata` for reset state
 
@@ -228,17 +226,17 @@ Component re-renders with new data
 
 1. **No auto-migration between buckets** - Items stay in bucket until manually moved (Future Log exception: auto-migrates on `scheduledDate`)
 
-2. **Guest mode data loss** - Closing browser clears localStorage (warning shown via `beforeunload`)
+2. **Guest mode data loss** - Closing browser clears localStorage
 
-3. **Cosmetics dual format** - PNG for UI previews (Bazaar grids), .glb for 3D rendering (Profile/Customize pages)
+3. **Cosmetics dual format** - PNG for UI previews, .glb for 3D rendering
 
-4. **Focus session conflicts** - Only one active session at a time, `SwitchFocusDialog` confirms changing items mid-session
+4. **Focus session conflicts** - Only one active session at a time, `SwitchFocusDialog` confirms changes
 
-5. **Quest claiming** - Completing quest ≠ claiming rewards. User must manually claim from UI.
+5. **Quest claiming** - Completing quest ≠ claiming rewards. User must manually claim.
 
-6. **Soft deletes** - Archived bullet items have `archivedAt` timestamp, retained 30 days before permanent deletion
+6. **Soft deletes** - Archived items have `archivedAt` timestamp, retained 30 days
 
-7. **Type vs bucket** - Bullet item `type` (task/event) is independent of `bucket` (today/tomorrow/someday/future-log)
+7. **Time is optional** - All items are tasks; adding time just makes it a scheduled task
 
 ---
 
@@ -272,14 +270,14 @@ npm run db:push      # Push schema changes
 
 ## Current Sprint
 
-See [PLAN.md](../PLAN.md) for latest priorities and recent completions.
+See [PLAN.md](../PLAN.md) for latest priorities.
 
 **Recent Major Features:**
-- Future Log bucket view (scheduled items with auto-migration)
-- Floating task input with animated gradient
-- Archive system (soft delete for completed tasks)
-- 3D cosmetics system (bone-based attachment)
-- Quest inbox (unclaimed rewards)
+- Right-click focus session start flow
+- Future Log bucket view with auto-migration
+- Archive system with 30-day retention
+- 3D cosmetics with bone-based attachment
+- Quest inbox for unclaimed rewards
 
 ---
 
@@ -298,10 +296,10 @@ See [PLAN.md](../PLAN.md) for latest priorities and recent completions.
 - Main content with responsive padding
 
 ### Animations
-- Drag & drop: Real-time position updates (dnd-kit)
-- Focus timer: Circular progress, 1s intervals
+- Drag & drop: Real-time position updates
+- Focus timer: Circular progress
 - Task completion: Scale + fade out
-- 3D cosmetics: Optional animations for capes (flowing)
+- 3D cosmetics: Optional cape animations
 
 ---
 
@@ -330,22 +328,22 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 **Auth not working?**
 - Check `.env.local` has `VITE_` prefix
 - Restart dev server after adding env vars
-- Verify RLS policies in Supabase dashboard
+- Verify RLS policies in Supabase
 
 **Data not persisting?**
-- Guest mode? Check localStorage
-- Authenticated? Check Supabase Table Editor
-- Console errors? Check network tab for failed requests
+- Guest mode: Check localStorage
+- Authenticated: Check Supabase Table Editor
+- Check network tab for failed requests
 
 **3D model not rendering?**
-- Check file exists at `public/models/Howie.glb`
-- Verify cosmetic `modelPath` is correct
+- Verify file exists at `public/models/Howie.glb`
+- Check cosmetic `modelPath` is correct
 - Check console for Three.js errors
 
 **Focus timer not ticking?**
-- Check `useFocus` hook is providing `FocusProvider`
-- Verify `setInterval` is running (check console)
-- localStorage might be corrupted (clear and retry)
+- Verify `FocusProvider` wraps components
+- Check console for interval errors
+- Clear localStorage and retry
 
 ---
 

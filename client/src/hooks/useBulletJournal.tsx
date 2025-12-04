@@ -96,7 +96,7 @@ export function useBulletJournal() {
     }
   }, [items, isLoading, isAuthenticated]);
 
-  const addItem = (text: string, type: BulletItemType, bucket: Bucket = 'today', time?: string, date?: string, scheduledDate?: string) => {
+  const addItem = (text: string, bucket: Bucket = 'today', time?: string, date?: string, scheduledDate?: string) => {
     // Find the highest order for this bucket
     const bucketItems = items.filter(item => item.bucket === bucket);
     const maxOrder = bucketItems.length > 0
@@ -106,11 +106,11 @@ export function useBulletJournal() {
 
     const newItem: BulletItem = {
       id: crypto.randomUUID(),
-      type,
+      type: 'task', // Everything is a task now
       text,
       bucket,
-      date, // Optional - only for scheduled events
-      time,
+      date, // Optional - only for scheduled tasks with dates
+      time, // Optional - only for tasks with specific times
       scheduledDate, // Optional - for Future Log auto-migration
       completed: false,
       createdAt: Date.now(),
@@ -122,8 +122,8 @@ export function useBulletJournal() {
 
     // Sync to Supabase if logged in (pass the same ID)
     if (isAuthenticated && isSupabaseConfigured()) {
-      console.log('Adding bullet item to Supabase:', { id: newItem.id, text, type, bucket, time, date, scheduledDate, order });
-      addItemMutation.mutate({ id: newItem.id, text, type, bucket, time, date, scheduledDate, order });
+      console.log('Adding bullet item to Supabase:', { id: newItem.id, text, bucket, time, date, scheduledDate, order });
+      addItemMutation.mutate({ id: newItem.id, text, bucket, time, date, scheduledDate, order });
     } else {
       console.log('Not syncing to Supabase - authenticated:', isAuthenticated, 'configured:', isSupabaseConfigured());
     }
@@ -182,59 +182,6 @@ export function useBulletJournal() {
     }
   };
 
-  const cycleItemType = (id: string) => {
-    let updates: Partial<BulletItem> = {};
-
-    // Update local state immediately
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const types: BulletItemType[] = ["task", "event", "note"];
-          const currentIndex = types.indexOf(item.type);
-          const nextIndex = (currentIndex + 1) % types.length;
-          const newType = types[nextIndex];
-
-          updates = {
-            type: newType,
-            completed: newType === "task" ? item.completed : false,
-          };
-
-          return { ...item, ...updates };
-        }
-        return item;
-      })
-    );
-
-    // Sync to Supabase if logged in
-    if (updates.type && isAuthenticated && isSupabaseConfigured()) {
-      updateItemMutation.mutate({ id, updates });
-    }
-  };
-
-  const changeItemType = (id: string, newType: BulletItemType) => {
-    let updates: Partial<BulletItem> = {};
-
-    // Update local state immediately
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          updates = {
-            type: newType,
-            completed: newType === "task" ? item.completed : false,
-            time: newType === "event" ? item.time : undefined,
-          };
-
-          return { ...item, ...updates };
-        }
-        return item;
-      })
-    );
-
-    // Sync to Supabase if logged in
-    if (isAuthenticated && isSupabaseConfigured()) {
-      updateItemMutation.mutate({ id, updates });
-    }
-  };
 
   const getItemsByDate = (date: string) => {
     return items.filter((item) => item.date === date)
@@ -242,7 +189,7 @@ export function useBulletJournal() {
   };
 
   const getItemsByBucket = (bucket: Bucket) => {
-    return items.filter((item) => item.bucket === bucket)
+    return items.filter((item) => item.bucket === bucket && !item.archivedAt)
       .sort((a, b) => b.order - a.order); // Descending order: newest (highest order) first
   };
 
@@ -348,8 +295,6 @@ export function useBulletJournal() {
     deleteItem,
     updateItem,
     toggleItemCompletion,
-    cycleItemType,
-    changeItemType,
     getItemsByDate,
     getItemsByBucket,
     moveItemToBucket,

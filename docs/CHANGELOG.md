@@ -1,6 +1,6 @@
 # Howerful Changelog
 
-**Last Updated:** 2025-12-02
+**Last Updated:** 2025-12-04
 
 ---
 
@@ -17,7 +17,7 @@
 
 ### Pages
 - **Dojo** - Bullet journal with temporal buckets (Today/Tomorrow/Someday/Future Log)
-- **Focus** - Pomodoro timer with drag-and-drop task integration
+- **Focus** - Pomodoro timer with right-click start flow and duration selection
 - **Routines** - Daily habit tracking with streak system
 - **Quests** - Daily quests (3/day from pool of 8) + Story quests
 - **Bazaar** - Cosmetics shop (hats, shirts, pants, capes, pets, facewear)
@@ -25,11 +25,11 @@
 - **Customize** - Equip cosmetics on 3D Howie model
 
 ### Core Systems
-- **Bullet Journal** - Enter tasks for different buckets
+- **Bullet Journal** - Task/event system simplified to tasks-only with optional time
 - **Gamification** - XP/leveling (max 50), Howie Coins currency, quest rewards
-- **3D Avatar** - Three.js viewer with cosmetic attachments, pixelation shader
-- **Focus Mode** - Pomodoro timer (25/5/15 min), persistent state, session history
-- **Data Persistence** - Supabase (PostgreSQL) for profiles, tasks, quests
+- **3D Avatar** - Three.js viewer with cosmetic attachments, pixelation shader, bone-based facewear
+- **Focus Mode** - Context menu start flow, custom duration, fullscreen start page
+- **Data Persistence** - Supabase (PostgreSQL) for profiles, cosmetics, daily quests
 - **Authentication** - Supabase Auth with guest mode fallback
 
 ---
@@ -37,10 +37,16 @@
 ## Recent Changes
 
 ### December 2025
+- **Focus Session UX** - Right-click context menu on tasks, fullscreen start page with duration selection (5/10/25 min + custom), gamified BEGIN button
+- **Context Menu** - Added "Start Focus Session" and "Archive" options to BulletCard
+- **Task Type Simplification** - Removed event/task distinction, everything is a task with optional time
+- **Bazaar Sync Fixes** - Coin deduction and cosmetic unlocks now sync to Supabase
+- **Daily Quest Tracking** - Fixed cosmetic-based quest completion (equipping cosmetics now triggers progress)
+- **Bucket Count Fixes** - Badges show only uncompleted, non-archived tasks
+- **3D Cosmetics** - Added Howerful Glasses with attachment_face bone support
 - **Profile Page Redesign** - Compact XP bar, new stats grid (Tasks Tracked, Quests Completed, Howie Coins)
-- **Supabase Integration** - Migrated profile data from localStorage to PostgreSQL
+- **Supabase Integration** - Migrated profile, cosmetics, daily quests from localStorage to PostgreSQL
 - **Database Schema** - Added `totalQuestsCompleted`, `bulletTasksCompleted`, `focusSessionsCompleted` tracking
-- **3D Model Fixes** - Fixed React hooks error in HowieViewer3D component
 
 ### November 2025
 - **Focus Session History** - Added persistent tracking for completed Pomodoro sessions

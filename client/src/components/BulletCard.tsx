@@ -1,12 +1,21 @@
 import { BulletItem } from '@shared/schema';
-import { CheckSquare, Circle, Clock, Trash2 } from 'lucide-react';
+import { CheckSquare, Clock, Trash2, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+} from '@/components/ui/context-menu';
 
 interface BulletCardProps {
   item: BulletItem;
   onToggleComplete: (id: string) => void;
   onClick: (id: string) => void;
   onArchive?: (id: string) => void;
+  onStartFocus?: (id: string, text: string) => void;
   isDragging?: boolean;
 }
 
@@ -15,30 +24,32 @@ export default function BulletCard({
   onToggleComplete,
   onClick,
   onArchive,
+  onStartFocus,
   isDragging,
 }: BulletCardProps) {
-  const isTask = item.type === 'task';
-  const isEvent = item.type === 'event';
   const isCompleted = item.completed;
+  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
 
   return (
-    <div
-      className={cn(
-        "bullet-card group relative bg-card border border-border rounded-xl p-4 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5",
-        "w-full",
-        isDragging && "opacity-50 scale-95",
-        isCompleted && "opacity-60"
-      )}
-      onClick={() => onClick(item.id)}
-    >
+    <ContextMenu onOpenChange={setIsContextMenuOpen}>
+      <ContextMenuTrigger asChild>
+        <div
+          className={cn(
+            "bullet-card group relative bg-card border border-border rounded-xl p-4 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5",
+            "w-full",
+            isDragging && "opacity-50 scale-95",
+            isCompleted && "opacity-60",
+            isContextMenuOpen && "ring-2 ring-primary shadow-md"
+          )}
+          onClick={() => onClick(item.id)}
+        >
       {/* Type Indicator & Content */}
       <div className="flex items-start gap-3">
-        {/* Type Icon - Clickable for both tasks and events */}
+        {/* Type Icon - Clickable checkbox for tasks */}
         <div className="flex-shrink-0 mt-0.5">
           <div
             className={cn(
-              "w-5 h-5 border-2 flex items-center justify-center transition-colors cursor-pointer",
-              isEvent ? "rounded-full" : "rounded",
+              "w-5 h-5 border-2 flex items-center justify-center transition-colors cursor-pointer rounded",
               isCompleted
                 ? "bg-primary border-primary text-primary-foreground"
                 : "border-muted-foreground hover:border-primary"
@@ -65,8 +76,8 @@ export default function BulletCard({
             {item.text}
           </p>
 
-          {/* Time Badge - For Events */}
-          {isEvent && item.time && (
+          {/* Time Badge - For tasks with specific times */}
+          {item.time && (
             <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
               <Clock className="w-3 h-3" />
               <span className="font-mono">{item.time}</span>
@@ -101,6 +112,33 @@ export default function BulletCard({
           <Trash2 className="w-5 h-5" />
         </button>
       )}
-    </div>
+        </div>
+      </ContextMenuTrigger>
+
+      <ContextMenuContent className="w-48">
+        {onStartFocus && (
+          <>
+            <ContextMenuItem
+              onSelect={() => onStartFocus(item.id, item.text)}
+              className="flex items-center text-primary focus:text-primary"
+            >
+              <Timer className="w-4 h-4 mr-2" />
+              Start Focus Session
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+          </>
+        )}
+
+        {onArchive && (
+          <ContextMenuItem
+            onSelect={() => onArchive(item.id)}
+            className="text-destructive focus:text-destructive"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Archive
+          </ContextMenuItem>
+        )}
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }

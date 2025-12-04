@@ -38,8 +38,15 @@ export default function TopBar() {
     }
   };
 
+  const handleGetCoins = () => {
+    // TODO: Navigate to a page showing how to earn/purchase coins
+    toast.info('Coming soon!', {
+      description: 'Learn how to earn more coins or support the creator',
+    });
+  };
+
   return (
-    <div className={`fixed top-0 right-0 h-16 bg-card/95 backdrop-blur-sm border-b border-border px-6 py-3 flex items-center gap-4 z-50 transition-all duration-300 ${isCollapsed ? 'left-20' : 'left-64'}`}>
+    <div className={`fixed top-0 right-0 h-16 bg-transparent px-6 py-3 flex items-center gap-4 z-50 transition-all duration-300 ${isCollapsed ? 'left-20' : 'left-64'}`}>
       {/* Hamburger Menu Toggle */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
@@ -53,11 +60,13 @@ export default function TopBar() {
       <div className="flex-1" />
 
       {/* Right side content */}
-      <div className="flex items-center gap-8">
-        {/* Coin Display */}
-        <div className="flex items-center">
-          <CoinDisplay coins={coins} size="sm" />
-        </div>
+      <div className="flex items-center gap-4">
+        {/* Coin Display - Game Style */}
+        <CoinDisplay
+          coins={coins}
+          variant="game"
+          onPlusClick={handleGetCoins}
+        />
 
         {/* Profile Picture or Login Button */}
         {isAuthenticated ? (

@@ -6,6 +6,7 @@ import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Dojo from "@/pages/Dojo";
 import Focus from "@/pages/Focus";
+import FocusStart from "@/pages/FocusStart";
 import Profile from "@/pages/Profile";
 import Customize from "@/pages/Customize";
 import Quests from "@/pages/Quests";
@@ -37,6 +38,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dojo} />
+      <Route path="/focus/start" component={FocusStart} />
       <Route path="/focus" component={Focus} />
       <Route path="/routines" component={Routines} />
       <Route path="/profile" component={Profile} />

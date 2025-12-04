@@ -314,10 +314,17 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       return false; // Insufficient coins
     }
 
+    const newCoinAmount = (profile.coins || 0) - amount;
+
     setProfile((prev) => ({
       ...prev,
-      coins: (prev.coins || 0) - amount,
+      coins: newCoinAmount,
     }));
+
+    // Sync to Supabase if authenticated
+    if (isAuthenticated && isSupabaseConfigured()) {
+      updateProfile.mutate({ coins: newCoinAmount });
+    }
 
     return true; // Success
   };
@@ -499,7 +506,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
    * Called when user equips a cosmetic
    */
   const trackCosmeticChange = (): void => {
-    let questsToSync: DailyQuest[] = [];
+    const questsToSync: DailyQuest[] = [];
 
     setProfile(prev => {
       const updatedDailyQuests = (prev.dailyQuests || []).map(quest => {
@@ -513,15 +520,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         return updatedQuest;
       });
 
+      // Sync updated quests to Supabase immediately after state update
+      if (isAuthenticated && isSupabaseConfigured() && questsToSync.length > 0) {
+        questsToSync.forEach(quest => {
+          upsertDailyQuest.mutate(quest);
+        });
+      }
+
       return { ...prev, dailyQuests: updatedDailyQuests };
     });
-
-    // Sync updated quests to Supabase
-    if (isAuthenticated && isSupabaseConfigured() && questsToSync.length > 0) {
-      questsToSync.forEach(quest => {
-        upsertDailyQuest.mutate(quest);
-      });
-    }
   };
 
   /**

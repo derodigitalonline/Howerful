@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 
 export default function Bazaar() {
-  const { profile, deductCoins, setProfile } = useProfile();
+  const { profile, deductCoins, unlockCosmeticReward } = useProfile();
   const coins = profile.coins || 0;
   const unlockedCosmetics = profile.unlockedCosmetics || [];
 
@@ -55,12 +55,8 @@ export default function Bazaar() {
       return;
     }
 
-    // Add to unlocked cosmetics
-    const newUnlockedCosmetics = [...unlockedCosmetics, cosmeticId];
-    setProfile({
-      ...profile,
-      unlockedCosmetics: newUnlockedCosmetics,
-    });
+    // Add to unlocked cosmetics (syncs to Supabase)
+    unlockCosmeticReward(cosmeticId);
 
     // Celebration!
     confetti({

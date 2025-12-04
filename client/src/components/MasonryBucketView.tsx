@@ -9,6 +9,7 @@ interface MasonryBucketViewProps {
   onToggleComplete: (id: string) => void;
   onCardClick: (id: string) => void;
   onArchive?: (id: string) => void;
+  onStartFocus?: (id: string, text: string) => void;
   activeId?: string | null;
 }
 
@@ -33,6 +34,7 @@ export default function MasonryBucketView({
   onToggleComplete,
   onCardClick,
   onArchive,
+  onStartFocus,
   activeId,
 }: MasonryBucketViewProps) {
   // Filter out archived items
@@ -89,6 +91,7 @@ export default function MasonryBucketView({
                 onToggleComplete={onToggleComplete}
                 onClick={onCardClick}
                 onArchive={onArchive}
+                onStartFocus={onStartFocus}
                 isDragging={activeId === item.id}
               />
             ))}
@@ -116,6 +119,7 @@ export default function MasonryBucketView({
                 onToggleComplete={onToggleComplete}
                 onClick={onCardClick}
                 onArchive={onArchive}
+                onStartFocus={onStartFocus}
                 isDragging={activeId === item.id}
               />
             ))}

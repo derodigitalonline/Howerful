@@ -25,8 +25,8 @@ Howerful is a gamified productivity app that combines task management, focus ses
 **Purpose**: Brain dump and task triage system inspired by bullet journaling.
 
 **Features**:
-- Three buckets: Today, Tomorrow, Someday
-- Bullet types: Task (•), Event (○), Note (-)
+- Four buckets: Today, Tomorrow, Someday, Future Log
+- All items are tasks (with optional time/date)
 - Natural language parsing (e.g., "tomorrow: buy milk")
 - Drag & drop reordering and bucket changes
 - Drag items to Focus Zone to start focus session
@@ -296,18 +296,21 @@ const userTasks = await db
 - updated_at (timestamp)
 ```
 
-**daily_spread_items**
+**bullet_items**
 ```sql
 - id (serial, PK)
 - user_id (integer, FK -> profiles.id)
 - text (text)
-- type (text: 'task', 'event', 'note')
-- bucket (text: 'today', 'tomorrow', 'someday')
+- type (text: 'task')
+- bucket (text: 'today', 'tomorrow', 'someday', 'future-log')
 - time (text, optional)
+- date (text, optional)
+- scheduledDate (text, optional)
 - order_index (integer)
 - completed (boolean, default false)
 - created_at (timestamp)
 - updated_at (timestamp)
+- archivedAt (timestamp, optional)
 ```
 
 **focus_sessions**

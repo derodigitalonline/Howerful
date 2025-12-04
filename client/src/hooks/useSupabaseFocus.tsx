@@ -219,7 +219,6 @@ interface RoutineMetadata {
   xpAwardedToday: string[];
 }
 
-// Helper: Convert database row to DailyRoutine type
 function dbRowToRoutine(row: any): DailyRoutine {
   return {
     id: row.id,
@@ -228,7 +227,6 @@ function dbRowToRoutine(row: any): DailyRoutine {
   };
 }
 
-// Helper: Convert DailyRoutine type to database row
 function routineToDbRow(routine: DailyRoutine, userId: string) {
   return {
     id: routine.id,
@@ -238,9 +236,6 @@ function routineToDbRow(routine: DailyRoutine, userId: string) {
   };
 }
 
-/**
- * Fetch all routines from Supabase
- */
 export function useSupabaseRoutines() {
   const { user, isAuthenticated } = useAuth();
   const enabled = isSupabaseConfigured() && isAuthenticated && !!user;
@@ -360,18 +355,20 @@ export function useBulkUpsertRoutines() {
       if (!user?.id) throw new Error('User not authenticated');
       if (!isSupabaseConfigured()) throw new Error('Supabase not configured');
 
-      // First, delete all existing routines for this user
       const { error: deleteError } = await supabase
         .from('routines')
         .delete()
         .eq('user_id', user.id);
 
       if (deleteError) {
-        console.error('Error deleting old routines:', error);
+        console.error('Error deleting old routines:', deleteError);
         throw deleteError;
       }
 
-      // Then insert new routines
+      if (routines.length === 0) {
+        return [];
+      }
+
       const dbRows = routines.map(r => routineToDbRow(r, user.id));
 
       const { data, error } = await supabase
@@ -392,9 +389,6 @@ export function useBulkUpsertRoutines() {
   });
 }
 
-/**
- * Update a single routine's completion status
- */
 export function useUpdateRoutine() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -421,5 +415,4 @@ export function useUpdateRoutine() {
   });
 }
 
-// Export types for use in other files
 export type { DailyRoutine, RoutineMetadata };
