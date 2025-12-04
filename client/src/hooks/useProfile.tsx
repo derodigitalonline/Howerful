@@ -99,76 +99,86 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (isAuthenticated && supabaseProfile) {
-      // Logged in: Load from Supabase
-      const stored = localStorage.getItem(STORAGE_KEY);
-      let localData: Partial<UserProfile> = {};
+    if (isAuthenticated) {
+      // User is logged in - handle both cases: profile exists or doesn't exist yet
+      if (supabaseProfile) {
+        // Profile exists in Supabase - load it
+        console.log('Loading profile from Supabase:', supabaseProfile);
 
-      if (stored) {
-        try {
-          localData = JSON.parse(stored);
-        } catch (e) {
-          console.error("Failed to parse stored profile", e);
+        const stored = localStorage.getItem(STORAGE_KEY);
+        let localData: Partial<UserProfile> = {};
+
+        if (stored) {
+          try {
+            localData = JSON.parse(stored);
+          } catch (e) {
+            console.error("Failed to parse stored profile", e);
+          }
         }
-      }
 
-      // Load daily quests: use Supabase data if available, otherwise generate new
-      let mergedQuests: DailyQuest[] = [];
+        // Load daily quests: use Supabase data if available, otherwise generate new
+        let mergedQuests: DailyQuest[] = [];
 
-      if (supabaseDailyQuests && supabaseDailyQuests.length > 0) {
-        // Load quests from Supabase and merge with definitions
-        // Filter out any old/invalid quests that don't exist in the current quest pool
-        mergedQuests = supabaseDailyQuests
-          .map(supabaseQuest => {
-            const questDef = getDailyQuestDefinition(supabaseQuest.id);
-            if (questDef) {
-              return {
-                ...questDef,
-                progress: supabaseQuest.progress,
-                completed: supabaseQuest.completed,
-                claimed: supabaseQuest.claimed,
-              };
-            }
-            // Quest definition not found (old Matrix quest) - filter it out
-            return null;
-          })
-          .filter((quest): quest is DailyQuest => quest !== null);
+        if (supabaseDailyQuests && supabaseDailyQuests.length > 0) {
+          // Load quests from Supabase and merge with definitions
+          // Filter out any old/invalid quests that don't exist in the current quest pool
+          mergedQuests = supabaseDailyQuests
+            .map(supabaseQuest => {
+              const questDef = getDailyQuestDefinition(supabaseQuest.id);
+              if (questDef) {
+                return {
+                  ...questDef,
+                  progress: supabaseQuest.progress,
+                  completed: supabaseQuest.completed,
+                  claimed: supabaseQuest.claimed,
+                };
+              }
+              // Quest definition not found (old Matrix quest) - filter it out
+              return null;
+            })
+            .filter((quest): quest is DailyQuest => quest !== null);
 
-        // If no valid quests remain after filtering, generate new ones
-        if (mergedQuests.length === 0) {
+          // If no valid quests remain after filtering, generate new ones
+          if (mergedQuests.length === 0) {
+            mergedQuests = generateDailyQuests();
+          } else if (mergedQuests.length > 3) {
+            // Safety check: If somehow we have more than 3 quests, only keep the first 3
+            mergedQuests = mergedQuests.slice(0, 3);
+          }
+        } else {
+          // No quests in Supabase, generate new ones
+          // (This will be synced to Supabase by checkAndResetDailyQuests)
           mergedQuests = generateDailyQuests();
-        } else if (mergedQuests.length > 3) {
-          // Safety check: If somehow we have more than 3 quests, only keep the first 3
-          mergedQuests = mergedQuests.slice(0, 3);
         }
-      } else {
-        // No quests in Supabase, generate new ones
-        // (This will be synced to Supabase by checkAndResetDailyQuests)
-        mergedQuests = generateDailyQuests();
-      }
 
-      setProfile({
-        // Basic fields from Supabase
-        userName: supabaseProfile.userName,
-        howieName: supabaseProfile.howieName,
-        totalXP: supabaseProfile.totalXP,
-        level: supabaseProfile.level,
-        coins: supabaseProfile.coins,
-        bulletTasksCompleted: supabaseProfile.bulletTasksCompleted || 0,
-        focusSessionsCompleted: supabaseProfile.focusSessionsCompleted || 0,
-        totalQuestsCompleted: supabaseProfile.totalQuestsCompleted || 0,
-        hasCompletedOnboarding: supabaseProfile.hasCompletedOnboarding,
-        selectedSprite: supabaseProfile.selectedSprite || undefined,
-        // Quest fields from Supabase
-        dailyQuests: mergedQuests,
-        lastDailyQuestReset: localData.lastDailyQuestReset, // Still in localStorage for now
-        inbox: supabaseInbox || [],
-        claimedQuests: supabaseClaimedQuests || [],
-        // Cosmetic fields from Supabase
-        unlockedCosmetics: supabaseUnlockedCosmetics || [],
-        equippedCosmetics: supabaseEquippedCosmetics || undefined,
-      });
-      setIsLoading(false);
+        setProfile({
+          // Basic fields from Supabase
+          userName: supabaseProfile.userName,
+          howieName: supabaseProfile.howieName,
+          totalXP: supabaseProfile.totalXP,
+          level: supabaseProfile.level,
+          coins: supabaseProfile.coins,
+          bulletTasksCompleted: supabaseProfile.bulletTasksCompleted || 0,
+          focusSessionsCompleted: supabaseProfile.focusSessionsCompleted || 0,
+          totalQuestsCompleted: supabaseProfile.totalQuestsCompleted || 0,
+          hasCompletedOnboarding: supabaseProfile.hasCompletedOnboarding,
+          selectedSprite: supabaseProfile.selectedSprite || undefined,
+          // Quest fields from Supabase
+          dailyQuests: mergedQuests,
+          lastDailyQuestReset: localData.lastDailyQuestReset, // Still in localStorage for now
+          inbox: supabaseInbox || [],
+          claimedQuests: supabaseClaimedQuests || [],
+          // Cosmetic fields from Supabase
+          unlockedCosmetics: supabaseUnlockedCosmetics || [],
+          equippedCosmetics: supabaseEquippedCosmetics || undefined,
+        });
+        setIsLoading(false);
+      } else {
+        // Profile doesn't exist in Supabase yet (new user or failed trigger)
+        // Keep default profile state - it will be created via upsert on first change
+        console.log('No profile in Supabase yet, using default profile');
+        setIsLoading(false);
+      }
     } else {
       // Not logged in: Load from localStorage only
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -224,6 +234,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   // Sync basic profile fields to Supabase when they change
   useEffect(() => {
     if (!isLoading && isAuthenticated && isSupabaseConfigured() && user) {
+      console.log('Syncing profile to Supabase:', {
+        userName: profile.userName,
+        howieName: profile.howieName,
+        coins: profile.coins,
+        hasCompletedOnboarding: profile.hasCompletedOnboarding,
+      });
       updateProfile.mutate({
         userName: profile.userName,
         howieName: profile.howieName,
