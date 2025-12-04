@@ -90,7 +90,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     howieName: "Howie",
   });
   const [isLoading, setIsLoading] = useState(true);
-  const hasCheckedQuestReset = useRef(false); // Prevent infinite loop by only checking once per session
+  const hasCheckedQuestReset = useRef(false);
+  const hasLoadedInitialProfile = useRef(false); // Track if we've done the initial profile load
 
   // Load profile on mount: Supabase if logged in, otherwise localStorage
   useEffect(() => {
@@ -172,6 +173,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           unlockedCosmetics: supabaseUnlockedCosmetics || [],
           equippedCosmetics: supabaseEquippedCosmetics || undefined,
         });
+        hasLoadedInitialProfile.current = true; // Mark that we've loaded the initial profile
         setIsLoading(false);
       } else {
         // Profile doesn't exist in Supabase yet (new user or failed trigger)
@@ -232,8 +234,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, [profile, isLoading]);
 
   // Sync basic profile fields to Supabase when they change
+  // IMPORTANT: Only sync after initial profile load to prevent infinite loops
   useEffect(() => {
-    if (!isLoading && isAuthenticated && isSupabaseConfigured() && user) {
+    if (!isLoading && isAuthenticated && isSupabaseConfigured() && user && hasLoadedInitialProfile.current) {
       console.log('Syncing profile to Supabase:', {
         userName: profile.userName,
         howieName: profile.howieName,
