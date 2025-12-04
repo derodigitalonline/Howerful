@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase, isSupabaseConfigured, type User, type Session } from '@/lib/supabase';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AuthContextType {
   // Current user and session state
@@ -28,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const isSupabaseEnabled = isSupabaseConfigured();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     // Skip auth if Supabase not configured
@@ -111,6 +113,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Clear all localStorage data on logout to prevent data leakage
     localStorage.clear();
+
+    // Clear React Query cache to ensure fresh data on next login
+    queryClient.clear();
 
     return { error };
   };

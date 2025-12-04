@@ -62,8 +62,8 @@ export function useSupabaseProfile() {
       return data ? dbRowToProfile(data) : null;
     },
     enabled,
-    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
+    staleTime: 1000 * 10, // Consider data fresh for 10 seconds
+    gcTime: 1000 * 60 * 5, // Keep in cache for 5 minutes
   });
 }
 
