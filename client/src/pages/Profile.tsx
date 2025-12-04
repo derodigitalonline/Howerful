@@ -2,13 +2,27 @@ import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Sparkles, Pencil, Check, X } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import HowieViewer3D from '@/components/HowieViewer3D';
 import CoinDisplay from '@/components/CoinDisplay';
+import { useState } from 'react';
 
 export default function Profile() {
-  const { profile } = useProfile();
+  const { profile, updateHowieName } = useProfile();
+  const [isEditingHowie, setIsEditingHowie] = useState(false);
+  const [tempHowieName, setTempHowieName] = useState(profile.howieName || 'Howie');
+
+  const handleSaveHowieName = () => {
+    updateHowieName(tempHowieName);
+    setIsEditingHowie(false);
+  };
+
+  const handleCancelEdit = () => {
+    setTempHowieName(profile.howieName || 'Howie');
+    setIsEditingHowie(false);
+  };
 
   // Get level tier for styling
   const getLevelBadgeStyle = (level: number) => {
@@ -65,9 +79,49 @@ export default function Profile() {
                       LVL {profile.level}
                     </Badge>
                   </div>
-                  <p className="text-lg text-muted-foreground mb-2">
-                    {profile.howieName || "Howie"}'s Trainer
-                  </p>
+                  {isEditingHowie ? (
+                    <div className="flex items-center gap-2 mb-2">
+                      <Input
+                        value={tempHowieName}
+                        onChange={(e) => setTempHowieName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveHowieName();
+                          if (e.key === 'Escape') handleCancelEdit();
+                        }}
+                        className="max-w-[200px] h-8"
+                        maxLength={20}
+                        autoFocus
+                      />
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                        onClick={handleSaveHowieName}
+                      >
+                        <Check className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                        onClick={handleCancelEdit}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-lg text-muted-foreground mb-2 flex items-center gap-2 group">
+                      {profile.howieName || "Howie"}'s Trainer
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setIsEditingHowie(true)}
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </Button>
+                    </p>
+                  )}
 
                   {/* Compact XP Bar */}
                   <div className="max-w-md">

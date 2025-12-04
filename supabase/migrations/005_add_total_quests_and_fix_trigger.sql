@@ -16,7 +16,7 @@ COMMENT ON COLUMN profiles.total_quests_completed IS 'Total count of all quests 
 -- ============================================================================
 
 -- Update the handle_new_user trigger to use correct column names
--- Previous trigger used 'nickname' which was renamed to 'howie_name'
+-- Reads user_name from auth.users metadata, defaults to 'User' if not provided
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -34,9 +34,9 @@ BEGIN
   )
   VALUES (
     NEW.id,
-    'User',  -- Default user name
+    COALESCE(NEW.raw_user_meta_data->>'user_name', 'User'),  -- Read from signup metadata
     'Howie', -- Default Howie companion name
-    FALSE,   -- User hasn't completed onboarding yet
+    TRUE,    -- No onboarding needed anymore
     0,       -- Starting XP
     1,       -- Starting level
     0,       -- Starting coins

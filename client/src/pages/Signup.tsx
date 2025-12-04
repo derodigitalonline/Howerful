@@ -14,7 +14,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [nickname, setNickname] = useState('');
+  const [firstName, setFirstName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -44,7 +44,7 @@ export default function Signup() {
 
     setLoading(true);
 
-    const { user, error } = await signUp(email, password, nickname || undefined);
+    const { user, error } = await signUp(email, password, firstName || undefined);
 
     if (error) {
       setError(error.message);
@@ -92,22 +92,22 @@ export default function Signup() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="nickname">
-              Nickname <span className="text-muted-foreground text-xs">(optional)</span>
+            <Label htmlFor="firstName">
+              Your First Name <span className="text-muted-foreground text-xs">(optional)</span>
             </Label>
             <Input
-              id="nickname"
+              id="firstName"
               type="text"
-              placeholder="What should we call you?"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              autoComplete="nickname"
+              placeholder="What's your first name?"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              autoComplete="given-name"
               disabled={loading || !!success}
               maxLength={50}
               className="h-11"
             />
             <p className="text-xs text-muted-foreground">
-              This will be your avatar's name
+              Used for personalization (defaults to "User" if skipped)
             </p>
           </div>
 

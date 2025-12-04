@@ -42,7 +42,7 @@ interface ProfileContextType {
   addCoins: (amount: number) => void;
   deductCoins: (amount: number) => boolean;
   resetProfile: () => void;
-  completeOnboarding: (userName: string, howieName: string) => void;
+  updateHowieName: (howieName: string) => void;
   checkAndResetDailyQuests: () => void;
   claimDailyQuest: (questId: string) => boolean;
   unlockCosmeticReward: (cosmeticId: string) => void;
@@ -297,21 +297,13 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * Complete onboarding with userName and howieName
+   * Update Howie's name
    */
-  const completeOnboarding = (userName: string, howieName: string): void => {
-    console.log('useProfile: completeOnboarding called with:', { userName, howieName });
-    setProfile((prev) => {
-      const newProfile = {
-        ...prev,
-        hasCompletedOnboarding: true,
-        selectedSprite: 'default', // Always assign default sprite on onboarding
-        userName: userName || 'User', // Fallback to "User" if empty
-        howieName: howieName || 'Howie', // Fallback to "Howie" if empty
-      };
-      console.log('useProfile: New profile state:', newProfile);
-      return newProfile;
-    });
+  const updateHowieName = (howieName: string): void => {
+    setProfile((prev) => ({
+      ...prev,
+      howieName: howieName || 'Howie',
+    }));
   };
 
   /**
@@ -627,7 +619,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         addCoins,
         deductCoins,
         resetProfile,
-        completeOnboarding,
+        updateHowieName,
         checkAndResetDailyQuests,
         claimDailyQuest,
         unlockCosmeticReward,

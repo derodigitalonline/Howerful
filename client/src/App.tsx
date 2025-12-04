@@ -15,10 +15,9 @@ import Bazaar from "@/pages/Bazaar";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import NotFound from "@/pages/not-found";
-import OnboardingDialog from "@/components/OnboardingDialog";
 import NavigationDrawer from "@/components/NavigationDrawer";
 import TopBar from "@/components/TopBar";
-import { ProfileProvider, useProfile } from "@/hooks/useProfile";
+import { ProfileProvider } from "@/hooks/useProfile";
 import { FocusProvider } from "@/hooks/useFocus";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { useState, createContext, useContext, useEffect } from "react";
@@ -53,7 +52,6 @@ function Router() {
 }
 
 function AppContent() {
-  const { profile, completeOnboarding } = useProfile();
   const { isAuthenticated } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [location] = useLocation();
@@ -80,10 +78,6 @@ function AppContent() {
     <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed }}>
       <Toaster />
       <Sonner position="top-right" richColors />
-      <OnboardingDialog
-        open={isAuthenticated && !profile.hasCompletedOnboarding}
-        onComplete={completeOnboarding}
-      />
 
       {isAuthPage ? (
         // Auth pages: No navigation or top bar

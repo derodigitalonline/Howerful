@@ -11,7 +11,7 @@ interface AuthContextType {
   loading: boolean;
 
   // Authentication methods
-  signUp: (email: string, password: string, nickname?: string) => Promise<{ user: User | null; error: Error | null }>;
+  signUp: (email: string, password: string, firstName?: string) => Promise<{ user: User | null; error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ user: User | null; error: Error | null }>;
   signOut: () => Promise<{ error: Error | null }>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, [isSupabaseEnabled]);
 
-  const signUp = async (email: string, password: string, nickname?: string) => {
+  const signUp = async (email: string, password: string, firstName?: string) => {
     if (!isSupabaseEnabled) {
       return { user: null, error: new Error('Supabase is not configured') };
     }
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       options: {
         data: {
-          nickname: nickname || 'Howie', // Store nickname in auth metadata
+          user_name: firstName || 'User', // Store user's first name in auth metadata
         },
       },
     });
