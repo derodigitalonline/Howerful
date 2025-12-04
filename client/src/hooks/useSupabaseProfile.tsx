@@ -86,15 +86,19 @@ export function useUpdateProfile() {
 
       const dbRow = profileToDbRow(profile as UserProfile);
 
+      // Use upsert instead of update to handle first-time profile creation
+      // This ensures the profile is created even if the trigger failed
       const { data, error } = await supabase
         .from('profiles')
-        .update(dbRow)
-        .eq('id', user.id)
+        .upsert(
+          { id: user.id, ...dbRow },
+          { onConflict: 'id' }
+        )
         .select()
         .single();
 
       if (error) {
-        console.error('Error updating profile:', error);
+        console.error('Error upserting profile:', error);
         throw error;
       }
 
