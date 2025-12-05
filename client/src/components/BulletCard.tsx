@@ -1,6 +1,7 @@
 import { BulletItem } from '@shared/schema';
 import { CheckSquare, Clock, Trash2, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatTime12Hour } from '@/lib/formatTime';
 import { useState } from 'react';
 import {
   ContextMenu,
@@ -80,7 +81,7 @@ export default function BulletCard({
           {item.time && (
             <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
               <Clock className="w-3 h-3" />
-              <span className="font-mono">{item.time}</span>
+              <span className="font-mono">{formatTime12Hour(item.time)}</span>
             </div>
           )}
         </div>

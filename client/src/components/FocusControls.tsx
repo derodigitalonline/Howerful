@@ -15,10 +15,11 @@ import { useState } from "react";
 
 interface FocusControlsProps {
   variant?: "default" | "compact";
+  isNight?: boolean;
 }
 
-export default function FocusControls({ variant = "default" }: FocusControlsProps) {
-  const { isRunning, isPaused, pauseTimer, resumeTimer, startTimer, finishEarly, skipPhase, activeItemText } = useFocus();
+export default function FocusControls({ variant = "default", isNight = false }: FocusControlsProps) {
+  const { isRunning, isPaused, pauseTimer, resumeTimer, startTimer, finishEarly, activeItemText } = useFocus();
   const [showFinishDialog, setShowFinishDialog] = useState(false);
 
   const buttonSize = variant === "compact" ? "sm" : "default";
@@ -51,23 +52,14 @@ export default function FocusControls({ variant = "default" }: FocusControlsProp
             size={buttonSize}
             variant="outline"
             onClick={pauseTimer}
-            className="gap-2"
+            className={`gap-2 transition-all ${
+              isNight
+                ? 'bg-indigo-950/30 border-indigo-400/30 text-indigo-100 hover:bg-indigo-900/50 hover:border-indigo-400/50'
+                : ''
+            }`}
           >
             <Pause className={iconSize} />
             {variant === "default" && "Pause"}
-          </Button>
-        )}
-
-        {/* Skip Phase Button */}
-        {isRunning && (
-          <Button
-            size={buttonSize}
-            variant="outline"
-            onClick={skipPhase}
-            className="gap-2"
-          >
-            <SkipForward className={iconSize} />
-            {variant === "default" && "Skip"}
           </Button>
         )}
 
@@ -77,7 +69,11 @@ export default function FocusControls({ variant = "default" }: FocusControlsProp
             size={buttonSize}
             variant="destructive"
             onClick={handleFinishEarly}
-            className="gap-2"
+            className={`gap-2 transition-all ${
+              isNight
+                ? 'bg-red-950/40 border-red-500/40 text-red-100 hover:bg-red-900/60 hover:border-red-500/60'
+                : ''
+            }`}
           >
             <Square className={iconSize} />
             {variant === "default" && "Finish"}

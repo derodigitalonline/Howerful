@@ -194,7 +194,7 @@ export default function Customize() {
                     enableZoom={true}
                     enablePan={false}
                     autoRotate={false}
-                    pixelSize={2}
+                    pixelSize={1}
                   />
                   <p className="absolute bottom-2 left-0 right-0 text-xs text-muted-foreground text-center">
                     Drag to rotate • Scroll to zoom

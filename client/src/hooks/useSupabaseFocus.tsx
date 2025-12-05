@@ -211,6 +211,7 @@ interface DailyRoutine {
   id: string;
   text: string;
   completed: boolean;
+  orderIndex?: number;
 }
 
 interface RoutineMetadata {
@@ -224,15 +225,17 @@ function dbRowToRoutine(row: any): DailyRoutine {
     id: row.id,
     text: row.text,
     completed: row.completed,
+    orderIndex: row.order_index,
   };
 }
 
-function routineToDbRow(routine: DailyRoutine, userId: string) {
+function routineToDbRow(routine: DailyRoutine, userId: string, orderIndex: number) {
   return {
     id: routine.id,
     user_id: userId,
     text: routine.text,
     completed: routine.completed,
+    order_index: orderIndex,
   };
 }
 
@@ -249,7 +252,7 @@ export function useSupabaseRoutines() {
         .from('routines')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: true });
+        .order('order_index', { ascending: true });
 
       if (error) {
         console.error('Error fetching routines:', error);
@@ -292,7 +295,7 @@ export function useSupabaseRoutineMetadata() {
       return data ? {
         lastClaimedDate: data.last_claimed_date,
         lastResetDate: data.last_reset_date,
-        xpAwardedToday: data.xp_awarded_today || [],
+        xpAwardedToday: data.xp_awarded_routine_ids || [],
       } : null;
     },
     enabled,
@@ -317,7 +320,7 @@ export function useUpsertRoutineMetadata() {
         user_id: user.id,
         last_claimed_date: metadata.lastClaimedDate,
         last_reset_date: metadata.lastResetDate,
-        xp_awarded_today: metadata.xpAwardedToday,
+        xp_awarded_routine_ids: metadata.xpAwardedToday,
       };
 
       const { data, error } = await supabase
@@ -334,7 +337,7 @@ export function useUpsertRoutineMetadata() {
       return {
         lastClaimedDate: data.last_claimed_date,
         lastResetDate: data.last_reset_date,
-        xpAwardedToday: data.xp_awarded_today || [],
+        xpAwardedToday: data.xp_awarded_routine_ids || [],
       };
     },
     onSuccess: () => {
@@ -355,30 +358,44 @@ export function useBulkUpsertRoutines() {
       if (!user?.id) throw new Error('User not authenticated');
       if (!isSupabaseConfigured()) throw new Error('Supabase not configured');
 
-      const { error: deleteError } = await supabase
-        .from('routines')
-        .delete()
-        .eq('user_id', user.id);
-
-      if (deleteError) {
-        console.error('Error deleting old routines:', deleteError);
-        throw deleteError;
-      }
-
+      // If empty, delete all
       if (routines.length === 0) {
+        const { error: deleteError } = await supabase
+          .from('routines')
+          .delete()
+          .eq('user_id', user.id);
+
+        if (deleteError) {
+          console.error('Error deleting routines:', deleteError);
+          throw deleteError;
+        }
         return [];
       }
 
-      const dbRows = routines.map(r => routineToDbRow(r, user.id));
+      // Otherwise, upsert with ON CONFLICT
+      const dbRows = routines.map((r, index) => routineToDbRow(r, user.id, index));
 
       const { data, error } = await supabase
         .from('routines')
-        .insert(dbRows)
+        .upsert(dbRows, { onConflict: 'id' })
         .select();
 
       if (error) {
         console.error('Error bulk upserting routines:', error);
         throw error;
+      }
+
+      // Delete any routines that were removed (not in the new list)
+      const routineIds = routines.map(r => r.id);
+      const { error: deleteError } = await supabase
+        .from('routines')
+        .delete()
+        .eq('user_id', user.id)
+        .not('id', 'in', `(${routineIds.map(id => `'${id}'`).join(',')})`);
+
+      if (deleteError) {
+        console.error('Error deleting removed routines:', deleteError);
+        // Don't throw, this is non-critical
       }
 
       return data ? data.map(dbRowToRoutine) : [];

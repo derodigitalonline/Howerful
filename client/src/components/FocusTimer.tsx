@@ -3,9 +3,10 @@ import { useFocus } from "@/hooks/useFocus";
 
 interface FocusTimerProps {
   size?: "small" | "medium" | "large";
+  isNight?: boolean;
 }
 
-export default function FocusTimer({ size = "large" }: FocusTimerProps) {
+export default function FocusTimer({ size = "large", isNight = false }: FocusTimerProps) {
   const { phase, formattedTime, progress, isRunning } = useFocus();
 
   // Size configurations
@@ -46,9 +47,9 @@ export default function FocusTimer({ size = "large" }: FocusTimerProps) {
 
   // Phase colors
   const phaseColor = {
-    work: "stroke-primary",
-    shortBreak: "stroke-green-500",
-    longBreak: "stroke-blue-500",
+    work: isNight ? "stroke-indigo-400" : "stroke-primary",
+    shortBreak: isNight ? "stroke-emerald-400" : "stroke-green-500",
+    longBreak: isNight ? "stroke-cyan-400" : "stroke-blue-500",
   }[phase];
 
   return (
@@ -63,7 +64,7 @@ export default function FocusTimer({ size = "large" }: FocusTimerProps) {
           cx="50"
           cy="50"
           r={config.radius}
-          className="stroke-muted/20"
+          className={isNight ? "stroke-indigo-500/20" : "stroke-muted/20"}
           strokeWidth={config.strokeWidth}
           fill="none"
         />
@@ -82,24 +83,34 @@ export default function FocusTimer({ size = "large" }: FocusTimerProps) {
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset }}
           transition={{ duration: 0.3, ease: "easeOut" }}
+          style={isNight ? {
+            filter: 'drop-shadow(0 0 8px rgba(129, 140, 248, 0.5))',
+          } : undefined}
         />
       </svg>
 
       {/* Time display */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center">
         <motion.div
-          className={`${config.fontSize} font-bold font-mono tracking-tight`}
+          className={`${config.fontSize} font-bold font-mono tracking-tight ${
+            isNight ? 'text-indigo-50' : ''
+          }`}
           animate={{ scale: isRunning ? [1, 1.02, 1] : 1 }}
           transition={{
             duration: 1,
             repeat: isRunning ? Infinity : 0,
             repeatType: "loop",
           }}
+          style={isNight ? {
+            textShadow: '0 0 20px rgba(165, 180, 252, 0.3)',
+          } : undefined}
         >
           {formattedTime}
         </motion.div>
 
-        <div className={`${config.labelSize} text-muted-foreground mt-2 font-medium`}>
+        <div className={`${config.labelSize} mt-2 font-medium ${
+          isNight ? 'text-indigo-200/70' : 'text-muted-foreground'
+        }`}>
           {phaseLabel}
         </div>
       </div>
@@ -107,7 +118,9 @@ export default function FocusTimer({ size = "large" }: FocusTimerProps) {
       {/* Pulsing ring effect when running */}
       {isRunning && (
         <motion.div
-          className="absolute inset-0 rounded-full border-2 border-primary/30"
+          className={`absolute inset-0 rounded-full border-2 ${
+            isNight ? 'border-indigo-400/40' : 'border-primary/30'
+          }`}
           animate={{
             scale: [1, 1.1, 1],
             opacity: [0.5, 0, 0.5],

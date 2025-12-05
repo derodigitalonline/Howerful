@@ -41,7 +41,7 @@ export default function Routines() {
   const updateRoutine = useUpdateRoutine();
   const upsertMetadata = useUpsertRoutineMetadata();
 
-  const { profile, trackRoutineCompletion } = useProfile();
+  const { profile, trackRoutineCompletion, addXP } = useProfile();
   const [isSetup, setIsSetup] = useState(false);
   const [setupRoutines, setSetupRoutines] = useState<string[]>(['']);
   const [routines, setRoutines] = useState<DailyRoutine[]>([]);
@@ -60,7 +60,7 @@ export default function Routines() {
       return;
     }
 
-    const today = new Date().toDateString();
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
     if (isAuthenticated && supabaseRoutines !== undefined) {
       let loadedRoutines = supabaseRoutines || [];
@@ -191,7 +191,7 @@ export default function Routines() {
       };
     });
 
-    const today = new Date().toDateString();
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
     const updatedMetadata: RoutineMetadata = {
       lastClaimedDate: metadata.lastClaimedDate,
       lastResetDate: today,
@@ -269,7 +269,7 @@ export default function Routines() {
   };
 
   const handleClaimBounty = () => {
-    const today = new Date().toDateString();
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
     const updatedMetadata: RoutineMetadata = {
       ...metadata,
@@ -281,6 +281,9 @@ export default function Routines() {
     if (isAuthenticated && isSupabaseConfigured()) {
       upsertMetadata.mutate(updatedMetadata);
     }
+
+    // Award the bounty XP
+    addXP(BOUNTY_XP);
 
     confetti({
       particleCount: 150,
@@ -295,37 +298,11 @@ export default function Routines() {
     });
   };
 
-  const handleResetRoutines = () => {
-    if (confirm('Are you sure you want to reset your routines? This will clear all your daily tasks.')) {
-      setRoutines([]);
-      setMetadata({
-        lastClaimedDate: null,
-        lastResetDate: null,
-        xpAwardedToday: [],
-      });
-      setIsSetup(false);
-      setSetupRoutines(['']);
-
-      localStorage.removeItem(STORAGE_KEY);
-
-      if (isAuthenticated && isSupabaseConfigured()) {
-        bulkUpsertRoutines.mutate([]);
-        upsertMetadata.mutate({
-          lastClaimedDate: null,
-          lastResetDate: null,
-          xpAwardedToday: [],
-        });
-      }
-
-      toast.success('Routines reset!');
-    }
-  };
-
   const completedCount = routines.filter(r => r.completed).length;
   const totalCount = routines.length;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
   const allCompleted = totalCount > 0 && completedCount === totalCount;
-  const canClaimBounty = allCompleted && metadata.lastClaimedDate !== new Date().toDateString();
+  const canClaimBounty = allCompleted && metadata.lastClaimedDate !== new Date().toISOString().split('T')[0];
 
   return (
     <div className="h-full p-6 md:p-8 overflow-y-auto">
@@ -487,23 +464,14 @@ export default function Routines() {
                   )}
                 </Card>
 
-                {/* Edit and Reset Buttons */}
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditing(true)}
-                    className="flex-1"
-                  >
-                    Edit Routines
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleResetRoutines}
-                    className="flex-1"
-                  >
-                    Reset Routines
-                  </Button>
-                </div>
+                {/* Edit Button */}
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditing(true)}
+                  className="w-full"
+                >
+                  Edit Routines
+                </Button>
               </div>
             )}
       </motion.div>

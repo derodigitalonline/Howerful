@@ -28,6 +28,14 @@ const TIME_PRESETS = [
   { label: 'Evening', value: '18:00' },
 ] as const;
 
+const FOCUSED_PLACEHOLDERS = [
+  "What's on your mind?",
+  "Quick! Before you forget...",
+  "Brain dump here...",
+  "What needs doing?",
+  "Got any plans?",
+];
+
 const FloatingTaskInput = forwardRef<SlashInputRef, FloatingTaskInputProps>(
   ({ onAddItem, placeholder = "Press '/' to add task" }, ref) => {
     const { isCollapsed } = useSidebar();
@@ -36,6 +44,8 @@ const FloatingTaskInput = forwardRef<SlashInputRef, FloatingTaskInputProps>(
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [showCustomTimePicker, setShowCustomTimePicker] = useState(false);
     const [customTime, setCustomTime] = useState('09:00');
+    const [placeholderIndex, setPlaceholderIndex] = useState(0);
+    const [isAnimating, setIsAnimating] = useState(false);
 
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -51,6 +61,23 @@ const FloatingTaskInput = forwardRef<SlashInputRef, FloatingTaskInputProps>(
       },
     }));
 
+    // Rotate placeholder text when focused
+    useEffect(() => {
+      if (!isFocused) return;
+
+      const interval = setInterval(() => {
+        setIsAnimating(true);
+
+        // After animation completes, change the text
+        setTimeout(() => {
+          setPlaceholderIndex((prev) => (prev + 1) % FOCUSED_PLACEHOLDERS.length);
+          setIsAnimating(false);
+        }, 300); // Half of the animation duration for smooth transition
+      }, 4000);
+
+      return () => clearInterval(interval);
+    }, [isFocused]);
+
     const handleSubmit = () => {
       const trimmedText = text.trim();
       if (!trimmedText) return;
@@ -60,6 +87,7 @@ const FloatingTaskInput = forwardRef<SlashInputRef, FloatingTaskInputProps>(
       // Reset state
       setText('');
       setSelectedTime(null);
+      setPlaceholderIndex(0); // Reset placeholder rotation
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -135,25 +163,43 @@ const FloatingTaskInput = forwardRef<SlashInputRef, FloatingTaskInputProps>(
                 {isFocused ? <Sparkles size={20} /> : <Plus size={20} />}
               </div>
 
-              {/* Input Field */}
-              <input
-                ref={inputRef}
-                type="text"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onFocus={() => setIsFocused(true)}
-                onBlur={(e) => {
-                  // Keep focused if clicking within the container
-                  if (containerRef.current?.contains(e.relatedTarget as Node)) {
-                    return;
-                  }
-                  if (!text) setIsFocused(false);
-                }}
-                onKeyDown={handleKeyDown}
-                placeholder={isFocused ? "What needs to be done?" : placeholder}
-                className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground text-base font-light"
-                autoComplete="off"
-              />
+              {/* Input Field with Animated Placeholder */}
+              <div className="flex-1 relative">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={(e) => {
+                    // Keep focused if clicking within the container
+                    if (containerRef.current?.contains(e.relatedTarget as Node)) {
+                      return;
+                    }
+                    if (!text) {
+                      setIsFocused(false);
+                      setPlaceholderIndex(0); // Reset to first placeholder
+                    }
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder={!isFocused ? placeholder : ""}
+                  className="w-full bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground text-base font-light"
+                  autoComplete="off"
+                />
+                {/* Animated placeholder overlay when focused */}
+                {isFocused && !text && (
+                  <div className="absolute inset-0 pointer-events-none flex items-center overflow-hidden">
+                    <span
+                      className={cn(
+                        "text-muted-foreground text-base font-light transition-all duration-300",
+                        isAnimating ? "translate-y-[-100%] opacity-0" : "translate-y-0 opacity-100"
+                      )}
+                    >
+                      {FOCUSED_PLACEHOLDERS[placeholderIndex]}
+                    </span>
+                  </div>
+                )}
+              </div>
 
               {/* Right Side: Keyboard Shortcut or Submit Button */}
               {!isFocused && (

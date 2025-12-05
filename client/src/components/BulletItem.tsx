@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { formatTime12Hour } from '@/lib/formatTime';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
@@ -217,7 +218,7 @@ export default function BulletItem({
             {item.type === 'event' && item.time && (
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Clock className="w-3 h-3" />
-                {item.time}
+                {formatTime12Hour(item.time)}
               </span>
             )}
           </div>

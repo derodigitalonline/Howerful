@@ -130,8 +130,17 @@ function HowieModel({
 
   useEffect(() => {
     // Play the Idle animation
-    if (actions['Idle']) {
-      actions['Idle'].reset().fadeIn(0.5).play();
+    const idleAction = actions['Idle'];
+
+    if (idleAction) {
+      // Start animation immediately with full weight (no T-pose flash)
+      idleAction.reset();
+      idleAction.setEffectiveWeight(1); // Full weight immediately, no fade-in
+      idleAction.play();
+
+      // Start at random point in animation loop to avoid always starting from frame 0
+      const clip = idleAction.getClip();
+      idleAction.time = Math.random() * clip.duration;
     }
 
     // Notify parent that scene is ready for cosmetic attachment

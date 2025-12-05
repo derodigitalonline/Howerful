@@ -48,7 +48,7 @@ export default function FocusHistory({ sessions }: FocusHistoryProps) {
 
   if (sessions.length === 0) {
     return (
-      <Card>
+      <Card className="bg-background/80 backdrop-blur-md">
         <CardHeader>
           <CardTitle className="text-lg">Session History</CardTitle>
         </CardHeader>
@@ -62,7 +62,7 @@ export default function FocusHistory({ sessions }: FocusHistoryProps) {
   }
 
   return (
-    <Card>
+    <Card className="bg-background/80 backdrop-blur-md">
       <CardHeader>
         <CardTitle className="text-lg">Recent Sessions</CardTitle>
       </CardHeader>
@@ -71,7 +71,7 @@ export default function FocusHistory({ sessions }: FocusHistoryProps) {
           {recentSessions.map((session) => (
             <div
               key={session.id}
-              className="flex items-start justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+              className="flex items-start justify-between p-3 rounded-lg border bg-card/60 hover:bg-accent/50 transition-colors"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">

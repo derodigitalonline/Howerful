@@ -56,12 +56,12 @@ export default function Profile() {
               autoRotate={true}
               enableZoom={true}
               enablePan={false}
-              pixelSize={2}
+              pixelSize={1}
             />
           </div>
 
           {/* Overlay Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-900 via-transparent to-transparent pointer-events-none" />
 
           {/* Profile Info Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
@@ -70,7 +70,7 @@ export default function Profile() {
                 {/* User Info */}
                 <div className="flex-1 pb-2">
                   <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-4xl md:text-5xl font-bold text-foreground drop-shadow-lg">
+                    <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
                       {profile.userName || 'User'}
                     </h1>
                     <Badge
