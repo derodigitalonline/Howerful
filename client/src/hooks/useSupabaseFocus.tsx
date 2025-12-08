@@ -387,15 +387,32 @@ export function useBulkUpsertRoutines() {
 
       // Delete any routines that were removed (not in the new list)
       const routineIds = routines.map(r => r.id);
-      const { error: deleteError } = await supabase
-        .from('routines')
-        .delete()
-        .eq('user_id', user.id)
-        .not('id', 'in', `(${routineIds.map(id => `'${id}'`).join(',')})`);
 
-      if (deleteError) {
-        console.error('Error deleting removed routines:', deleteError);
-        // Don't throw, this is non-critical
+      // First, fetch all existing routines for this user
+      const { data: existingRoutines, error: fetchError } = await supabase
+        .from('routines')
+        .select('id')
+        .eq('user_id', user.id);
+
+      if (fetchError) {
+        console.error('Error fetching existing routines for deletion:', fetchError);
+      } else if (existingRoutines) {
+        // Find IDs that need to be deleted (exist in DB but not in new list)
+        const idsToDelete = existingRoutines
+          .map(r => r.id)
+          .filter(id => !routineIds.includes(id));
+
+        // Delete each removed routine
+        if (idsToDelete.length > 0) {
+          const { error: deleteError } = await supabase
+            .from('routines')
+            .delete()
+            .in('id', idsToDelete);
+
+          if (deleteError) {
+            console.error('Error deleting removed routines:', deleteError);
+          }
+        }
       }
 
       return data ? data.map(dbRowToRoutine) : [];

@@ -44,34 +44,34 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
 
   const navItems = [
     {
-      label: 'Dojo',
+      label: 'TASK JOURNAL',
       path: '/',
       icon: Home,
-      description: 'Your training grounds',
+      description: 'Track your tasks',
     },
     {
-      label: 'Focus',
+      label: 'FOCUS',
       path: '/focus',
       icon: Timer,
-      description: 'Deep work sessions',
+      description: 'Get stuff done',
     },
     {
-      label: 'Routines',
+      label: 'ROUTINES',
       path: '/routines',
       icon: Calendar,
       description: 'Daily habits',
     },
     {
-      label: 'Quests',
+      label: 'QUESTS',
       path: '/quests',
       icon: Sparkles,
       description: 'Unlock rewards',
     },
     {
-      label: 'Bazaar',
+      label: 'BAZAAR',
       path: '/bazaar',
       icon: ShoppingBag,
-      description: 'Buy cosmetics',
+      description: 'Shop items',
     },
   ];
 
@@ -85,23 +85,15 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
         <div>
           <div className={cn(
             "flex items-center transition-all duration-300",
-            isCollapsed ? "justify-center" : "gap-3"
+            isCollapsed ? "justify-center" : "gap-2"
           )}>
             <Logo className="h-8 w-8 text-primary flex-shrink-0" />
             {!isCollapsed && <h1 className="text-2xl font-semibold">Howerful</h1>}
           </div>
-
-          {!isCollapsed && (
-            <p className="mt-4 text-sm text-muted-foreground">
-              Do Tasks. Level Up!
-              <br />
-              <kbd className="px-1.5 py-0.5 text-xs bg-muted rounded">Ctrl+Enter</kbd> to start!
-            </p>
-          )}
         </div>
 
         {/* Navigation Menu */}
-        <nav className="mt-8 flex flex-col gap-2">
+        <nav className="mt-8 flex flex-col gap-1">
           {navItems.map((item) => {
             const isActive = location === item.path;
             const Icon = item.icon;
@@ -110,17 +102,45 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
               <Link key={item.path} href={item.path}>
                 <div
                   className={cn(
-                    'block flex items-center rounded-lg transition-colors cursor-pointer',
-                    'hover:bg-accent hover:text-accent-foreground',
-                    isActive && 'bg-primary/10 text-primary font-medium',
-                    isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-3 py-2'
+                    'group block flex items-center rounded-lg transition-all duration-200 cursor-pointer relative',
+                    'hover:scale-[1.02]',
+                    isActive && 'border-2 border-[#3D4C7B]',
+                    !isActive && 'border-2 border-transparent',
+                    isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-4 py-3 max-h-[54px]'
                   )}
+                  style={{ overflow: 'hidden' }}
                 >
-                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  {/* Gradient background for hover and active states */}
+                  <div
+                    className={cn(
+                      'absolute inset-0 rounded-lg transition-opacity duration-200',
+                      isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                    )}
+                    style={{
+                      background: 'linear-gradient(100deg, rgba(255, 255, 255, 0.8) 0%, rgba(61, 76, 123, 0.15) 100%)',
+                    }}
+                  />
+                  <Icon className={cn(
+                    "h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 relative z-10",
+                    isActive ? 'text-[#3D4C7B]' : 'text-foreground'
+                  )} />
                   {!isCollapsed && (
-                    <div className="flex-1">
-                      <div className="text-sm">{item.label}</div>
-                      <div className="text-xs text-muted-foreground">
+                    <div className="flex-1 overflow-hidden relative z-10">
+                      <div
+                        className={cn(
+                          "font-medium transition-colors",
+                          isActive && 'text-[#3D4C7B]'
+                        )}
+                        style={{ fontFamily: 'Boogaloo, cursive', fontSize: '18px' }}
+                      >
+                        {item.label}
+                      </div>
+                      <div className={cn(
+                        "text-xs text-muted-foreground transition-all duration-200",
+                        isActive
+                          ? "opacity-100 max-h-6"
+                          : "opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-6"
+                      )}>
                         {item.description}
                       </div>
                     </div>

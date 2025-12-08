@@ -37,8 +37,8 @@ export default function CoinDisplay({
           <div
             className="rounded-full px-6 py-2 flex items-center justify-center min-w-[100px] pl-8"
             style={{
-              backgroundColor: '#3D4C7B',
-              boxShadow: 'inset 0 2px 0 0 #2A3451'
+              backgroundColor: 'hsl(var(--coin-display-bg))',
+              boxShadow: 'inset 0 2px 0 0 hsl(var(--coin-display-shadow))'
             }}
           >
             <span className="text-xl font-bold text-white leading-none" style={{ fontFamily: 'Fugaz One, cursive' }}>
@@ -52,8 +52,8 @@ export default function CoinDisplay({
             onClick={onPlusClick}
             className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-110"
             style={{
-              backgroundColor: '#3D4C7B',
-              boxShadow: 'inset 0 1px 0 0 #2A3451'
+              backgroundColor: 'hsl(var(--coin-display-bg))',
+              boxShadow: 'inset 0 1px 0 0 hsl(var(--coin-display-shadow))'
             }}
           >
             <Plus className="w-6 h-6 text-white" />

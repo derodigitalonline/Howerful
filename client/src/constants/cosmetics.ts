@@ -39,6 +39,16 @@ export const COSMETICS_LIBRARY: CosmeticItem[] = [
     rarity: 'common',
   },
   {
+    id: 'hat-bunnyears-dark',
+    name: 'Dark Bunny Ears',
+    category: 'hat',
+    imagePath: '/assets/cosmetics/hats/bunny_ears_dark.png',
+    modelPath: '/models/cosmetics/Hat_BunnyEars-Dark.glb',
+    description: 'Her favorite accessory',
+    rarity: 'legendary',
+    coinPrice: 450,
+  },
+  {
     id: 'hat-wizard',
     name: 'Wizard Hat',
     category: 'hat',

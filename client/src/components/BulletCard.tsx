@@ -1,5 +1,5 @@
 import { BulletItem } from '@shared/schema';
-import { CheckSquare, Clock, Trash2, Timer } from 'lucide-react';
+import { CheckSquare, Clock, Trash2, Timer, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatTime12Hour } from '@/lib/formatTime';
 import { useState } from 'react';
@@ -17,6 +17,7 @@ interface BulletCardProps {
   onClick: (id: string) => void;
   onArchive?: (id: string) => void;
   onStartFocus?: (id: string, text: string) => void;
+  onMarkAsVIT?: (id: string) => void;
   isDragging?: boolean;
 }
 
@@ -26,6 +27,7 @@ export default function BulletCard({
   onClick,
   onArchive,
   onStartFocus,
+  onMarkAsVIT,
   isDragging,
 }: BulletCardProps) {
   const isCompleted = item.completed;
@@ -125,6 +127,19 @@ export default function BulletCard({
             >
               <Timer className="w-4 h-4 mr-2" />
               Start Focus Session
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+          </>
+        )}
+
+        {onMarkAsVIT && !item.completed && (
+          <>
+            <ContextMenuItem
+              onSelect={() => onMarkAsVIT(item.id)}
+              className="flex items-center text-amber-600 dark:text-amber-400 font-medium focus:text-amber-600 dark:focus:text-amber-400"
+            >
+              <Star className="w-4 h-4 mr-2 fill-amber-500" />
+              Mark as VIT
             </ContextMenuItem>
             <ContextMenuSeparator />
           </>

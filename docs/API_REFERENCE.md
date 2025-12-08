@@ -305,10 +305,9 @@ CREATE TABLE bullet_items (
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   text TEXT NOT NULL,
   type TEXT NOT NULL,                             -- 'task' | 'event'
-  bucket TEXT NOT NULL DEFAULT 'today',           -- 'today' | 'tomorrow' | 'someday' | 'future-log'
+  bucket TEXT NOT NULL DEFAULT 'today',           -- 'today' | 'tomorrow' | 'someday'
   date TEXT,                                      -- Optional date for events
   time TEXT,                                      -- HH:MM format for events
-  scheduled_date TEXT,                            -- YYYY-MM-DD for Future Log auto-migration
   completed BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   order_index INTEGER NOT NULL DEFAULT 0,
@@ -455,10 +454,9 @@ interface BulletItem {
   id: string;
   type: 'task' | 'event';
   text: string;
-  bucket: 'today' | 'tomorrow' | 'someday' | 'future-log';
+  bucket: 'today' | 'tomorrow' | 'someday';
   date?: string;                    // Optional date (for events)
   time?: string;                    // HH:MM format (for events)
-  scheduledDate?: string;           // YYYY-MM-DD (for Future Log auto-migration)
   completed: boolean;
   createdAt: number;                // Timestamp
   order: number;                    // Manual sort order

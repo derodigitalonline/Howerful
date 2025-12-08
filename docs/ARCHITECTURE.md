@@ -25,7 +25,7 @@ Howerful is a gamified productivity app that combines task management, focus ses
 **Purpose**: Brain dump and task triage system inspired by bullet journaling.
 
 **Features**:
-- Four buckets: Today, Tomorrow, Someday, Future Log
+- Three buckets: Today, Tomorrow, Someday
 - All items are tasks (with optional time/date)
 - Natural language parsing (e.g., "tomorrow: buy milk")
 - Drag & drop reordering and bucket changes

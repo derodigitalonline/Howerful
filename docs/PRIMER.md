@@ -45,7 +45,6 @@ Quick reference guide for understanding Howerful's codebase. Optimized for rapid
 - **Today** - current focus
 - **Tomorrow** - next day planning
 - **Someday** - backlog/ideas
-- **Future Log** - scheduled items with specific dates (auto-migrate to Today on date)
 
 **Key Features:**
 - All items are tasks (with optional time/date)
@@ -274,7 +273,6 @@ See [PLAN.md](../PLAN.md) for latest priorities.
 
 **Recent Major Features:**
 - Right-click focus session start flow
-- Future Log bucket view with auto-migration
 - Archive system with 30-day retention
 - 3D cosmetics with bone-based attachment
 - Quest inbox for unclaimed rewards

@@ -1,19 +1,21 @@
 import BucketTabs from '@/components/BucketTabs';
 import MasonryBucketView from '@/components/MasonryBucketView';
-import FutureLogView from '@/components/FutureLogView';
-import FutureLogTaskSheet from '@/components/FutureLogTaskSheet';
 import FocusDropZone from '@/components/FocusDropZone';
 import FocusedItemBanner from '@/components/FocusedItemBanner';
 import SwitchFocusDialog from '@/components/SwitchFocusDialog';
 import FloatingTaskInput from '@/components/FloatingTaskInput';
+import VITBanner from '@/components/VITBanner';
+import VITDialog from '@/components/VITDialog';
 import { SlashInputRef } from '@/components/SlashInput';
 import { useBulletJournal } from '@/hooks/useBulletJournal';
 import { useFocus } from '@/hooks/useFocus';
 import { useProfile } from '@/hooks/useProfile';
+import { useVIT } from '@/hooks/useVIT';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { Bucket, BULLET_TASK_XP_REWARD, BULLET_TASK_COIN_REWARD } from '@shared/schema';
 import { toast } from 'sonner';
 import { useLocation } from 'wouter';
+import { AnimatePresence } from 'framer-motion';
 import {
   DndContext,
   closestCenter,
@@ -29,7 +31,8 @@ import {
 export default function Dojo() {
   const { getItemsByBucket, addItem, deleteItem, updateItem, toggleItemCompletion, reorderItems, moveItemToBucket, archiveItem, items: allItems } = useBulletJournal();
   const { startTimer, activeItemId, activeItemText } = useFocus();
-  const { trackBulletTaskCompletion } = useProfile();
+  const { trackBulletTaskCompletion, addCoins } = useProfile();
+  const { activeVIT, markAsVIT, cancelVIT, completeVIT } = useVIT();
   const [, navigate] = useLocation();
 
   const [activeBucket, setActiveBucket] = useState<Bucket>('today');
@@ -41,8 +44,9 @@ export default function Dojo() {
   const [showSwitchDialog, setShowSwitchDialog] = useState(false);
   const [pendingFocus, setPendingFocus] = useState<{ itemId?: string; itemText?: string; duration?: number } | null>(null);
 
-  // Future Log task sheet state
-  const [showFutureLogSheet, setShowFutureLogSheet] = useState(false);
+  // VIT dialog state
+  const [showVITDialog, setShowVITDialog] = useState(false);
+  const [vitDialogItemId, setVitDialogItemId] = useState<string | null>(null);
 
   // Handle bullet item completion with quest tracking
   const handleToggleItemCompletion = (id: string) => {
@@ -94,12 +98,6 @@ export default function Dojo() {
     addItem(text, activeBucket, time);
   };
 
-  const handleAddToFutureLog = (text: string, scheduledDate: string, time?: string) => {
-    // Add the task to future-log (always as a task)
-    addItem(text, 'future-log', time, undefined, scheduledDate);
-    toast.success('Task added to Future Log!');
-  };
-
   const handleCardClick = (id: string) => {
     // TODO: Phase 3 - Open edit modal
     console.log('Card clicked:', id);
@@ -136,6 +134,60 @@ export default function Dojo() {
   const handleCancelSwitch = () => {
     setShowSwitchDialog(false);
     setPendingFocus(null);
+  };
+
+  // VIT handlers
+  const handleMarkAsVIT = (itemId: string) => {
+    setVitDialogItemId(itemId);
+    setShowVITDialog(true);
+  };
+
+  const handleConfirmVIT = (bounty: number) => {
+    if (!vitDialogItemId) return;
+
+    markAsVIT(vitDialogItemId, bounty, () => {
+      // If replacing existing VIT, dialog is already showing with existingVIT prop
+      // Dialog will show warning, user confirms by clicking again
+    });
+
+    toast.success('VIT marked! Get it done! 💪', {
+      duration: 3000,
+    });
+  };
+
+  const handleCancelVIT = () => {
+    if (!activeVIT) return;
+
+    cancelVIT(activeVIT.id);
+    toast.info('VIT status removed. Task returned to regular list.', {
+      duration: 3000,
+    });
+  };
+
+  const handleToggleVITCompletion = (id: string) => {
+    const item = allItems.find(i => i.id === id);
+    if (!item || !item.isVIT || !item.vitBounty) return;
+
+    // Prevent multiple clicks
+    if (item.vitCompletedAt || item.completed) return;
+
+    // Award ALL coins (bounty + standard reward)
+    const totalCoins = item.vitBounty + BULLET_TASK_COIN_REWARD;
+    addCoins(totalCoins);
+
+    // Track quest completion
+    trackBulletTaskCompletion();
+
+    // SINGLE atomic update - sets both fields together to prevent race condition
+    updateItem(id, {
+      completed: true,
+      vitCompletedAt: Date.now(),
+    });
+
+    // Show celebration
+    toast.success(`VIT completed! +${totalCoins} coins earned! 🎉`, {
+      duration: 4000,
+    });
   };
 
   // Drag handlers
@@ -191,6 +243,17 @@ export default function Dojo() {
 
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-y-auto px-6 md:px-8 pt-6 pb-32">
+          {/* VIT Banner - Shows active VIT regardless of bucket */}
+          <AnimatePresence>
+            {activeVIT && (
+              <VITBanner
+                key={activeVIT.id}
+                item={activeVIT}
+                onToggleComplete={handleToggleVITCompletion}
+              />
+            )}
+          </AnimatePresence>
+
           {/* Focused Item Banner */}
           <FocusedItemBanner />
 
@@ -218,40 +281,28 @@ export default function Dojo() {
           </div>
 
           {/* Bucket Content View */}
-          {activeBucket === 'future-log' ? (
-            <FutureLogView
-              items={items}
-              onToggleComplete={handleToggleItemCompletion}
-              onCardClick={handleCardClick}
-              onArchive={archiveItem}
-              onStartFocus={handleStartFocus}
-              onOpenAddSheet={() => setShowFutureLogSheet(true)}
-            />
-          ) : (
-            <MasonryBucketView
-              bucket={activeBucket}
-              items={items}
-              onToggleComplete={handleToggleItemCompletion}
-              onCardClick={handleCardClick}
-              onArchive={archiveItem}
-              onStartFocus={handleStartFocus}
-              activeId={activeId}
-            />
-          )}
+          <MasonryBucketView
+            bucket={activeBucket}
+            items={items}
+            onToggleComplete={handleToggleItemCompletion}
+            onCardClick={handleCardClick}
+            onArchive={archiveItem}
+            onStartFocus={handleStartFocus}
+            onMarkAsVIT={handleMarkAsVIT}
+            activeId={activeId}
+          />
         </div>
 
         {/* Focus Drop Zone - shown only when dragging */}
         <FocusDropZone isVisible={activeId !== null} />
       </div>
 
-      {/* Floating Task Input - bottom of screen (hidden for Future Log) */}
-      {activeBucket !== 'future-log' && (
-        <FloatingTaskInput
-          ref={inputRef}
-          onAddItem={handleAddItem}
-          placeholder="Press / to add a task..."
-        />
-      )}
+      {/* Floating Task Input - bottom of screen */}
+      <FloatingTaskInput
+        ref={inputRef}
+        onAddItem={handleAddItem}
+        placeholder="Press / to add a task..."
+      />
 
       {/* Switch Focus Dialog */}
       <SwitchFocusDialog
@@ -263,11 +314,13 @@ export default function Dojo() {
         onCancel={handleCancelSwitch}
       />
 
-      {/* Future Log Task Sheet */}
-      <FutureLogTaskSheet
-        open={showFutureLogSheet}
-        onOpenChange={setShowFutureLogSheet}
-        onAddTask={handleAddToFutureLog}
+      {/* VIT Dialog */}
+      <VITDialog
+        open={showVITDialog}
+        onOpenChange={setShowVITDialog}
+        onConfirm={handleConfirmVIT}
+        taskText={vitDialogItemId ? allItems.find(i => i.id === vitDialogItemId)?.text || '' : ''}
+        existingVIT={activeVIT && vitDialogItemId !== activeVIT.id ? { id: activeVIT.id, text: activeVIT.text } : undefined}
       />
     </DndContext>
   );

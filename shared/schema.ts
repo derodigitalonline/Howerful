@@ -37,6 +37,11 @@ export interface EquippedCosmetics {
 export const BULLET_TASK_XP_REWARD = 10;
 export const BULLET_TASK_COIN_REWARD = 5;
 
+// VIT (Very Important Task) System
+export const VIT_BOUNTY_MIN = 10;
+export const VIT_BOUNTY_MAX = 100;
+export const VIT_BOUNTY_DEFAULT = 25;
+
 // Daily Quest System
 export const dailyQuestSchema = z.object({
   id: z.string(),                    // Quest ID (e.g., 'warm-up', 'urgent-master')
@@ -100,7 +105,7 @@ export const bulletItemTypes = ["task"] as const;
 export type BulletItemType = typeof bulletItemTypes[number];
 
 // Temporal buckets for ADHD-friendly task organization
-export const buckets = ["today", "tomorrow", "someday", "future-log"] as const;
+export const buckets = ["today", "tomorrow", "someday"] as const;
 export type Bucket = typeof buckets[number];
 
 export const bulletItemSchema = z.object({
@@ -110,7 +115,6 @@ export const bulletItemSchema = z.object({
   bucket: z.enum(buckets).default("today"), // Temporal bucket instead of specific dates
   date: z.string().optional(), // Optional - only for scheduled tasks with specific dates
   time: z.string().optional(), // Optional time for tasks (HH:MM format)
-  scheduledDate: z.string().optional(), // YYYY-MM-DD format for Future Log items (auto-migration date)
   completed: z.boolean().default(false),
   createdAt: z.number(),
   order: z.number(), // For manual sorting within bucket
@@ -123,6 +127,14 @@ export const bulletItemSchema = z.object({
   focusCompletedAt: z.number().optional(), // Timestamp when focus session completed
   pomodorosCompleted: z.number().default(0).optional(), // Count of completed pomodoros
   estimatedPomodoros: z.number().optional(), // User can estimate how many pomodoros needed
+
+  // VIT (Very Important Task) System
+  isVIT: z.boolean().default(false).optional(), // Flag for VIT status
+  vitBounty: z.number().int().min(VIT_BOUNTY_MIN).max(VIT_BOUNTY_MAX).optional(), // Coin bounty (10-100)
+  vitMarkedAt: z.number().optional(), // Timestamp when marked as VIT
+  vitCompletedAt: z.number().optional(), // Timestamp when VIT completed
+  vitCancelledAt: z.number().optional(), // Timestamp if VIT cancelled
+  originalBucket: z.enum(buckets).optional(), // Original bucket before VIT
 });
 
 export type BulletItem = z.infer<typeof bulletItemSchema>;

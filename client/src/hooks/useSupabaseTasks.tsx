@@ -222,7 +222,6 @@ function dbRowToBulletItem(row: any): BulletItem {
     bucket: row.bucket || 'today',
     date: row.date || undefined,
     time: row.time || undefined,
-    scheduledDate: row.scheduled_date || undefined,
     completed: row.completed || false,
     createdAt: row.created_at,
     order: row.order_index,
@@ -233,6 +232,13 @@ function dbRowToBulletItem(row: any): BulletItem {
     focusCompletedAt: row.focus_completed_at || undefined,
     pomodorosCompleted: row.pomodoros_completed || 0,
     estimatedPomodoros: row.estimated_pomodoros || undefined,
+    // VIT fields
+    isVIT: row.is_vit || false,
+    vitBounty: row.vit_bounty || undefined,
+    vitMarkedAt: row.vit_marked_at ? new Date(row.vit_marked_at).getTime() : undefined,
+    vitCompletedAt: row.vit_completed_at ? new Date(row.vit_completed_at).getTime() : undefined,
+    vitCancelledAt: row.vit_cancelled_at ? new Date(row.vit_cancelled_at).getTime() : undefined,
+    originalBucket: row.original_bucket || undefined,
   };
 }
 
@@ -245,7 +251,6 @@ function bulletItemToDbRow(item: Partial<BulletItem>, userId: string) {
     bucket: item.bucket || 'today',
     date: item.date || null,
     time: item.time || null,
-    scheduled_date: item.scheduledDate || null,
     completed: item.completed || false,
     created_at: item.createdAt ? new Date(item.createdAt).toISOString() : new Date().toISOString(),
     order_index: item.order,
@@ -256,6 +261,13 @@ function bulletItemToDbRow(item: Partial<BulletItem>, userId: string) {
     focus_completed_at: item.focusCompletedAt ? new Date(item.focusCompletedAt).toISOString() : null,
     pomodoros_completed: item.pomodorosCompleted || 0,
     estimated_pomodoros: item.estimatedPomodoros || null,
+    // VIT fields
+    is_vit: item.isVIT || false,
+    vit_bounty: item.vitBounty || null,
+    vit_marked_at: item.vitMarkedAt ? new Date(item.vitMarkedAt).toISOString() : null,
+    vit_completed_at: item.vitCompletedAt ? new Date(item.vitCompletedAt).toISOString() : null,
+    vit_cancelled_at: item.vitCancelledAt ? new Date(item.vitCancelledAt).toISOString() : null,
+    original_bucket: item.originalBucket || null,
   };
 }
 
@@ -305,7 +317,6 @@ export function useAddBulletItem() {
       bucket,
       time,
       date,
-      scheduledDate,
       order,
     }: {
       id: string;
@@ -314,7 +325,6 @@ export function useAddBulletItem() {
       bucket?: Bucket;
       time?: string;
       date?: string;
-      scheduledDate?: string;
       order: number;
     }): Promise<BulletItem> => {
       if (!user?.id) throw new Error('User not authenticated');
@@ -327,7 +337,6 @@ export function useAddBulletItem() {
         bucket: bucket || 'today',
         time,
         date,
-        scheduledDate,
         completed: false,
         createdAt: Date.now(),
         order,
@@ -387,6 +396,13 @@ export function useUpdateBulletItem() {
       if (updates.focusCompletedAt !== undefined) dbUpdates.focus_completed_at = updates.focusCompletedAt || null;
       if (updates.pomodorosCompleted !== undefined) dbUpdates.pomodoros_completed = updates.pomodorosCompleted;
       if (updates.estimatedPomodoros !== undefined) dbUpdates.estimated_pomodoros = updates.estimatedPomodoros || null;
+      // VIT field updates
+      if (updates.isVIT !== undefined) dbUpdates.is_vit = updates.isVIT;
+      if (updates.vitBounty !== undefined) dbUpdates.vit_bounty = updates.vitBounty || null;
+      if (updates.vitMarkedAt !== undefined) dbUpdates.vit_marked_at = updates.vitMarkedAt ? new Date(updates.vitMarkedAt).toISOString() : null;
+      if (updates.vitCompletedAt !== undefined) dbUpdates.vit_completed_at = updates.vitCompletedAt ? new Date(updates.vitCompletedAt).toISOString() : null;
+      if (updates.vitCancelledAt !== undefined) dbUpdates.vit_cancelled_at = updates.vitCancelledAt ? new Date(updates.vitCancelledAt).toISOString() : null;
+      if (updates.originalBucket !== undefined) dbUpdates.original_bucket = updates.originalBucket || null;
 
       const { data, error } = await supabase
         .from('bullet_items')
