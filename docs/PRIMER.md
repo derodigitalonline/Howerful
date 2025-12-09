@@ -1,12 +1,8 @@
-# Howerful - Developer Primer
-
-Quick reference guide for understanding Howerful's codebase. Optimized for rapid onboarding and AI context priming.
-
----
+Reference guide for understanding Howerful codebase
 
 ## Project Overview
 
-**Howerful** is a gamified productivity app combining bullet journaling, focus sessions, habit tracking, and RPG-style progression.
+Gamified productivity app combining bullet journaling, focus sessions, habit tracking, and RPG-style progression.
 
 **Core Concept:** Help users manage tasks while building habits and progressing their companion character "Howie" through XP, levels, and cosmetic customization.
 
@@ -223,7 +219,7 @@ Component re-renders with new data
 
 ## Common Gotchas
 
-1. **No auto-migration between buckets** - Items stay in bucket until manually moved (Future Log exception: auto-migrates on `scheduledDate`)
+1. **No auto-migration between buckets** - Items stay in bucket until manually moved
 
 2. **Guest mode data loss** - Closing browser clears localStorage
 
@@ -293,12 +289,6 @@ See [PLAN.md](../PLAN.md) for latest priorities.
 - Collapsible NavigationDrawer (256px expanded, 80px collapsed)
 - Main content with responsive padding
 
-### Animations
-- Drag & drop: Real-time position updates
-- Focus timer: Circular progress
-- Task completion: Scale + fade out
-- 3D cosmetics: Optional cape animations
-
 ---
 
 ## Environment Variables
@@ -318,30 +308,6 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 - **Setup:** [SETUP.md](SETUP.md) - Installation, Supabase configuration
 - **Design:** [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) - UI/UX patterns, colors
 - **Changes:** [CHANGELOG.md](CHANGELOG.md) - Development history
-
----
-
-## Quick Debugging
-
-**Auth not working?**
-- Check `.env.local` has `VITE_` prefix
-- Restart dev server after adding env vars
-- Verify RLS policies in Supabase
-
-**Data not persisting?**
-- Guest mode: Check localStorage
-- Authenticated: Check Supabase Table Editor
-- Check network tab for failed requests
-
-**3D model not rendering?**
-- Verify file exists at `public/models/Howie.glb`
-- Check cosmetic `modelPath` is correct
-- Check console for Three.js errors
-
-**Focus timer not ticking?**
-- Verify `FocusProvider` wraps components
-- Check console for interval errors
-- Clear localStorage and retry
 
 ---
 

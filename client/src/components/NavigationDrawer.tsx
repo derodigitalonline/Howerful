@@ -104,7 +104,7 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
                   className={cn(
                     'group block flex items-center rounded-lg transition-all duration-200 cursor-pointer relative',
                     'hover:scale-[1.02]',
-                    isActive && 'border-2 border-[#3D4C7B]',
+                    isActive && 'border-2 border-[hsl(var(--navy-border))]',
                     !isActive && 'border-2 border-transparent',
                     isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-4 py-3 max-h-[54px]'
                   )}
@@ -122,16 +122,16 @@ export default function NavigationDrawer({ onHelpClick }: NavigationDrawerProps)
                   />
                   <Icon className={cn(
                     "h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 relative z-10",
-                    isActive ? 'text-[#3D4C7B]' : 'text-foreground'
+                    isActive ? 'text-[hsl(var(--navy-border))]' : 'text-foreground'
                   )} />
                   {!isCollapsed && (
                     <div className="flex-1 overflow-hidden relative z-10">
                       <div
                         className={cn(
                           "font-medium transition-colors",
-                          isActive && 'text-[#3D4C7B]'
+                          isActive && 'text-[hsl(var(--navy-border))]'
                         )}
-                        style={{ fontFamily: 'Boogaloo, cursive', fontSize: '18px' }}
+                        style={{ fontFamily: 'Boogaloo, cursive', fontSize: '17px' }}
                       >
                         {item.label}
                       </div>

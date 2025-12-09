@@ -49,10 +49,9 @@ export default function MasonryBucketView({
 
   const generalItems = activeItems.filter((i) => !(i.type === 'event' && i.time));
 
-  // Responsive breakpoints for masonry columns
+  // 3-column masonry layout
   const breakpointColumns = {
-    default: 4,
-    1400: 3,
+    default: 3,
     1024: 2,
     768: 1,
   };
@@ -74,62 +73,64 @@ export default function MasonryBucketView({
   }
 
   return (
-    <div className="space-y-8">
-      {/* Scheduled Section - Only for Today/Tomorrow buckets */}
-      {scheduledItems.length > 0 && bucket !== 'someday' && (
-        <div>
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
-            Scheduled
-          </h3>
-          <Masonry
-            breakpointCols={breakpointColumns}
-            className="masonry-grid"
-            columnClassName="masonry-column"
-          >
-            {scheduledItems.map((item) => (
-              <BulletCard
-                key={item.id}
-                item={item}
-                onToggleComplete={onToggleComplete}
-                onClick={onCardClick}
-                onArchive={onArchive}
-                onStartFocus={onStartFocus}
-                onMarkAsVIT={onMarkAsVIT}
-                isDragging={activeId === item.id}
-              />
-            ))}
-          </Masonry>
-        </div>
-      )}
-
-      {/* General Items Section */}
-      {generalItems.length > 0 && (
-        <div>
-          {scheduledItems.length > 0 && bucket !== 'someday' && (
+    <div className="w-full flex justify-center">
+      <div className="w-full max-w-[1250px] space-y-8">
+        {/* Scheduled Section - Only for Today/Tomorrow buckets */}
+        {scheduledItems.length > 0 && bucket !== 'someday' && (
+          <div>
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
-              All Items
+              Scheduled
             </h3>
-          )}
-          <Masonry
-            breakpointCols={breakpointColumns}
-            className="masonry-grid"
-            columnClassName="masonry-column"
-          >
-            {generalItems.map((item) => (
-              <BulletCard
-                key={item.id}
-                item={item}
-                onToggleComplete={onToggleComplete}
-                onClick={onCardClick}
-                onArchive={onArchive}
-                onStartFocus={onStartFocus}
-                onMarkAsVIT={onMarkAsVIT}
-                isDragging={activeId === item.id}
-              />
-            ))}
-          </Masonry>
-        </div>
-      )}
+            <Masonry
+              breakpointCols={breakpointColumns}
+              className="masonry-grid"
+              columnClassName="masonry-column"
+            >
+              {scheduledItems.map((item) => (
+                <BulletCard
+                  key={item.id}
+                  item={item}
+                  onToggleComplete={onToggleComplete}
+                  onClick={onCardClick}
+                  onArchive={onArchive}
+                  onStartFocus={onStartFocus}
+                  onMarkAsVIT={onMarkAsVIT}
+                  isDragging={activeId === item.id}
+                />
+              ))}
+            </Masonry>
+          </div>
+        )}
+
+        {/* General Items Section */}
+        {generalItems.length > 0 && (
+          <div>
+            {scheduledItems.length > 0 && bucket !== 'someday' && (
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+                All Items
+              </h3>
+            )}
+            <Masonry
+              breakpointCols={breakpointColumns}
+              className="masonry-grid"
+              columnClassName="masonry-column"
+            >
+              {generalItems.map((item) => (
+                <BulletCard
+                  key={item.id}
+                  item={item}
+                  onToggleComplete={onToggleComplete}
+                  onClick={onCardClick}
+                  onArchive={onArchive}
+                  onStartFocus={onStartFocus}
+                  onMarkAsVIT={onMarkAsVIT}
+                  isDragging={activeId === item.id}
+                />
+              ))}
+            </Masonry>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -38,6 +38,10 @@
   --primary: 225 100% 62%;
   --primary-foreground: 0 0% 100%;
 
+  /* Dark */
+  --navy: 225 32% 24%;
+  --navy-border: 229 34% 36%; /* #3D4C7B - stronger border variant */
+
   /* Secondary - Soft blue/purple */
   --secondary: 235 70% 85%;
   --secondary-foreground: 0 0% 10%;
@@ -58,14 +62,7 @@
   --input: 20 10% 80%;
   --ring: 225 100% 62%;
 
-  /* Chart colors - Gaming palette */
-  --chart-1: 142 76% 45%;    /* Green - Do First (Most Important!) */
-  --chart-2: 225 100% 62%;   /* Primary Blue - Schedule */
-  --chart-3: 280 70% 65%;    /* Purple - Delegate */
-  --chart-4: 340 85% 60%;    /* Pink-Red - Eliminate */
-  --chart-5: 200 90% 60%;    /* Cyan - Additional */
-
-  /* Success color - Same as chart-1 for consistency */
+  /* Success color */
   --success: 142 76% 45%;
   --success-foreground: 0 0% 100%;
 

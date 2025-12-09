@@ -1,5 +1,5 @@
 import { BulletItem } from '@shared/schema';
-import { CheckSquare, Clock, Trash2, Timer, Star } from 'lucide-react';
+import { CheckSquare, Clock, Trash2, Timer, Star, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatTime12Hour } from '@/lib/formatTime';
 import { useState } from 'react';
@@ -38,7 +38,7 @@ export default function BulletCard({
       <ContextMenuTrigger asChild>
         <div
           className={cn(
-            "bullet-card group relative bg-card border border-border rounded-xl p-4 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5",
+            "bullet-card group relative bg-card border border-[hsl(var(--navy-border))] rounded-xl p-4 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5",
             "w-full",
             isDragging && "opacity-50 scale-95",
             isCompleted && "opacity-60",
@@ -89,23 +89,40 @@ export default function BulletCard({
         </div>
       </div>
 
-      {/* Compact 3D DONE Button - Bottom Right - Shows on hover for incomplete items */}
+      {/* Action Buttons - Bottom Right - Shows on hover for incomplete items */}
       {!isCompleted && (
-        <button
-          className="absolute bottom-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all duration-150 bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-1.5 rounded-md shadow-[0_3px_0_0_rgba(0,0,0,0.15)] hover:shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:-translate-y-[1px] active:shadow-[0_1px_0_0_rgba(0,0,0,0.15)] active:translate-y-[2px]"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleComplete(item.id);
-          }}
-        >
-          DONE
-        </button>
+        <>
+          {/* Play/Focus Button - Navy colored */}
+          {onStartFocus && (
+            <button
+              className="absolute bottom-3 right-[4rem] z-10 opacity-0 group-hover:opacity-100 transition-all duration-150 bg-[hsl(var(--navy-border))] text-white p-1.5 rounded-md shadow-[0_3px_0_0_rgba(0,0,0,0.15)] hover:shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:-translate-y-[1px] active:shadow-[0_1px_0_0_rgba(0,0,0,0.15)] active:translate-y-[2px]"
+              onClick={(e) => {
+                e.stopPropagation();
+                onStartFocus(item.id, item.text);
+              }}
+              title="Start focus session"
+            >
+              <Play className="w-3.5 h-3.5 fill-white" />
+            </button>
+          )}
+
+          {/* DONE Button - Primary blue */}
+          <button
+            className="absolute bottom-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all duration-150 bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-1.5 rounded-md shadow-[0_3px_0_0_rgba(0,0,0,0.15)] hover:shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:-translate-y-[1px] active:shadow-[0_1px_0_0_rgba(0,0,0,0.15)] active:translate-y-[2px]"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleComplete(item.id);
+            }}
+          >
+            DONE
+          </button>
+        </>
       )}
 
       {/* Trash Icon - Bottom Center - Shows on hover for completed items */}
       {isCompleted && onArchive && (
         <button
-          className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 transition-all duration-150 text-muted-foreground hover:text-destructive p-2 rounded-md bg-card hover:bg-red-50 dark:hover:bg-red-950/30 border border-border hover:border-destructive/50"
+          className="absolute bottom-1/2 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 transition-all duration-150 text-muted-foreground hover:text-destructive p-2 rounded-md bg-card hover:bg-red-50 dark:hover:bg-red-950/30 border border-[hsl(var(--navy-border))] hover:border-destructive/50"
           onClick={(e) => {
             e.stopPropagation();
             onArchive(item.id);

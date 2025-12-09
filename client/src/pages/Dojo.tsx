@@ -228,7 +228,7 @@ export default function Dojo() {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="h-full flex flex-col overflow-hidden">
+      <div className="h-full flex flex-col overflow-hidden bg-white">
         {/* Fixed Top Section */}
         <div className="flex-shrink-0 px-6 md:px-8 pt-6 md:pt-8 bg-background">
           {/* Bucket Tabs */}
