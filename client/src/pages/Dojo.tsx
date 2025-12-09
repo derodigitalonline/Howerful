@@ -3,10 +3,9 @@ import MasonryBucketView from '@/components/MasonryBucketView';
 import FocusDropZone from '@/components/FocusDropZone';
 import FocusedItemBanner from '@/components/FocusedItemBanner';
 import SwitchFocusDialog from '@/components/SwitchFocusDialog';
-import FloatingTaskInput from '@/components/FloatingTaskInput';
+import TaskInput, { SlashInputRef } from '@/components/TaskInput';
 import VITBanner from '@/components/VITBanner';
 import VITDialog from '@/components/VITDialog';
-import { SlashInputRef } from '@/components/SlashInput';
 import { useBulletJournal } from '@/hooks/useBulletJournal';
 import { useFocus } from '@/hooks/useFocus';
 import { useProfile } from '@/hooks/useProfile';
@@ -228,81 +227,81 @@ export default function Dojo() {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="h-full flex flex-col overflow-hidden bg-white">
-        {/* Fixed Top Section */}
-        <div className="flex-shrink-0 px-6 md:px-8 pt-6 md:pt-8 bg-background">
-          {/* Bucket Tabs */}
-          <div>
-            <BucketTabs
-              activeBucket={activeBucket}
-              onBucketChange={setActiveBucket}
-              counts={bucketCounts}
+      <div className="h-full flex flex-col overflow-hidden bg-background">
+        {/* Centered Content Wrapper */}
+        <div className="flex-1 flex justify-center overflow-y-auto">
+          {/* Max-Width Container */}
+          <div className="w-full max-w-[1250px] flex flex-col px-6 md:px-8 pt-6 md:pt-8 pb-8">
+            {/* Task Input - at top */}
+            <TaskInput
+              ref={inputRef}
+              onAddItem={handleAddItem}
+              placeholder="Press / to add a task..."
+            />
+
+            {/* Bucket Tabs */}
+            <div className="mb-6">
+              <BucketTabs
+                activeBucket={activeBucket}
+                onBucketChange={setActiveBucket}
+                counts={bucketCounts}
+              />
+            </div>
+
+            {/* VIT Banner - Shows active VIT regardless of bucket */}
+            <AnimatePresence>
+              {activeVIT && (
+                <VITBanner
+                  key={activeVIT.id}
+                  item={activeVIT}
+                  onToggleComplete={handleToggleVITCompletion}
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Focused Item Banner */}
+            <FocusedItemBanner />
+
+            {/* Bucket Headers */}
+            <div className="mb-6">
+              {activeBucket === 'today' && (
+                <div>
+                  <p className="text-sm text-muted-foreground mt-1">{formatTodayDate()}</p>
+                </div>
+              )}
+
+              {activeBucket === 'tomorrow' && (
+                <div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {new Date(Date.now() + 86400000).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </div>
+              )}
+
+              {activeBucket === 'someday' && (
+                <div>
+                  <p className="text-sm text-muted-foreground mt-1">You'll get to it eventually</p>
+                </div>
+              )}
+            </div>
+
+            {/* Bucket Content View */}
+            <MasonryBucketView
+              bucket={activeBucket}
+              items={items}
+              onToggleComplete={handleToggleItemCompletion}
+              onCardClick={handleCardClick}
+              onArchive={archiveItem}
+              onStartFocus={handleStartFocus}
+              onMarkAsVIT={handleMarkAsVIT}
+              activeId={activeId}
             />
           </div>
-        </div>
-
-        {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto px-6 md:px-8 pt-6 pb-32">
-          {/* VIT Banner - Shows active VIT regardless of bucket */}
-          <AnimatePresence>
-            {activeVIT && (
-              <VITBanner
-                key={activeVIT.id}
-                item={activeVIT}
-                onToggleComplete={handleToggleVITCompletion}
-              />
-            )}
-          </AnimatePresence>
-
-          {/* Focused Item Banner */}
-          <FocusedItemBanner />
-
-          {/* Bucket Headers */}
-          <div className="mb-6">
-            {activeBucket === 'today' && (
-              <div>
-                <p className="text-sm text-muted-foreground mt-1">{formatTodayDate()}</p>
-              </div>
-            )}
-
-            {activeBucket === 'tomorrow' && (
-              <div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {new Date(Date.now() + 86400000).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                </p>
-              </div>
-            )}
-
-            {activeBucket === 'someday' && (
-              <div>
-                <p className="text-sm text-muted-foreground mt-1">You'll get to it eventually</p>
-              </div>
-            )}
-          </div>
-
-          {/* Bucket Content View */}
-          <MasonryBucketView
-            bucket={activeBucket}
-            items={items}
-            onToggleComplete={handleToggleItemCompletion}
-            onCardClick={handleCardClick}
-            onArchive={archiveItem}
-            onStartFocus={handleStartFocus}
-            onMarkAsVIT={handleMarkAsVIT}
-            activeId={activeId}
-          />
         </div>
 
         {/* Focus Drop Zone - shown only when dragging */}
         <FocusDropZone isVisible={activeId !== null} />
       </div>
-
-      {/* Floating Task Input - bottom of screen */}
-      <FloatingTaskInput
-        ref={inputRef}
-        onAddItem={handleAddItem}
-        placeholder="Press / to add a task..."
-      />
 
       {/* Switch Focus Dialog */}
       <SwitchFocusDialog

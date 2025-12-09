@@ -55,6 +55,10 @@ export default {
           DEFAULT: "hsl(var(--success) / <alpha-value>)",
           foreground: "hsl(var(--success-foreground) / <alpha-value>)",
         },
+        xp: {
+          start: "hsl(var(--xp-bar-start) / <alpha-value>)",
+          end: "hsl(var(--xp-bar-end) / <alpha-value>)",
+        },
         ring: "hsl(var(--ring) / <alpha-value>)",
         chart: {
           "1": "hsl(var(--chart-1) / <alpha-value>)",

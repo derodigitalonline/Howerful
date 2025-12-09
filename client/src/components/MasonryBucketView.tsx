@@ -73,8 +73,7 @@ export default function MasonryBucketView({
   }
 
   return (
-    <div className="w-full flex justify-center">
-      <div className="w-full max-w-[1250px] space-y-8">
+    <div className="w-full space-y-8">
         {/* Scheduled Section - Only for Today/Tomorrow buckets */}
         {scheduledItems.length > 0 && bucket !== 'someday' && (
           <div>
@@ -130,7 +129,6 @@ export default function MasonryBucketView({
             </Masonry>
           </div>
         )}
-      </div>
     </div>
   );
 }

@@ -133,7 +133,7 @@ export default function Profile() {
                     </div>
                     <div className="relative h-[10px] bg-muted/30 rounded-full overflow-hidden">
                       <div
-                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-500"
+                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-xp-start to-xp-end rounded-full transition-all duration-500"
                         style={{ width: `${(xpInCurrentLevel / xpNeededForLevel) * 100}%` }}
                       />
                     </div>

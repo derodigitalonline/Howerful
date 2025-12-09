@@ -66,6 +66,10 @@
   --success: 142 76% 45%;
   --success-foreground: 0 0% 100%;
 
+  /* XP Bar - Gaming progression colors */
+  --xp-bar-start: 225 100% 62%;   /* Primary blue */
+  --xp-bar-end: 142 76% 55%;      /* Success green - represents completion */
+
   /* Coin Display - Game UI */
   --coin-display-bg: 229 34% 36%; /* #3D4C7B */
   --coin-display-shadow: 225 32% 24%; /* #2A3451 - inset shadow */
@@ -150,6 +154,10 @@
   /* Success color - Same as chart-1 for consistency */
   --success: 142 76% 55%;
   --success-foreground: 0 0% 100%;
+
+  /* XP Bar - Gaming progression colors (dark mode) */
+  --xp-bar-start: 225 100% 62%;   /* Primary blue */
+  --xp-bar-end: 142 76% 60%;      /* Brighter success green for dark mode */
 
   /* Enhanced shadows for dark mode */
   --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.30);

@@ -1,117 +1,308 @@
-import { useState, useRef, useEffect } from 'react';
+import { forwardRef, useState, useRef, useImperativeHandle, useEffect } from 'react';
+import { Plus, Sparkles, Clock, X, CornerDownLeft } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Chip } from '@/components/ui/chip';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
-import { Quadrant } from '@shared/schema';
 
-interface TaskInputProps {
-  onAddTask: (text: string, quadrant: Quadrant) => void;
-  selectedQuadrant: Quadrant;
-  onQuadrantChange: (quadrant: Quadrant) => void;
-  isSelectingQuadrant: boolean;
-  onSelectingChange: (isSelecting: boolean) => void;
+export interface SlashInputRef {
+  focus: () => void;
 }
 
-const quadrantInfo = {
-  'do-first': { name: 'Do First', color: 'ring-chart-1' },
-  'schedule': { name: 'Schedule', color: 'ring-chart-2' },
-  'delegate': { name: 'Delegate', color: 'ring-chart-3' },
-  'eliminate': { name: 'Eliminate', color: 'ring-chart-4' },
-};
+interface TaskInputProps {
+  onAddItem: (text: string, time?: string) => void;
+  placeholder?: string;
+}
 
-export default function TaskInput({
-  onAddTask,
-  selectedQuadrant,
-  onQuadrantChange,
-  isSelectingQuadrant,
-  onSelectingChange,
-}: TaskInputProps) {
-  const [taskText, setTaskText] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+const TIME_PRESETS = [
+  { label: 'Morning', value: '08:00' },
+  { label: 'Afternoon', value: '12:00' },
+  { label: 'Evening', value: '18:00' },
+] as const;
 
-  useEffect(() => {
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // Focus input when "/" is pressed (and not already in an input/textarea)
-      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
-        e.preventDefault();
+const FOCUSED_PLACEHOLDERS = [
+  "What's on your mind?",
+  "Quick! Before you forget...",
+  "Brain dump here...",
+  "What needs doing?",
+  "Got any plans?",
+];
+
+const TaskInput = forwardRef<SlashInputRef, TaskInputProps>(
+  ({ onAddItem, placeholder = "Press '/' to add task" }, ref) => {
+    const [isFocused, setIsFocused] = useState(false);
+    const [text, setText] = useState('');
+    const [selectedTime, setSelectedTime] = useState<string | null>(null);
+    const [showCustomTimePicker, setShowCustomTimePicker] = useState(false);
+    const [customTime, setCustomTime] = useState('09:00');
+    const [placeholderIndex, setPlaceholderIndex] = useState(0);
+    const [isAnimating, setIsAnimating] = useState(false);
+
+    const inputRef = useRef<HTMLInputElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Expose focus method to parent via ref
+    useImperativeHandle(ref, () => ({
+      focus: () => {
         inputRef.current?.focus();
+        setIsFocused(true);
+      },
+    }));
+
+    // Rotate placeholder text when focused
+    useEffect(() => {
+      if (!isFocused) return;
+
+      const interval = setInterval(() => {
+        setIsAnimating(true);
+
+        // After animation completes, change the text
+        setTimeout(() => {
+          setPlaceholderIndex((prev) => (prev + 1) % FOCUSED_PLACEHOLDERS.length);
+          setIsAnimating(false);
+        }, 300); // Half of the animation duration for smooth transition
+      }, 4000);
+
+      return () => clearInterval(interval);
+    }, [isFocused]);
+
+    const handleSubmit = () => {
+      const trimmedText = text.trim();
+      if (!trimmedText) return;
+
+      onAddItem(trimmedText, selectedTime || undefined);
+
+      // Reset state
+      setText('');
+      setSelectedTime(null);
+      setPlaceholderIndex(0); // Reset placeholder rotation
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSubmit();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        inputRef.current?.blur();
       }
     };
 
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, []);
+    const handleTimePreset = (time: string) => {
+      setSelectedTime(time);
+      inputRef.current?.focus();
+    };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isSelectingQuadrant && e.key === 'Enter' && taskText.trim()) {
-      onSelectingChange(true);
-      e.preventDefault();
-      return;
-    }
+    const handleCustomTimeClick = () => {
+      setShowCustomTimePicker(true);
+    };
 
-    if (isSelectingQuadrant) {
-      const quadrantMap: Record<string, Quadrant> = {
-        'ArrowLeft': selectedQuadrant === 'schedule' ? 'do-first' : selectedQuadrant === 'eliminate' ? 'delegate' : selectedQuadrant,
-        'ArrowRight': selectedQuadrant === 'do-first' ? 'schedule' : selectedQuadrant === 'delegate' ? 'eliminate' : selectedQuadrant,
-        'ArrowUp': selectedQuadrant === 'delegate' ? 'do-first' : selectedQuadrant === 'eliminate' ? 'schedule' : selectedQuadrant,
-        'ArrowDown': selectedQuadrant === 'do-first' ? 'delegate' : selectedQuadrant === 'schedule' ? 'eliminate' : selectedQuadrant,
-      };
+    const handleCustomTimeSubmit = () => {
+      setSelectedTime(customTime);
+      setShowCustomTimePicker(false);
+      inputRef.current?.focus();
+    };
 
-      if (e.key in quadrantMap) {
-        onQuadrantChange(quadrantMap[e.key]);
-        e.preventDefault();
-      } else if (e.key === 'Enter') {
-        onAddTask(taskText.trim(), selectedQuadrant);
-        setTaskText('');
-        onSelectingChange(false);
-        e.preventDefault();
-      } else if (e.key === 'Escape') {
-        onSelectingChange(false);
-        e.preventDefault();
-      }
-    }
-  };
+    const handleRemoveTime = () => {
+      setSelectedTime(null);
+      inputRef.current?.focus();
+    };
 
-  return (
-    <div className="space-y-3">
-      <div className="relative">
-        <Input
-          ref={inputRef}
-          type="text"
-          placeholder="What's on your mind? (Press / to focus, Enter to capture)"
-          value={taskText}
-          onChange={(e) => setTaskText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className={`h-12 text-base pr-32 ${isSelectingQuadrant ? quadrantInfo[selectedQuadrant].color : ''}`}
-          data-testid="input-task"
-          autoFocus
-        />
-        {!taskText && !isSelectingQuadrant && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
-            <kbd className="px-2 py-1 text-xs font-mono bg-muted text-muted-foreground rounded border">
-              /
-            </kbd>
+    return (
+      <>
+        <div
+          ref={containerRef}
+          className="relative w-full mb-6 transition-all duration-300"
+        >
+          {/* Wrapper to clip overflow from animated gradients */}
+          <div className="relative overflow-hidden rounded-2xl">
+            {/* Animated Glow on Focus */}
+            <div
+              className={cn(
+                "absolute -inset-0.5 rounded-2xl blur-md transition-opacity duration-500",
+                isFocused ? "opacity-100" : "opacity-0"
+              )}
+            >
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-600 via-primary to-blue-600 animate-pulse" />
+            </div>
+
+            {/* Spinning conic gradient border - only when NOT focused */}
+            <div
+              className={cn(
+                "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400%] h-[400%] animate-spin transition-opacity duration-500",
+                isFocused ? "opacity-0" : "opacity-100"
+              )}
+              style={{
+                background: 'conic-gradient(from 90deg at 50% 50%, transparent 0%, transparent 50%, #3b82f6 70%, hsl(var(--primary)) 85%, #6366f1 100%)',
+                animationDuration: '4s',
+              }}
+            />
+
+            {/* Main Container */}
+            <div className="relative m-[2px] bg-background/95 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl border border-border/50">
+            {/* Input Row */}
+            <div className="flex items-center px-4 py-4 gap-3">
+              {/* Left Icon */}
+              <div className={cn(
+                "flex items-center justify-center w-5 h-5 transition-colors duration-300",
+                isFocused ? "text-primary" : "text-muted-foreground"
+              )}>
+                {isFocused ? <Sparkles size={20} /> : <Plus size={20} />}
+              </div>
+
+              {/* Input Field with Animated Placeholder */}
+              <div className="flex-1 relative">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={(e) => {
+                    // Keep focused if clicking within the container
+                    if (containerRef.current?.contains(e.relatedTarget as Node)) {
+                      return;
+                    }
+                    if (!text) {
+                      setIsFocused(false);
+                      setPlaceholderIndex(0); // Reset to first placeholder
+                    }
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder={!isFocused ? placeholder : ""}
+                  className="w-full bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground text-base font-light"
+                  autoComplete="off"
+                />
+                {/* Animated placeholder overlay when focused */}
+                {isFocused && !text && (
+                  <div className="absolute inset-0 pointer-events-none flex items-center overflow-hidden">
+                    <span
+                      className={cn(
+                        "text-muted-foreground text-base font-light transition-all duration-300",
+                        isAnimating ? "translate-y-[-100%] opacity-0" : "translate-y-0 opacity-100"
+                      )}
+                    >
+                      {FOCUSED_PLACEHOLDERS[placeholderIndex]}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Side: Keyboard Shortcut or Submit Button */}
+              {!isFocused && (
+                <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground bg-muted rounded-md border border-border">
+                  <span className="text-[10px]">⌘</span> /
+                </kbd>
+              )}
+
+              {isFocused && (
+                <button
+                  onClick={handleSubmit}
+                  disabled={!text.trim()}
+                  className={cn(
+                    "p-2 rounded-lg transition-all duration-200",
+                    text.trim()
+                      ? "bg-primary text-primary-foreground shadow-lg hover:bg-primary/90"
+                      : "bg-muted text-muted-foreground cursor-not-allowed"
+                  )}
+                >
+                  <CornerDownLeft size={18} />
+                </button>
+              )}
+            </div>
+
+            {/* Time Chips - Expandable Section */}
+            {isFocused && (
+              <div className="border-t border-border/50 bg-muted/30 px-4 py-3">
+                <div className="flex flex-wrap gap-2">
+                  {/* Preset Time Chips */}
+                  {TIME_PRESETS.map((preset) => (
+                    <Chip
+                      key={preset.value}
+                      selected={selectedTime === preset.value}
+                      onClick={() => handleTimePreset(preset.value)}
+                    >
+                      <span>{preset.label}</span>
+                      <span className="font-mono text-xs">{preset.value}</span>
+                    </Chip>
+                  ))}
+
+                  {/* Custom Time Chip */}
+                  <Chip
+                    selected={selectedTime !== null && !TIME_PRESETS.some(p => p.value === selectedTime)}
+                    onClick={handleCustomTimeClick}
+                  >
+                    <Clock className="w-3 h-3" />
+                    <span>Choose</span>
+                  </Chip>
+
+                  {/* Remove Time Chip */}
+                  {selectedTime && (
+                    <Chip
+                      variant="outline"
+                      onClick={handleRemoveTime}
+                    >
+                      <X className="w-3 h-3" />
+                      <span>No time</span>
+                    </Chip>
+                  )}
+                </div>
+
+                {/* Selected Time Indicator */}
+                {selectedTime && (
+                  <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-2">
+                    <Clock className="w-3 h-3" />
+                    <span>Task scheduled for {selectedTime}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      
-      {isSelectingQuadrant && (
-        <div className="text-center space-y-2">
-          <p className="text-sm text-muted-foreground">
-            Use arrow keys to select quadrant: <span className="font-medium text-foreground">{quadrantInfo[selectedQuadrant].name}</span>
-          </p>
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <ArrowUp className="h-3 w-3" />
-            <ArrowDown className="h-3 w-3" />
-            <ArrowLeft className="h-3 w-3" />
-            <ArrowRight className="h-3 w-3" />
-            <span>to navigate</span>
-            <span className="mx-2">•</span>
-            <span>Enter to confirm</span>
-            <span className="mx-2">•</span>
-            <span>Esc to cancel</span>
           </div>
         </div>
-      )}
-    </div>
-  );
-}
+
+        {/* Custom Time Picker Dialog */}
+        <Dialog open={showCustomTimePicker} onOpenChange={setShowCustomTimePicker}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Choose Custom Time</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Time</label>
+                <Input
+                  type="time"
+                  value={customTime}
+                  onChange={(e) => setCustomTime(e.target.value)}
+                  className="text-lg"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowCustomTimePicker(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCustomTimeSubmit}>
+                Set Time
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
+);
+
+TaskInput.displayName = 'TaskInput';
+
+export default TaskInput;

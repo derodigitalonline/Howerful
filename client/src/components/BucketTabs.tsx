@@ -21,7 +21,7 @@ export default function BucketTabs({ activeBucket, onBucketChange, counts }: Buc
   ];
 
   return (
-    <div className="relative border-b border-border">
+    <div className="relative">
       {/* Tab Container */}
       <div className="flex items-center gap-1">
         {tabs.map((tab) => {
