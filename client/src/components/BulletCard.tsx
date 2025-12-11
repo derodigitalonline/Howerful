@@ -50,7 +50,7 @@ export default function BulletCard({
           <div className="p-4">
             <p
               className={cn(
-                "text-sm break-words",
+                "text-sm font-medium break-words",
                 isCompleted && "line-through text-muted-foreground"
               )}
             >

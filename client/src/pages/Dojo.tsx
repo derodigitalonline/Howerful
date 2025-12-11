@@ -299,12 +299,15 @@ export default function Dojo() {
             transition={{ duration: 0.4 }}
           >
             {/* Bucket Tabs - at top */}
-            <div className="mb-6">
+            <div className="flex items-center justify-between mb-6">
               <BucketTabs
                 activeBucket={activeBucket}
                 onBucketChange={setActiveBucket}
                 counts={bucketCounts}
               />
+              <p className="text-sm text-muted-foreground">
+                {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              </p>
             </div>
 
             {/* Task Input */}

@@ -33,7 +33,7 @@ export default function BucketTabs({ activeBucket, onBucketChange, counts }: Buc
               key={tab.bucket}
               onClick={() => onBucketChange(tab.bucket)}
               className={cn(
-                "relative px-4 py-2.5 rounded-md font-medium transition-all duration-200",
+                "relative px-4 py-2.5 rounded-md font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
                 isActive
                   ? "bg-card text-primary shadow-sm"
                   : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-accent/50"

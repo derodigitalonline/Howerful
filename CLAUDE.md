@@ -21,10 +21,9 @@ Howerful is a gamified bullet journal app with XP, levels, quests, and a 3D comp
 
 ## Key Features
 - **Dojo (Task Journal)**: Bullet journal with Today/Tomorrow/Someday buckets, masonry grid layout
-- **VIT (Very Important Task)**: Special task designation with coin bounties
 - **Focus Sessions**: Pomodoro-style timer with 3D Howie companion
 - **Quests**: Daily quests, story quests for progression
-- **Routines**: Morning/evening routine tracking
+- **Routines**: Daily routine tracking
 - **XP System**: RuneScape-inspired exponential leveling (max level 50)
 - **Howie**: 3D customizable character using Three.js/React Three Fiber
 
@@ -48,11 +47,7 @@ Howerful is a gamified bullet journal app with XP, levels, quests, and a 3D comp
 - Fallback to localStorage when not authenticated
 
 ## Important Notes
-- The XP calculation uses `utils/xpCalculator.ts` - don't modify the formula without understanding the leveling curve
-- Profile XP bar uses custom CSS variables `--xp-bar-start` and `--xp-bar-end` for gradient
-- Task input supports time scheduling (Morning/Afternoon/Evening presets or custom time)
-- "/" key globally focuses the task input from anywhere in the Dojo
-- Sidebar is collapsible (80px collapsed, 256px expanded)
+- Target audience for Howerful is ADHD, AuDHD, and neurodivergent "work-from-home" users, ages 16-39, that struggle day to day with feeling good about how they track tasks and feeling rewarded for doing so.
 
 ## Workflow
 - Always check that dev server compiles without errors before finishing
