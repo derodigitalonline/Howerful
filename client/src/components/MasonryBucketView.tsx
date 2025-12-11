@@ -2,6 +2,7 @@ import { BulletItem, Bucket } from '@shared/schema';
 import BulletCard from './BulletCard';
 import Masonry from 'react-masonry-css';
 import { ListX } from 'lucide-react';
+import pixelFace from '@/assets/pixel-face.svg';
 
 interface MasonryBucketViewProps {
   bucket: Bucket;
@@ -42,14 +43,12 @@ export default function MasonryBucketView({
   // Filter out archived items
   const activeItems = items.filter((i) => !i.archivedAt);
 
-  // Separate scheduled items (events with time) from general items
   const scheduledItems = activeItems
     .filter((i) => i.type === 'event' && i.time)
     .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
 
   const generalItems = activeItems.filter((i) => !(i.type === 'event' && i.time));
 
-  // 3-column masonry layout
   const breakpointColumns = {
     default: 3,
     1024: 2,
@@ -61,10 +60,16 @@ export default function MasonryBucketView({
     const emptyState = EMPTY_STATES[bucket];
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-16 h-16 rounded-full bg-accent/50 flex items-center justify-center mb-4">
-          <ListX className="w-8 h-8 text-muted-foreground" />
-        </div>
-        <h3 className="text-lg font-semibold mb-2">{emptyState.title}</h3>
+        {bucket === 'today' ? (
+          <div className="w-16 h-16 flex items-center justify-center mb-4 animate-soft-bounce">
+            <img src={pixelFace} alt="Pixel face" className="w-12 h-12" />
+          </div>
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-accent/50 flex items-center justify-center mb-4">
+            <ListX className="w-8 h-8 text-muted-foreground" />
+          </div>
+        )}
+        <h3 className="text-lg font-semibold text-muted-foreground mb-2">{emptyState.title}</h3>
         <p className="text-sm text-muted-foreground max-w-sm">
           {emptyState.description}
         </p>

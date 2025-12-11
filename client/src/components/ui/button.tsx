@@ -22,6 +22,7 @@ const buttonVariants = cva(
         // Add a transparent border so that when someone toggles a border on later, it doesn't shift layout/size.
         ghost: "border border-transparent rounded-lg",
         chunk: "bg-[#6155F5] text-white rounded-2xl font-bold text-lg py-6 px-12 shadow-lg hover:bg-[#5144D9] active:bg-[#4234BD] transition-colors no-default-hover-elevate no-default-active-elevate",
+        arcade: "uppercase tracking-wider border border-black rounded-sm shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:brightness-105 active:shadow-[2px_2px_0_0_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px] active:brightness-110 transition-all duration-100 no-default-hover-elevate no-default-active-elevate disabled:bg-[#9CA3AF] disabled:text-[#6B7280] disabled:shadow-[3px_3px_0_0_rgba(75,85,99,1)] disabled:translate-x-0 disabled:translate-y-0 disabled:cursor-not-allowed bg-primary text-primary-foreground",
       },
       
       size: {

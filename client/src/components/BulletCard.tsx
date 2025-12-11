@@ -38,100 +38,86 @@ export default function BulletCard({
       <ContextMenuTrigger asChild>
         <div
           className={cn(
-            "bullet-card group relative bg-card border border-[hsl(var(--navy-border))] rounded-xl p-4 transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5",
-            "w-full",
+            "bullet-card group relative bg-card border border-[hsl(var(--navy-border))] rounded-lg overflow-hidden transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5",
+            "w-full flex flex-col",
             isDragging && "opacity-50 scale-95",
             isCompleted && "opacity-60",
             isContextMenuOpen && "ring-2 ring-primary shadow-md"
           )}
           onClick={() => onClick(item.id)}
         >
-      {/* Type Indicator & Content */}
-      <div className="flex items-start gap-3">
-        {/* Type Icon - Clickable checkbox for tasks */}
-        <div className="flex-shrink-0 mt-0.5">
-          <div
-            className={cn(
-              "w-5 h-5 border-2 flex items-center justify-center transition-colors cursor-pointer rounded",
-              isCompleted
-                ? "bg-primary border-primary text-primary-foreground"
-                : "border-muted-foreground hover:border-primary"
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleComplete(item.id);
-            }}
-          >
-            {isCompleted && (
-              <CheckSquare className="w-3 h-3" />
-            )}
+          {/* Task Content */}
+          <div className="p-4">
+            <p
+              className={cn(
+                "text-sm break-words",
+                isCompleted && "line-through text-muted-foreground"
+              )}
+            >
+              {item.text}
+            </p>
           </div>
-        </div>
 
-        {/* Text Content */}
-        <div className="flex-1 min-w-0">
-          <p
-            className={cn(
-              "text-sm break-words",
-              isCompleted && "line-through text-muted-foreground"
-            )}
-          >
-            {item.text}
-          </p>
+          {/* Action Buttons Row */}
+          {!isCompleted && (
+            <div className="flex items-center gap-2 px-2.5 pb-2.5">
+              {/* COMPLETE Button - Takes most space (Stroked Primary) */}
+              <button
+                className="flex-1 bg-card border border-[hsl(var(--navy-border))] text-primary text-xs font-bold uppercase px-4 py-2 rounded-md shadow-[2px_2px_0_0_rgba(0,0,0,0.15)] transition-all duration-150 hover:shadow-[1px_1px_0_0_rgba(0,0,0,0.15)] hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleComplete(item.id);
+                }}
+              >
+                Complete
+              </button>
 
-          {/* Time Badge - For tasks with specific times */}
-          {item.time && (
-            <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-              <Clock className="w-3 h-3" />
-              <span className="font-mono">{formatTime12Hour(item.time)}</span>
+              {/* Play/Focus Button - Small button (Stroked Navy) */}
+              {onStartFocus && (
+                <button
+                  className="flex-shrink-0 bg-card border border-[hsl(var(--navy-border))] text-[hsl(var(--navy))] p-2 rounded-md shadow-[2px_2px_0_0_rgba(0,0,0,0.15)] transition-all duration-150 hover:shadow-[1px_1px_0_0_rgba(0,0,0,0.15)] hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStartFocus(item.id, item.text);
+                  }}
+                  title="Start focus session"
+                >
+                  <Play className="w-4 h-4 fill-[hsl(var(--navy))]" />
+                </button>
+              )}
+
+              {/* Trash/Archive Button (Stroked Danger) */}
+              {onArchive && (
+                <button
+                  className="flex-shrink-0 bg-card border border-[hsl(var(--navy-border))] text-[#FF383C] p-2 rounded-md shadow-[2px_2px_0_0_rgba(0,0,0,0.15)] transition-all duration-150 hover:shadow-[1px_1px_0_0_rgba(0,0,0,0.15)] hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onArchive(item.id);
+                  }}
+                  title="Archive task"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Action Buttons - Bottom Right - Shows on hover for incomplete items */}
-      {!isCompleted && (
-        <>
-          {/* Play/Focus Button - Navy colored */}
-          {onStartFocus && (
-            <button
-              className="absolute bottom-3 right-[4rem] z-10 opacity-0 group-hover:opacity-100 transition-all duration-150 bg-[hsl(var(--navy-border))] text-white p-1.5 rounded-md shadow-[0_3px_0_0_rgba(0,0,0,0.15)] hover:shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:-translate-y-[1px] active:shadow-[0_1px_0_0_rgba(0,0,0,0.15)] active:translate-y-[2px]"
-              onClick={(e) => {
-                e.stopPropagation();
-                onStartFocus(item.id, item.text);
-              }}
-              title="Start focus session"
-            >
-              <Play className="w-3.5 h-3.5 fill-white" />
-            </button>
+          {/* Trash Icon for completed items */}
+          {isCompleted && onArchive && (
+            <div className="px-3 pb-3">
+              <button
+                className="w-full text-muted-foreground hover:text-destructive py-2 rounded-md transition-all duration-150 hover:bg-red-50 dark:hover:bg-red-950/30 border border-[hsl(var(--navy-border))] hover:border-destructive/50 flex items-center justify-center gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onArchive(item.id);
+                }}
+                title="Archive task (removed after 30 days)"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span className="text-xs font-medium">Archive</span>
+              </button>
+            </div>
           )}
-
-          {/* DONE Button - Primary blue */}
-          <button
-            className="absolute bottom-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all duration-150 bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-1.5 rounded-md shadow-[0_3px_0_0_rgba(0,0,0,0.15)] hover:shadow-[0_4px_0_0_rgba(0,0,0,0.15)] hover:-translate-y-[1px] active:shadow-[0_1px_0_0_rgba(0,0,0,0.15)] active:translate-y-[2px]"
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleComplete(item.id);
-            }}
-          >
-            DONE
-          </button>
-        </>
-      )}
-
-      {/* Trash Icon - Bottom Center - Shows on hover for completed items */}
-      {isCompleted && onArchive && (
-        <button
-          className="absolute bottom-1/2 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 transition-all duration-150 text-muted-foreground hover:text-destructive p-2 rounded-md bg-card hover:bg-red-50 dark:hover:bg-red-950/30 border border-[hsl(var(--navy-border))] hover:border-destructive/50"
-          onClick={(e) => {
-            e.stopPropagation();
-            onArchive(item.id);
-          }}
-          title="Archive task (removed after 30 days)"
-        >
-          <Trash2 className="w-5 h-5" />
-        </button>
-      )}
         </div>
       </ContextMenuTrigger>
 

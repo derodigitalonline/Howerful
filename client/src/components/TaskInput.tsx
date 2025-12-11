@@ -1,16 +1,6 @@
-import { forwardRef, useState, useRef, useImperativeHandle, useEffect } from 'react';
-import { Plus, Sparkles, Clock, X, CornerDownLeft } from 'lucide-react';
+import { forwardRef, useState, useRef, useImperativeHandle } from 'react';
 import { cn } from '@/lib/utils';
-import { Chip } from '@/components/ui/chip';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 export interface SlashInputRef {
   focus: () => void;
@@ -21,284 +11,103 @@ interface TaskInputProps {
   placeholder?: string;
 }
 
-const TIME_PRESETS = [
-  { label: 'Morning', value: '08:00' },
-  { label: 'Afternoon', value: '12:00' },
-  { label: 'Evening', value: '18:00' },
-] as const;
-
-const FOCUSED_PLACEHOLDERS = [
-  "What's on your mind?",
-  "Quick! Before you forget...",
-  "Brain dump here...",
-  "What needs doing?",
-  "Got any plans?",
-];
-
 const TaskInput = forwardRef<SlashInputRef, TaskInputProps>(
-  ({ onAddItem, placeholder = "Press '/' to add task" }, ref) => {
-    const [isFocused, setIsFocused] = useState(false);
+  ({ onAddItem, placeholder = "Dump your thoughts here... 'Potion brewing at 5, slay the laundry dragon, buy mana crystals'" }, ref) => {
     const [text, setText] = useState('');
-    const [selectedTime, setSelectedTime] = useState<string | null>(null);
-    const [showCustomTimePicker, setShowCustomTimePicker] = useState(false);
-    const [customTime, setCustomTime] = useState('09:00');
-    const [placeholderIndex, setPlaceholderIndex] = useState(0);
-    const [isAnimating, setIsAnimating] = useState(false);
-
-    const inputRef = useRef<HTMLInputElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     // Expose focus method to parent via ref
     useImperativeHandle(ref, () => ({
       focus: () => {
-        inputRef.current?.focus();
-        setIsFocused(true);
+        textareaRef.current?.focus();
       },
     }));
 
-    // Rotate placeholder text when focused
-    useEffect(() => {
-      if (!isFocused) return;
-
-      const interval = setInterval(() => {
-        setIsAnimating(true);
-
-        // After animation completes, change the text
-        setTimeout(() => {
-          setPlaceholderIndex((prev) => (prev + 1) % FOCUSED_PLACEHOLDERS.length);
-          setIsAnimating(false);
-        }, 300); // Half of the animation duration for smooth transition
-      }, 4000);
-
-      return () => clearInterval(interval);
-    }, [isFocused]);
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit();
+      }
+    };
 
     const handleSubmit = () => {
       const trimmedText = text.trim();
       if (!trimmedText) return;
 
-      onAddItem(trimmedText, selectedTime || undefined);
+      // Split by line breaks to create multiple tasks
+      const tasks = trimmedText.split('\n').filter(line => line.trim());
+
+      // Add each task separately
+      tasks.forEach(task => {
+        onAddItem(task.trim());
+      });
 
       // Reset state
       setText('');
-      setSelectedTime(null);
-      setPlaceholderIndex(0); // Reset placeholder rotation
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        handleSubmit();
-      } else if (e.key === 'Escape') {
-        e.preventDefault();
-        inputRef.current?.blur();
-      }
-    };
-
-    const handleTimePreset = (time: string) => {
-      setSelectedTime(time);
-      inputRef.current?.focus();
-    };
-
-    const handleCustomTimeClick = () => {
-      setShowCustomTimePicker(true);
-    };
-
-    const handleCustomTimeSubmit = () => {
-      setSelectedTime(customTime);
-      setShowCustomTimePicker(false);
-      inputRef.current?.focus();
-    };
-
-    const handleRemoveTime = () => {
-      setSelectedTime(null);
-      inputRef.current?.focus();
-    };
+    const hasContent = text.trim().length > 0;
 
     return (
-      <>
-        <div
-          ref={containerRef}
-          className="relative w-full mb-6 transition-all duration-300"
-        >
-          {/* Wrapper to clip overflow from animated gradients */}
-          <div className="relative overflow-hidden rounded-2xl">
-            {/* Animated Glow on Focus */}
-            <div
-              className={cn(
-                "absolute -inset-0.5 rounded-2xl blur-md transition-opacity duration-500",
-                isFocused ? "opacity-100" : "opacity-0"
-              )}
-            >
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-600 via-primary to-blue-600 animate-pulse" />
-            </div>
-
-            {/* Spinning conic gradient border - only when NOT focused */}
-            <div
-              className={cn(
-                "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400%] h-[400%] animate-spin transition-opacity duration-500",
-                isFocused ? "opacity-0" : "opacity-100"
-              )}
-              style={{
-                background: 'conic-gradient(from 90deg at 50% 50%, transparent 0%, transparent 50%, #3b82f6 70%, hsl(var(--primary)) 85%, #6366f1 100%)',
-                animationDuration: '4s',
-              }}
-            />
-
-            {/* Main Container */}
-            <div className="relative m-[2px] bg-background/95 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl border border-border/50">
-            {/* Input Row */}
-            <div className="flex items-center px-4 py-4 gap-3">
-              {/* Left Icon */}
-              <div className={cn(
-                "flex items-center justify-center w-5 h-5 transition-colors duration-300",
-                isFocused ? "text-primary" : "text-muted-foreground"
-              )}>
-                {isFocused ? <Sparkles size={20} /> : <Plus size={20} />}
-              </div>
-
-              {/* Input Field with Animated Placeholder */}
-              <div className="flex-1 relative">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={(e) => {
-                    // Keep focused if clicking within the container
-                    if (containerRef.current?.contains(e.relatedTarget as Node)) {
-                      return;
-                    }
-                    if (!text) {
-                      setIsFocused(false);
-                      setPlaceholderIndex(0); // Reset to first placeholder
-                    }
-                  }}
-                  onKeyDown={handleKeyDown}
-                  placeholder={!isFocused ? placeholder : ""}
-                  className="w-full bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground text-base font-light"
-                  autoComplete="off"
-                />
-                {/* Animated placeholder overlay when focused */}
-                {isFocused && !text && (
-                  <div className="absolute inset-0 pointer-events-none flex items-center overflow-hidden">
-                    <span
-                      className={cn(
-                        "text-muted-foreground text-base font-light transition-all duration-300",
-                        isAnimating ? "translate-y-[-100%] opacity-0" : "translate-y-0 opacity-100"
-                      )}
-                    >
-                      {FOCUSED_PLACEHOLDERS[placeholderIndex]}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Right Side: Keyboard Shortcut or Submit Button */}
-              {!isFocused && (
-                <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground bg-muted rounded-md border border-border">
-                  <span className="text-[10px]">⌘</span> /
-                </kbd>
-              )}
-
-              {isFocused && (
-                <button
-                  onClick={handleSubmit}
-                  disabled={!text.trim()}
-                  className={cn(
-                    "p-2 rounded-lg transition-all duration-200",
-                    text.trim()
-                      ? "bg-primary text-primary-foreground shadow-lg hover:bg-primary/90"
-                      : "bg-muted text-muted-foreground cursor-not-allowed"
-                  )}
-                >
-                  <CornerDownLeft size={18} />
-                </button>
-              )}
-            </div>
-
-            {/* Time Chips - Expandable Section */}
-            {isFocused && (
-              <div className="border-t border-border/50 bg-muted/30 px-4 py-3">
-                <div className="flex flex-wrap gap-2">
-                  {/* Preset Time Chips */}
-                  {TIME_PRESETS.map((preset) => (
-                    <Chip
-                      key={preset.value}
-                      selected={selectedTime === preset.value}
-                      onClick={() => handleTimePreset(preset.value)}
-                    >
-                      <span>{preset.label}</span>
-                      <span className="font-mono text-xs">{preset.value}</span>
-                    </Chip>
-                  ))}
-
-                  {/* Custom Time Chip */}
-                  <Chip
-                    selected={selectedTime !== null && !TIME_PRESETS.some(p => p.value === selectedTime)}
-                    onClick={handleCustomTimeClick}
-                  >
-                    <Clock className="w-3 h-3" />
-                    <span>Choose</span>
-                  </Chip>
-
-                  {/* Remove Time Chip */}
-                  {selectedTime && (
-                    <Chip
-                      variant="outline"
-                      onClick={handleRemoveTime}
-                    >
-                      <X className="w-3 h-3" />
-                      <span>No time</span>
-                    </Chip>
-                  )}
-                </div>
-
-                {/* Selected Time Indicator */}
-                {selectedTime && (
-                  <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-2">
-                    <Clock className="w-3 h-3" />
-                    <span>Task scheduled for {selectedTime}</span>
-                  </div>
-                )}
-              </div>
-            )}
+      <div className="w-full mb-8">
+        {/* Main Container */}
+        <div className="relative bg-card border-2 border-[hsl(var(--navy-border))] rounded-xl overflow-hidden shadow-lg">
+          {/* Header */}
+          <div className="px-4 pt-4 pb-3">
+            <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">
+              ENTER TASKS
+            </h2>
           </div>
+
+          {/* Textarea */}
+          <div className="px-4 pb-3">
+            <textarea
+              ref={textareaRef}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder}
+              className={cn(
+                "w-full bg-transparent border-none outline-none resize-none",
+                "text-foreground placeholder:text-muted-foreground",
+                "text-sm leading-relaxed",
+                "min-h-[80px] max-h-[120px]", // 4 lines approx, then scroll
+                "scrollbar-thin scrollbar-thumb-[hsl(var(--navy-border))] scrollbar-track-transparent"
+              )}
+              rows={4}
+            />
+          </div>
+
+          {/* Footer */}
+          <div className="px-4 pb-4 flex items-center justify-between">
+            {/* Keyboard Hints - Left */}
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <kbd className="px-1.5 py-0.5 bg-background/50 rounded text-[10px] font-mono border border-border">
+                  SHIFT+ENTER
+                </kbd>
+                <span>new task</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <kbd className="px-1.5 py-0.5 bg-background/50 rounded text-[10px] font-mono border border-border">
+                  ENTER
+                </kbd>
+                <span>submit</span>
+              </div>
+            </div>
+
+            {/* Submit Button - Right */}
+            <Button
+              onClick={handleSubmit}
+              disabled={!hasContent}
+              variant="arcade"
+              className="font-arcade text-xs px-5 py-2"
+            >
+              Log Tasks
+            </Button>
           </div>
         </div>
-
-        {/* Custom Time Picker Dialog */}
-        <Dialog open={showCustomTimePicker} onOpenChange={setShowCustomTimePicker}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Choose Custom Time</DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Time</label>
-                <Input
-                  type="time"
-                  value={customTime}
-                  onChange={(e) => setCustomTime(e.target.value)}
-                  className="text-lg"
-                  autoFocus
-                />
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowCustomTimePicker(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCustomTimeSubmit}>
-                Set Time
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </>
+      </div>
     );
   }
 );

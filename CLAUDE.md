@@ -1,7 +1,7 @@
 # Howerful - Gamified Task Tracking App
 
 ## About User
-User is an experienced senior level designer with minimal coding knowledge. When relevant, such as large code changes or new implementations, teach the user what's happening or what was implemented. They might not understand common or advanced syntax. Always get a deep understanding of what the user is wanting to achieve before executing big changes. 
+User is an experienced senior level designer with minimal coding knowledge. You can talk to him like a moron and offer syntax, structure, or other coding explanations where deemed necessary.
 
 ## Overview
 Howerful is a gamified bullet journal app with XP, levels, quests, and a 3D companion character named "Howie". Built with React, TypeScript, Vite, and Supabase.

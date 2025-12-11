@@ -14,7 +14,7 @@ import { useMemo, useState, useRef, useEffect } from 'react';
 import { Bucket, BULLET_TASK_XP_REWARD, BULLET_TASK_COIN_REWARD } from '@shared/schema';
 import { toast } from 'sonner';
 import { useLocation } from 'wouter';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   DndContext,
   closestCenter,
@@ -38,6 +38,7 @@ export default function Dojo() {
   const inputRef = useRef<SlashInputRef>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
+  const [isShaking, setIsShaking] = useState(false);
 
   // Switch focus dialog state
   const [showSwitchDialog, setShowSwitchDialog] = useState(false);
@@ -78,19 +79,47 @@ export default function Dojo() {
     'future-log': getItemsByBucket('future-log').filter(item => !item.completed).length,
   }), [getItemsByBucket]);
 
-  // Global keyboard shortcut: Press "/" to focus input from anywhere
+  // Determine if navigation hints should be shown
+  const buckets: Bucket[] = ['today', 'tomorrow', 'someday'];
+  const currentBucketIndex = buckets.indexOf(activeBucket);
+  const hasPrevBucket = currentBucketIndex > 0;
+  const hasNextBucket = currentBucketIndex < buckets.length - 1;
+
+  // Global keyboard shortcuts: "/" for input focus, arrow keys for bucket navigation
   useEffect(() => {
+    const buckets: Bucket[] = ['today', 'tomorrow', 'someday'];
+
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // Focus input when "/" is pressed (and not already in an input/textarea)
-      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+        return;
+      }
+
+      if (e.key === '/') {
         e.preventDefault();
         inputRef.current?.focus();
+      }
+
+      // Navigate buckets with arrow keys
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        const currentIndex = buckets.indexOf(activeBucket);
+        const newIndex = e.key === 'ArrowLeft' ? currentIndex - 1 : currentIndex + 1;
+
+        // Check boundaries
+        if (newIndex < 0 || newIndex >= buckets.length) {
+          // Trigger shake animation
+          setIsShaking(true);
+          setTimeout(() => setIsShaking(false), 500);
+        } else {
+          // Navigate to new bucket
+          setActiveBucket(buckets[newIndex]);
+        }
       }
     };
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, []);
+  }, [activeBucket]);
 
   const handleAddItem = (text: string, time?: string) => {
     // Add the item to the currently active bucket (always as a task)
@@ -227,19 +256,49 @@ export default function Dojo() {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="h-full flex flex-col overflow-hidden bg-background">
+      <div className="h-full flex flex-col overflow-hidden bg-[hsl(var(--navy-background))]">
         {/* Centered Content Wrapper */}
-        <div className="flex-1 flex justify-center overflow-y-auto">
-          {/* Max-Width Container */}
-          <div className="w-full max-w-[1250px] flex flex-col px-6 md:px-8 pt-6 md:pt-8 pb-8">
-            {/* Task Input - at top */}
-            <TaskInput
-              ref={inputRef}
-              onAddItem={handleAddItem}
-              placeholder="Press / to add a task..."
-            />
+        <div className="flex-1 flex justify-center overflow-y-auto relative">
+          {/* Floating Keyboard Hints */}
+          {/* Left Arrow Hint - only show if there's a previous bucket */}
+          {hasPrevBucket && (
+            <motion.div
+              className="hidden lg:flex absolute left-5 top-1/2 -translate-y-1/2 items-center justify-center bg-card rounded-lg px-4 py-3 shadow-lg pointer-events-none z-10"
+              animate={{ opacity: [0.4, 0.8, 0.4] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <div className="flex items-center gap-2">
+                <kbd className="px-2 py-1 bg-background/50 rounded text-xs font-mono border border-border">
+                  ←
+                </kbd>
+                <span className="text-xs text-muted-foreground font-medium">PREV</span>
+              </div>
+            </motion.div>
+          )}
 
-            {/* Bucket Tabs */}
+          {/* Right Arrow Hint - only show if there's a next bucket */}
+          {hasNextBucket && (
+            <motion.div
+              className="hidden lg:flex absolute right-5 top-1/2 -translate-y-1/2 items-center justify-center bg-card rounded-lg px-4 py-3 shadow-lg pointer-events-none z-10"
+              animate={{ opacity: [0.4, 0.8, 0.4] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground font-medium">NEXT</span>
+                <kbd className="px-2 py-1 bg-background/50 rounded text-xs font-mono border border-border">
+                  →
+                </kbd>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Max-Width Container */}
+          <motion.div
+            className="w-full max-w-[950px] flex flex-col px-6 md:px-8 pt-6 md:pt-8 pb-8"
+            animate={isShaking ? { x: [-5, 5, -5, 5, 0] } : { x: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            {/* Bucket Tabs - at top */}
             <div className="mb-6">
               <BucketTabs
                 activeBucket={activeBucket}
@@ -247,6 +306,13 @@ export default function Dojo() {
                 counts={bucketCounts}
               />
             </div>
+
+            {/* Task Input */}
+            <TaskInput
+              ref={inputRef}
+              onAddItem={handleAddItem}
+              placeholder="Press / to add a task..."
+            />
 
             {/* VIT Banner - Shows active VIT regardless of bucket */}
             <AnimatePresence>
@@ -296,7 +362,7 @@ export default function Dojo() {
               onMarkAsVIT={handleMarkAsVIT}
               activeId={activeId}
             />
-          </div>
+          </motion.div>
         </div>
 
         {/* Focus Drop Zone - shown only when dragging */}
